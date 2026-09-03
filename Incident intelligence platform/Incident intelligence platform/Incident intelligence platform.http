@@ -1,0 +1,6 @@
+@Incident_intelligence_platform_HostAddress = http://localhost:5264
+
+GET {{Incident_intelligence_platform_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
