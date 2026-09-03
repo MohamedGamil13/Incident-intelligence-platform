@@ -35,6 +35,7 @@ namespace Incident_intelligence_platform.Controllers
         [HttpPost]
         public async Task<ActionResult<Service>> CreateService(Service newService)
         {
+            newService.CreatedAt = DateTime.UtcNow;
             await _context.Services.AddAsync(newService);
             await _context.SaveChangesAsync();
 
