@@ -3,9 +3,7 @@
     public class Incident
     {
         public int Id { get; set; }
-
         public required string Title { get; set; }
-
         public required string Description { get; set; }
         public int ServiceId { get; set; }
         public IncidentSeverity Severity { get; set; }
