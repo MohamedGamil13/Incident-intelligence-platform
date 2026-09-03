@@ -4,42 +4,75 @@ using Microsoft.EntityFrameworkCore;
 namespace Incident_intelligence_platform.Controllers
 {
     [ApiController]
-
-    public class ServiceController
+    [Route("api/[controller]")]
+    public class ServicesController : ControllerBase
     {
         private readonly AppDbcontext _context;
-        public ServiceController(AppDbcontext context)
+
+        public ServicesController(AppDbcontext context)
         {
             _context = context;
         }
+
         [HttpGet]
-        [Route("Get All Services")]
-        public async Task<IEnumerable<Service>> GetAllServices()
+        public async Task<ActionResult<IEnumerable<Service>>> GetAllServices()
         {
-            return await _context.Services.ToListAsync();
-        }
-        [HttpGet]
-        [Route("")]
-        public async Task<Service> GetService(int servieId)
-        {
-            return await _context.Services.SingleOrDefaultAsync((s) => s.Id == servieId);
-        }
-        [HttpPost]
-        [Route("")]
-        public async Task CreateService(Service newService)
-        {
-            await _context.Services.AddAsync(newService);
-        }
-        [HttpDelete]
-        [Route("")]
-        public async Task DeleteService(Service service)
-        {
-            await _context.Services.ExecuteDeleteAsync((s) => s.Id == service.Id);
-        }
-        public async Task<Service> UpdateService(Service newService)
-        {
-            return newService;
+            return Ok(await _context.Services.ToListAsync());
         }
 
+        [HttpGet("{serviceId}")]
+        public async Task<ActionResult<Service>> GetService(int serviceId)
+        {
+            var service = await _context.Services
+                .SingleOrDefaultAsync(s => s.Id == serviceId);
+
+            if (service == null)
+                return NotFound();
+
+            return Ok(service);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<Service>> CreateService(Service newService)
+        {
+            await _context.Services.AddAsync(newService);
+            await _context.SaveChangesAsync();
+
+            return Ok(newService);
+        }
+
+        [HttpDelete("{serviceId}")]
+        public async Task<IActionResult> DeleteService(int serviceId)
+        {
+            var service = await _context.Services
+                .SingleOrDefaultAsync(s => s.Id == serviceId);
+
+            if (service == null)
+                return NotFound();
+
+            _context.Services.Remove(service);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpPut("{serviceId}")]
+        public async Task<ActionResult<Service>> UpdateService(
+            int serviceId,
+            Service updatedService)
+        {
+            var service = await _context.Services
+                .SingleOrDefaultAsync(s => s.Id == serviceId);
+
+            if (service == null)
+                return NotFound();
+
+            service.Name = updatedService.Name;
+            service.Description = updatedService.Description;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(service);
+        }
     }
 }
