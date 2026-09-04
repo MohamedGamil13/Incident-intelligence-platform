@@ -11,7 +11,7 @@
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ResolvedAt { get; set; }
-
+        public Service? Service { get; set; }
 
     }
     public enum IncidentSeverity

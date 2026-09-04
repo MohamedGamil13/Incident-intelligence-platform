@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Incident_intelligence_platform.DTOs;
+using Mapster;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Incident_intelligence_platform.Controllers
@@ -15,65 +17,77 @@ namespace Incident_intelligence_platform.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Service>>> GetAllServices()
+        public async Task<ActionResult<IEnumerable<GetServiceResponseDTO>>> GetAllServices()
         {
-            return Ok(await _context.Services.ToListAsync());
+            var services = await _context.Services
+                .AsNoTracking()
+                .ProjectToType<GetServiceResponseDTO>()
+                .ToListAsync();
+
+            return Ok(services);
         }
 
-        [HttpGet("{serviceId}")]
-        public async Task<ActionResult<Service>> GetService(int serviceId)
+        [HttpGet("{serviceId:int}")]
+        public async Task<ActionResult<GetServiceResponseDTO>> GetService(int serviceId)
         {
-            var service = await _context.Services
-                .SingleOrDefaultAsync(s => s.Id == serviceId);
+            var serviceDto = await _context.Services
+                .AsNoTracking()
+                .Where(s => s.Id == serviceId)
+                .ProjectToType<GetServiceResponseDTO>()
+                .FirstOrDefaultAsync();
 
-            if (service == null)
-                return NotFound();
+            if (serviceDto == null)
+                return NotFound(new { Message = $"Service with ID {serviceId} was not found." });
 
-            return Ok(service);
+            return Ok(serviceDto);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Service>> CreateService(Service newService)
+        public async Task<ActionResult<GetServiceResponseDTO>> CreateService([FromBody] CreateServiceRequestDTO requestDto)
         {
 
-            await _context.Services.AddAsync(newService);
+            var service = requestDto.Adapt<Service>();
+
+            await _context.Services.AddAsync(service);
             await _context.SaveChangesAsync();
 
-            return Ok(newService);
+
+            var responseDto = service.Adapt<GetServiceResponseDTO>();
+
+            return CreatedAtAction(nameof(GetService), new { serviceId = responseDto.Id }, responseDto);
         }
 
-        [HttpDelete("{serviceId}")]
-        public async Task<ActionResult> DeleteService(int serviceId)
+        [HttpPut("{serviceId:int}")]
+        public async Task<ActionResult<GetServiceResponseDTO>> UpdateService(int serviceId, [FromBody] UpdateServiceRequestDTO requestDto)
         {
             var service = await _context.Services
-                .SingleOrDefaultAsync(s => s.Id == serviceId);
+                .FirstOrDefaultAsync(s => s.Id == serviceId);
 
             if (service == null)
-                return NotFound();
+                return NotFound(new { Message = $"Service with ID {serviceId} was not found." });
+
+
+            requestDto.Adapt(service);
+
+            await _context.SaveChangesAsync();
+
+            var responseDto = service.Adapt<GetServiceResponseDTO>();
+            return Ok(responseDto);
+        }
+
+        [HttpDelete("{serviceId:int}")]
+        public async Task<IActionResult> DeleteService(int serviceId)
+        {
+            var service = await _context.Services
+                .FirstOrDefaultAsync(s => s.Id == serviceId);
+
+            if (service == null)
+                return NotFound(new { Message = $"Service with ID {serviceId} was not found." });
 
             _context.Services.Remove(service);
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        [HttpPut("{serviceId}")]
-        public async Task<ActionResult<Service>> UpdateService(
-            int serviceId,
-            Service updatedService)
-        {
-            var service = await _context.Services
-                .SingleOrDefaultAsync(s => s.Id == serviceId);
-
-            if (service == null)
-                return NotFound();
-
-            service.Name = updatedService.Name;
-            service.Description = updatedService.Description;
-
-            await _context.SaveChangesAsync();
-
-            return Ok(service);
         }
     }
 }

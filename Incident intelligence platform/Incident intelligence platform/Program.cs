@@ -1,4 +1,5 @@
 using Incident_intelligence_platform;
+using Incident_intelligence_platform.Middlewares;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,5 +25,6 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 app.MapControllers();
+app.UseMiddleware<RequestTimingMiddleware>();
 
 app.Run();

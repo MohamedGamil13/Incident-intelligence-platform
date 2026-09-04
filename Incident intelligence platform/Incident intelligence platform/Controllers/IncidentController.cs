@@ -1,4 +1,6 @@
-﻿using Incident_intelligence_platform.Models;
+﻿using Incident_intelligence_platform.DTOs;
+using Incident_intelligence_platform.Models;
+using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,9 +18,12 @@ namespace Incident_intelligence_platform.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Incident>>> GetAllIncidents()
+        public async Task<ActionResult<IEnumerable<GetIcidentRequest>>> GetAllIncidents()
         {
-            return Ok(await _context.Incidents.ToListAsync());
+            var incidents = await _context.Incidents.ProjectToType<GetIcidentRequest>().ToListAsync();
+
+            return Ok(incidents);
+
         }
 
         [HttpGet("{incidentId}")]
@@ -29,8 +34,9 @@ namespace Incident_intelligence_platform.Controllers
 
             if (incident == null)
                 return NotFound();
+            var data = incident.Adapt<GetIcidentRequest>();
 
-            return Ok(incident);
+            return Ok(data);
         }
 
         [HttpPost]
