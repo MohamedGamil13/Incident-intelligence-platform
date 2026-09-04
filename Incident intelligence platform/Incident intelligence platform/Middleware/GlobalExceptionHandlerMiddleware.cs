@@ -21,12 +21,12 @@ namespace Incident_intelligence_platform.Middlewares
         {
             try
             {
-                // تمرير الطلب للميدلوير التالي أو الـ Controller
+
                 await _next(context);
             }
             catch (Exception ex)
             {
-                // إذا حدث أي خطأ غير متوقع في أي مكان، يتم التقاطه هنا
+
                 _logger.LogError(ex, "An unhandled exception occurred: {Message}", ex.Message);
                 await HandleExceptionAsync(context, ex);
             }
@@ -36,32 +36,32 @@ namespace Incident_intelligence_platform.Middlewares
         {
             context.Response.ContentType = "application/json";
 
-            // تحديد كود الـ HTTP Status ورسالة الخطأ بناءً على نوع الـ Exception
-            var statusCode = HttpStatusCode.InternalServerError; // 500 افتراضياً
+
+            var statusCode = HttpStatusCode.InternalServerError;
             var title = "An unexpected error occurred on the server.";
 
             switch (exception)
             {
                 case KeyNotFoundException:
-                    statusCode = HttpStatusCode.NotFound; // 404
+                    statusCode = HttpStatusCode.NotFound;
                     title = "The requested resource was not found.";
                     break;
 
                 case InvalidOperationException:
                 case ArgumentException:
-                    statusCode = HttpStatusCode.BadRequest; // 400
+                    statusCode = HttpStatusCode.BadRequest;
                     title = "Bad request or invalid operation.";
                     break;
 
                 case UnauthorizedAccessException:
-                    statusCode = HttpStatusCode.Unauthorized; // 401
+                    statusCode = HttpStatusCode.Unauthorized;
                     title = "Unauthorized access.";
                     break;
             }
 
             context.Response.StatusCode = (int)statusCode;
 
-            // بناء استجابة موحدة بأسلوب ProblemDetails القياسي
+
             var problemDetails = new ProblemDetails
             {
                 Status = (int)statusCode,

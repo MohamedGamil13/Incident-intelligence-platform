@@ -18,69 +18,93 @@ namespace Incident_intelligence_platform.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<GetIcidentRequest>>> GetAllIncidents()
+        public async Task<ActionResult<IEnumerable<GetIncidentResponseDTO>>> GetAllIncidents()
         {
-            var incidents = await _context.Incidents.ProjectToType<GetIcidentRequest>().ToListAsync();
+            var incidents = await _context.Incidents
+                .AsNoTracking()
+                .ProjectToType<GetIncidentResponseDTO>()
+                .ToListAsync();
 
             return Ok(incidents);
-
         }
 
-        [HttpGet("{incidentId}")]
-        public async Task<ActionResult<Incident>> GetIncident(int incidentId)
+        [HttpGet("{incidentId:int}")]
+        public async Task<ActionResult<GetIncidentResponseDTO>> GetIncident(int incidentId)
         {
-            var incident = await _context.Incidents
-                .SingleOrDefaultAsync(i => i.Id == incidentId);
+            var incidentDto = await _context.Incidents
+                .AsNoTracking()
+                .Where(i => i.Id == incidentId)
+                .ProjectToType<GetIncidentResponseDTO>()
+                .FirstOrDefaultAsync();
 
-            if (incident == null)
-                return NotFound();
-            var data = incident.Adapt<GetIcidentRequest>();
+            if (incidentDto == null)
+                return NotFound(new { Message = $"Incident with ID {incidentId} was not found." });
 
-            return Ok(data);
+            return Ok(incidentDto);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Incident>> CreateIncident(Incident newIncident)
+        public async Task<ActionResult<GetIncidentResponseDTO>> CreateIncident([FromBody] CreateIncidentRequestDTO requestDto)
         {
+            // Verify Service exists before creating incident
+            var serviceExists = await _context.Services.AnyAsync(s => s.Id == requestDto.ServiceId);
+            if (!serviceExists)
+            {
+                return BadRequest(new { Message = $"ServiceId {requestDto.ServiceId} does not exist." });
+            }
 
-            await _context.Incidents.AddAsync(newIncident);
+            // Map DTO -> Entity
+            var incident = requestDto.Adapt<Incident>();
+
+            // Set server-managed properties
+            incident.Status = IncidentStatus.Open;
+            incident.CreatedAt = DateTime.UtcNow;
+
+            await _context.Incidents.AddAsync(incident);
             await _context.SaveChangesAsync();
 
-            return Ok(newIncident);
+            var responseDto = incident.Adapt<GetIncidentResponseDTO>();
+
+            return CreatedAtAction(nameof(GetIncident), new { incidentId = responseDto.Id }, responseDto);
         }
 
-        [HttpDelete("{incidentId}")]
-        public async Task<ActionResult> DeleteIncident(int incidentId)
+        [HttpPut("{incidentId:int}")]
+        public async Task<ActionResult<GetIncidentResponseDTO>> UpdateIncident(int incidentId, [FromBody] UpdateIncidentRequestDTO requestDto)
         {
             var incident = await _context.Incidents
-                .SingleOrDefaultAsync(i => i.Id == incidentId);
+                .FirstOrDefaultAsync(i => i.Id == incidentId);
 
             if (incident == null)
-                return NotFound();
+                return NotFound(new { Message = $"Incident with ID {incidentId} was not found." });
+
+            // Map updated properties from DTO to Entity
+            requestDto.Adapt(incident);
+
+            // Automatically manage ResolvedAt if Status changed to Resolved
+            if (incident.Status == IncidentStatus.Resolved && !incident.ResolvedAt.HasValue)
+            {
+                incident.ResolvedAt = DateTime.UtcNow;
+            }
+
+            await _context.SaveChangesAsync();
+
+            var responseDto = incident.Adapt<GetIncidentResponseDTO>();
+            return Ok(responseDto);
+        }
+
+        [HttpDelete("{incidentId:int}")]
+        public async Task<IActionResult> DeleteIncident(int incidentId)
+        {
+            var incident = await _context.Incidents
+                .FirstOrDefaultAsync(i => i.Id == incidentId);
+
+            if (incident == null)
+                return NotFound(new { Message = $"Incident with ID {incidentId} was not found." });
 
             _context.Incidents.Remove(incident);
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        [HttpPut("{incidentId}")]
-        public async Task<ActionResult<Incident>> UpdateIncident(int incidentId, Incident newIncident)
-        {
-            var incident = await _context.Incidents
-                .SingleOrDefaultAsync(s => s.Id == incidentId);
-
-            if (incident == null)
-                return NotFound();
-
-            incident.Title = newIncident.Title;
-            incident.Description = newIncident.Description;
-            incident.Severity = newIncident.Severity;
-            incident.Status = newIncident.Status;
-
-            await _context.SaveChangesAsync();
-
-            return Ok(incident);
         }
     }
 }
