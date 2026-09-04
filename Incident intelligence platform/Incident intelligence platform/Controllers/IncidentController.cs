@@ -44,7 +44,7 @@ namespace Incident_intelligence_platform.Controllers
         }
 
         [HttpDelete("{incidentId}")]
-        public async Task<IActionResult> DeleteIncident(int incidentId)
+        public async Task<ActionResult> DeleteIncident(int incidentId)
         {
             var incident = await _context.Incidents
                 .SingleOrDefaultAsync(i => i.Id == incidentId);

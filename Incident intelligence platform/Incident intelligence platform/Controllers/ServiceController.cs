@@ -43,7 +43,7 @@ namespace Incident_intelligence_platform.Controllers
         }
 
         [HttpDelete("{serviceId}")]
-        public async Task<IActionResult> DeleteService(int serviceId)
+        public async Task<ActionResult> DeleteService(int serviceId)
         {
             var service = await _context.Services
                 .SingleOrDefaultAsync(s => s.Id == serviceId);
