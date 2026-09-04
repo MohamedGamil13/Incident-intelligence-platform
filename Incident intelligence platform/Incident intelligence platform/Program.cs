@@ -1,4 +1,5 @@
 using Incident_intelligence_platform;
+using Incident_intelligence_platform.Configurations;
 using Incident_intelligence_platform.Middlewares;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.RegisterMapsterConfiguration();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
