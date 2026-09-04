@@ -9,7 +9,7 @@
         public IncidentSeverity Severity { get; set; }
         public IncidentStatus Status { get; set; }
 
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ResolvedAt { get; set; }
 
 
