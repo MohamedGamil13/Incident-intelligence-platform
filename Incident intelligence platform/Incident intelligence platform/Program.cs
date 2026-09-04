@@ -20,11 +20,11 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+app.UseMiddleware<RequestTimingMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 app.MapControllers();
-app.UseMiddleware<RequestTimingMiddleware>();
 
 app.Run();
