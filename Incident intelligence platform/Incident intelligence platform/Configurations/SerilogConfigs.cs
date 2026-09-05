@@ -10,6 +10,7 @@ namespace Incident_intelligence_platform.Config
                 .MinimumLevel.Information()
                 .WriteTo.Console()
                 .WriteTo.File("logs/myapp-.txt", rollingInterval: RollingInterval.Day)
+                .WriteTo.Seq("http://localhost:5341")
                 .CreateLogger();
 
             host.UseSerilog();

@@ -75,6 +75,7 @@ namespace Incident_intelligence_platform.Middlewares
             {
                 problemDetails.Extensions["stackTrace"] = exception.StackTrace;
             }
+            _logger.LogError("There Are An Execption with Title :{title}", title);
 
             var options = new JsonSerializerOptions
             {
