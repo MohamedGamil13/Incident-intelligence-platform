@@ -19,12 +19,15 @@ namespace Incident_intelligence_platform.Controllers
             this.logger = logger;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<GetIncidentResponseDTO>>> GetAllIncidents()
+        [HttpGet("{pageNumber:int}/{PageSize:int}")]
+        public async Task<ActionResult<IEnumerable<GetIncidentResponseDTO>>> GetAllIncidents(int pageNumber, int pageSize)
         {
+            int numberToSkip = (pageNumber - 1) * pageSize;
             var incidents = await _context.Incidents
                 .AsNoTracking()
                 .ProjectToType<GetIncidentResponseDTO>()
+                .Skip(numberToSkip)
+                .Take<GetIncidentResponseDTO>(pageSize)
                 .ToListAsync();
 
             return Ok(incidents);

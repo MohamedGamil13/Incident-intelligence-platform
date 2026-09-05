@@ -16,12 +16,14 @@ namespace Incident_intelligence_platform.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<GetServiceResponseDTO>>> GetAllServices()
+        [HttpGet("{pageNumber:int}/{pageSize:int}")]
+        public async Task<ActionResult<IEnumerable<GetServiceResponseDTO>>> GetAllServices(int pageNumber, int pageSize)
         {
             var services = await _context.Services
                 .AsNoTracking()
                 .ProjectToType<GetServiceResponseDTO>()
+                .Skip((pageNumber - 1) * pageSize)
+                .Take<GetServiceResponseDTO>(pageSize)
                 .ToListAsync();
 
             return Ok(services);
