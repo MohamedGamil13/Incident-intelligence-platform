@@ -22,8 +22,12 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+//Custom Middlewares
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 app.UseMiddleware<RequestTimingMiddleware>();
+
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
