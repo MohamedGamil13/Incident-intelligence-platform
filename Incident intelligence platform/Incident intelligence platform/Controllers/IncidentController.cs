@@ -11,10 +11,12 @@ namespace Incident_intelligence_platform.Controllers
     public class IncidentController : ControllerBase
     {
         private readonly AppDbcontext _context;
+        private readonly ILogger<IncidentController> logger;
 
-        public IncidentController(AppDbcontext context)
+        public IncidentController(AppDbcontext context, ILogger<IncidentController> logger)
         {
             _context = context;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -46,17 +48,17 @@ namespace Incident_intelligence_platform.Controllers
         [HttpPost]
         public async Task<ActionResult<GetIncidentResponseDTO>> CreateIncident([FromBody] CreateIncidentRequestDTO requestDto)
         {
-            // Verify Service exists before creating incident
+
             var serviceExists = await _context.Services.AnyAsync(s => s.Id == requestDto.ServiceId);
             if (!serviceExists)
             {
                 return BadRequest(new { Message = $"ServiceId {requestDto.ServiceId} does not exist." });
             }
 
-            // Map DTO -> Entity
+
             var incident = requestDto.Adapt<Incident>();
 
-            // Set server-managed properties
+
             incident.Status = IncidentStatus.Open;
             incident.CreatedAt = DateTime.UtcNow;
 
@@ -77,10 +79,10 @@ namespace Incident_intelligence_platform.Controllers
             if (incident == null)
                 return NotFound(new { Message = $"Incident with ID {incidentId} was not found." });
 
-            // Map updated properties from DTO to Entity
+
             requestDto.Adapt(incident);
 
-            // Automatically manage ResolvedAt if Status changed to Resolved
+
             if (incident.Status == IncidentStatus.Resolved && !incident.ResolvedAt.HasValue)
             {
                 incident.ResolvedAt = DateTime.UtcNow;
