@@ -10,10 +10,3 @@
 
     }
 }
-/* {
-    "Issuer": "https://localhost:7145",
-    "Audience": "https://localhost:7145",
-    "AccessKeyLifeTimeInMin": 5,
-    "RefershTokenLifeTimeInDays" :  30 , 
-    "SigningKey ": "T+iAT4+XXDOc79Xl6JJ8+q0U9wzXa6ec86QkNxaqatE="
-  }, */

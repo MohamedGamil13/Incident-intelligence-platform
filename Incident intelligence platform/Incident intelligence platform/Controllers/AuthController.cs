@@ -10,6 +10,5 @@ namespace Incident_intelligence_platform.Controllers
         public void SignUp() { }
         public void ResetPassword() { }
         public void RefereshToken() { }
-
     }
 }
