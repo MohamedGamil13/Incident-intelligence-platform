@@ -79,15 +79,17 @@ builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbcontext>()
     .AddDefaultTokenProviders();
-
+//Register Repos
 builder.Services.AddScoped<AuthRepo>();
-builder.Services.AddScoped<TokenService>();
-builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IncidentRepository>();
 builder.Services.AddScoped<ServiceRepository>();
 
+//Register Services
+builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IncidentService>();
 builder.Services.AddScoped<ServiceManagementService>();
+
 //Hosts
 builder.Host.AddSerilogLogging();
 
