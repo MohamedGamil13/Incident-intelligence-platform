@@ -1,7 +1,14 @@
 using Incident_intelligence_platform;
 using Incident_intelligence_platform.Config;
 using Incident_intelligence_platform.Middlewares;
+using Incident_intelligence_platform.Models;
+using Incident_intelligence_platform.Repos;
+using Incident_intelligence_platform.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,13 +18,45 @@ builder.Services.RegisterMapsterConfiguration();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-
-
 builder.Services.AddDbContext<AppDbcontext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
     ));
 
+//For Auth Override and Configure
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+
+}).AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = builder.Configuration["JWT:Issuer"],
+            ValidAudience = builder.Configuration["JWT:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(
+                    builder.Configuration["JWT:Key"]!
+                )
+            )
+        };
+    });
+
+builder.Services
+    .AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppDbcontext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<AuthRepo>();
+builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<AuthService>();
 //Hosts
 builder.Host.AddSerilogLogging();
 
