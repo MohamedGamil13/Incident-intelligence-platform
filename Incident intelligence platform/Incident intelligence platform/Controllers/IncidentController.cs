@@ -19,22 +19,22 @@ namespace Incident_intelligence_platform.Controllers
             this.logger = logger;
         }
 
-        [HttpGet("{pageNumber:int}/{PageSize:int}")]
-        public async Task<ActionResult<IEnumerable<GetIncidentResponseDTO>>> GetAllIncidents(int pageNumber, int pageSize)
+        [HttpGet("{pageNumber:int}/{pageSize:int}")]
+        public async Task<IActionResult> GetAllIncidents(int pageNumber, int pageSize)
         {
             int numberToSkip = (pageNumber - 1) * pageSize;
             var incidents = await _context.Incidents
                 .AsNoTracking()
                 .ProjectToType<GetIncidentResponseDTO>()
                 .Skip(numberToSkip)
-                .Take<GetIncidentResponseDTO>(pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return Ok(incidents);
+            return Ok(ApiResponse<IEnumerable<GetIncidentResponseDTO>>.SuccessResponse(incidents, "Incidents retrieved successfully"));
         }
 
         [HttpGet("{incidentId:int}")]
-        public async Task<ActionResult<GetIncidentResponseDTO>> GetIncident(int incidentId)
+        public async Task<IActionResult> GetIncident(int incidentId)
         {
             var incidentDto = await _context.Incidents
                 .AsNoTracking()
@@ -43,25 +43,23 @@ namespace Incident_intelligence_platform.Controllers
                 .FirstOrDefaultAsync();
 
             if (incidentDto == null)
-                return NotFound(new { Message = $"Incident with ID {incidentId} was not found." });
+            {
+                return NotFound(ApiResponse<GetIncidentResponseDTO>.FailureResponse($"Incident with ID {incidentId} was not found.", statusCode: 404));
+            }
 
-            return Ok(incidentDto);
+            return Ok(ApiResponse<GetIncidentResponseDTO>.SuccessResponse(incidentDto));
         }
 
         [HttpPost]
-        public async Task<ActionResult<GetIncidentResponseDTO>> CreateIncident([FromBody] CreateIncidentRequestDTO requestDto)
+        public async Task<IActionResult> CreateIncident([FromBody] CreateIncidentRequestDTO requestDto)
         {
-
             var serviceExists = await _context.Services.AnyAsync(s => s.Id == requestDto.ServiceId);
             if (!serviceExists)
             {
-                return BadRequest(new { Message = $"ServiceId {requestDto.ServiceId} does not exist." });
+                return BadRequest(ApiResponse<GetIncidentResponseDTO>.FailureResponse($"ServiceId {requestDto.ServiceId} does not exist."));
             }
 
-
             var incident = requestDto.Adapt<Incident>();
-
-
             incident.Status = IncidentStatus.Open;
             incident.CreatedAt = DateTime.UtcNow;
 
@@ -69,22 +67,22 @@ namespace Incident_intelligence_platform.Controllers
             await _context.SaveChangesAsync();
 
             var responseDto = incident.Adapt<GetIncidentResponseDTO>();
+            var apiResponse = ApiResponse<GetIncidentResponseDTO>.SuccessResponse(responseDto, "Incident created successfully", 201);
 
-            return CreatedAtAction(nameof(GetIncident), new { incidentId = responseDto.Id }, responseDto);
+            return CreatedAtAction(nameof(GetIncident), new { incidentId = responseDto.Id }, apiResponse);
         }
 
         [HttpPut("{incidentId:int}")]
-        public async Task<ActionResult<GetIncidentResponseDTO>> UpdateIncident(int incidentId, [FromBody] UpdateIncidentRequestDTO requestDto)
+        public async Task<IActionResult> UpdateIncident(int incidentId, [FromBody] UpdateIncidentRequestDTO requestDto)
         {
-            var incident = await _context.Incidents
-                .FirstOrDefaultAsync(i => i.Id == incidentId);
+            var incident = await _context.Incidents.FirstOrDefaultAsync(i => i.Id == incidentId);
 
             if (incident == null)
-                return NotFound(new { Message = $"Incident with ID {incidentId} was not found." });
-
+            {
+                return NotFound(ApiResponse<GetIncidentResponseDTO>.FailureResponse($"Incident with ID {incidentId} was not found.", statusCode: 404));
+            }
 
             requestDto.Adapt(incident);
-
 
             if (incident.Status == IncidentStatus.Resolved && !incident.ResolvedAt.HasValue)
             {
@@ -94,22 +92,23 @@ namespace Incident_intelligence_platform.Controllers
             await _context.SaveChangesAsync();
 
             var responseDto = incident.Adapt<GetIncidentResponseDTO>();
-            return Ok(responseDto);
+            return Ok(ApiResponse<GetIncidentResponseDTO>.SuccessResponse(responseDto, "Incident updated successfully"));
         }
 
         [HttpDelete("{incidentId:int}")]
         public async Task<IActionResult> DeleteIncident(int incidentId)
         {
-            var incident = await _context.Incidents
-                .FirstOrDefaultAsync(i => i.Id == incidentId);
+            var incident = await _context.Incidents.FirstOrDefaultAsync(i => i.Id == incidentId);
 
             if (incident == null)
-                return NotFound(new { Message = $"Incident with ID {incidentId} was not found." });
+            {
+                return NotFound(ApiResponse<bool>.FailureResponse($"Incident with ID {incidentId} was not found.", statusCode: 404));
+            }
 
             _context.Incidents.Remove(incident);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(ApiResponse<bool>.SuccessResponse(true, "Incident deleted successfully"));
         }
     }
 }

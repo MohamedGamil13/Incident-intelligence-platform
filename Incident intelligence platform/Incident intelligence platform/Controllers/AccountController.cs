@@ -16,36 +16,40 @@ namespace Incident_intelligence_platform.Controllers
         }
 
         [HttpPost("Register")]
-        public async Task<ActionResult> Register(RegisterUserDto newUser)
+        public async Task<IActionResult> Register(RegisterUserDto newUser)
         {
             var result = await _authService.RegisterAsync(newUser);
             if (!result.IsSuccess)
             {
-                return BadRequest(result);
+                return BadRequest(ApiResponse<object>.FailureResponse(result.Message, result.Errors, 400));
             }
-            return Ok(result);
+
+            return Ok(ApiResponse<string>.SuccessResponse(message: result.Message, statusCode: 200));
         }
 
         [HttpPost("Login")]
-        public async Task<ActionResult> Login(LoginRequest user)
+        public async Task<IActionResult> Login(LoginRequest user)
         {
             var result = await _authService.LoginAsync(user);
             if (!result.IsSuccess)
             {
-                return BadRequest(result.Message);
+                return BadRequest(ApiResponse<object>.FailureResponse(result.Message, statusCode: 400));
             }
-            return Ok(new { token = result.Token, expires = result.Expiration });
+
+            var tokenData = new { token = result.Token, expires = result.Expiration };
+            return Ok(ApiResponse<object>.SuccessResponse(tokenData, message: "Login Successful"));
         }
 
         [HttpPut("ForgetPassword")]
-        public async Task<ActionResult> ResetPassword(ResetPasswordRequest request)
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
         {
             var result = await _authService.ResetPasswordAsync(request);
             if (!result.IsSuccess)
             {
-                return BadRequest(result);
+                return BadRequest(ApiResponse<object>.FailureResponse(result.Message, result.Errors, 400));
             }
-            return Ok(result.Message);
+
+            return Ok(ApiResponse<string>.SuccessResponse(message: result.Message));
         }
     }
 }

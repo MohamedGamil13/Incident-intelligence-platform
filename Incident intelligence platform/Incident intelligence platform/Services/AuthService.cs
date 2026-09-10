@@ -56,6 +56,7 @@ namespace Incident_intelligence_platform.Services
             return new AuthResultDto
             {
                 IsSuccess = true,
+                Message = "Login Successful",
                 Token = token,
                 Expiration = expiration
             };
@@ -68,7 +69,6 @@ namespace Incident_intelligence_platform.Services
             {
                 return new AuthResultDto { IsSuccess = false, Message = "Invalid request or user not found" };
             }
-
 
             var result = await _authRepo.ResetPasswordAsync(user, resetDto.Token, resetDto.NewPassword);
             if (!result.Succeeded)
