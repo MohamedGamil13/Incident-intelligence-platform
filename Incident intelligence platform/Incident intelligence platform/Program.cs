@@ -1,11 +1,13 @@
 using Incident_intelligence_platform;
 using Incident_intelligence_platform.Config;
+using Incident_intelligence_platform.DTOs;
 using Incident_intelligence_platform.Middlewares;
 using Incident_intelligence_platform.Models;
 using Incident_intelligence_platform.Repos;
 using Incident_intelligence_platform.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -14,6 +16,29 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+//Standard Response 
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+
+        var errors = context.ModelState
+            .Where(e => e.Value?.Errors.Count > 0)
+            .SelectMany(e => e.Value!.Errors)
+            .Select(e => e.ErrorMessage)
+            .ToList();
+
+
+        var response = ApiResponse<object>.FailureResponse(
+            message: "Validation failed",
+            errors: errors,
+            statusCode: 400
+        );
+
+        return new BadRequestObjectResult(response);
+    };
+});
+
 builder.Services.RegisterMapsterConfiguration();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
