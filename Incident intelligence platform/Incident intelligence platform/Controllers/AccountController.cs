@@ -41,7 +41,7 @@ namespace Incident_intelligence_platform.Controllers
 
 
         [HttpPost("Login")]
-        public async Task<ActionResult> SignIn(LoginRequest user)
+        public async Task<ActionResult> Login(LoginRequest user)
         {
             var oldUser = await userManager.FindByEmailAsync(user.Email);
             if (oldUser == null)
@@ -82,6 +82,27 @@ namespace Incident_intelligence_platform.Controllers
                 Token = new JwtSecurityTokenHandler().WriteToken(token),
                 expires = DateTime.Now.AddHours(1)
             });
+        }
+        [HttpPut("ForgetPassword")]
+        public async Task<ActionResult> ResetPassword(ResetPasswordRequest request)
+        {
+            ApplicationUser? userFromDb = await userManager.FindByEmailAsync(request.Email);
+            if (request == null || userFromDb == null)
+            {
+                return BadRequest("Invalid request or user not found");
+            }
+
+            var result = userManager.ResetPasswordAsync(userFromDb, request.Token, request.NewPassword);
+
+            if (!result.IsCompletedSuccessfully)
+            {
+                return BadRequest("Password Is Weak or weak Internet Connection");
+            }
+
+            return Ok("Password Changed Successfully");
+
+
+
         }
 
     }
