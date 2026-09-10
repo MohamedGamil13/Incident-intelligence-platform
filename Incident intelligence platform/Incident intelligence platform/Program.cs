@@ -2,6 +2,8 @@ using Incident_intelligence_platform;
 using Incident_intelligence_platform.Config;
 using Incident_intelligence_platform.Middlewares;
 using Incident_intelligence_platform.Models;
+using Incident_intelligence_platform.Repos;
+using Incident_intelligence_platform.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -50,7 +52,11 @@ builder.Services.AddAuthentication(options =>
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbcontext>()
-    .AddDefaultTokenProviders(); ;
+    .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<AuthRepo>();
+builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<AuthService>();
 //Hosts
 builder.Host.AddSerilogLogging();
 
