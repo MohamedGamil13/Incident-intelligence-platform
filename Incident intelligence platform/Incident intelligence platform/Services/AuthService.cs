@@ -1,4 +1,4 @@
-﻿using Incident_intelligence_platform.DTOs;
+﻿using Incident_intelligence_platform.DTOs.AuthDTOs;
 using Incident_intelligence_platform.Models;
 using Incident_intelligence_platform.Repos;
 

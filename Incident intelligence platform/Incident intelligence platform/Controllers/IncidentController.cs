@@ -1,4 +1,5 @@
 ﻿using Incident_intelligence_platform.DTOs;
+using Incident_intelligence_platform.DTOs.IncidentDTOs;
 using Incident_intelligence_platform.Services;
 using Microsoft.AspNetCore.Mvc;
 

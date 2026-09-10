@@ -1,4 +1,4 @@
-﻿using Incident_intelligence_platform.DTOs;
+﻿using Incident_intelligence_platform.DTOs.IncidentDTOs;
 using Incident_intelligence_platform.Models;
 using Incident_intelligence_platform.Repositories;
 using Mapster;
