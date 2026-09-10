@@ -1,7 +1,6 @@
 ﻿using Incident_intelligence_platform.DTOs;
-using Mapster;
+using Incident_intelligence_platform.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Incident_intelligence_platform.Controllers
 {
@@ -9,35 +8,24 @@ namespace Incident_intelligence_platform.Controllers
     [Route("api/[controller]")]
     public class ServicesController : ControllerBase
     {
-        private readonly AppDbcontext _context;
+        private readonly ServiceManagementService _serviceService;
 
-        public ServicesController(AppDbcontext context)
+        public ServicesController(ServiceManagementService serviceService)
         {
-            _context = context;
+            _serviceService = serviceService;
         }
 
         [HttpGet("{pageNumber:int}/{pageSize:int}")]
         public async Task<IActionResult> GetAllServices(int pageNumber, int pageSize)
         {
-            var services = await _context.Services
-                .AsNoTracking()
-                .ProjectToType<GetServiceResponseDTO>()
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
+            var services = await _serviceService.GetAllServicesAsync(pageNumber, pageSize);
             return Ok(ApiResponse<IEnumerable<GetServiceResponseDTO>>.SuccessResponse(services, "Services retrieved successfully"));
         }
 
         [HttpGet("{serviceId:int}")]
         public async Task<IActionResult> GetService(int serviceId)
         {
-            var serviceDto = await _context.Services
-                .AsNoTracking()
-                .Where(s => s.Id == serviceId)
-                .ProjectToType<GetServiceResponseDTO>()
-                .FirstOrDefaultAsync();
-
+            var serviceDto = await _serviceService.GetServiceByIdAsync(serviceId);
             if (serviceDto == null)
             {
                 return NotFound(ApiResponse<GetServiceResponseDTO>.FailureResponse($"Service with ID {serviceId} was not found.", statusCode: 404));
@@ -49,12 +37,7 @@ namespace Incident_intelligence_platform.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateService([FromBody] CreateServiceRequestDTO requestDto)
         {
-            var service = requestDto.Adapt<Service>();
-
-            await _context.Services.AddAsync(service);
-            await _context.SaveChangesAsync();
-
-            var responseDto = service.Adapt<GetServiceResponseDTO>();
+            var responseDto = await _serviceService.CreateServiceAsync(requestDto);
             var apiResponse = ApiResponse<GetServiceResponseDTO>.SuccessResponse(responseDto, "Service created successfully", 201);
 
             return CreatedAtAction(nameof(GetService), new { serviceId = responseDto.Id }, apiResponse);
@@ -63,32 +46,23 @@ namespace Incident_intelligence_platform.Controllers
         [HttpPut("{serviceId:int}")]
         public async Task<IActionResult> UpdateService(int serviceId, [FromBody] UpdateServiceRequestDTO requestDto)
         {
-            var service = await _context.Services.FirstOrDefaultAsync(s => s.Id == serviceId);
-
-            if (service == null)
+            var updatedService = await _serviceService.UpdateServiceAsync(serviceId, requestDto);
+            if (updatedService == null)
             {
                 return NotFound(ApiResponse<GetServiceResponseDTO>.FailureResponse($"Service with ID {serviceId} was not found.", statusCode: 404));
             }
 
-            requestDto.Adapt(service);
-            await _context.SaveChangesAsync();
-
-            var responseDto = service.Adapt<GetServiceResponseDTO>();
-            return Ok(ApiResponse<GetServiceResponseDTO>.SuccessResponse(responseDto, "Service updated successfully"));
+            return Ok(ApiResponse<GetServiceResponseDTO>.SuccessResponse(updatedService, "Service updated successfully"));
         }
 
         [HttpDelete("{serviceId:int}")]
         public async Task<IActionResult> DeleteService(int serviceId)
         {
-            var service = await _context.Services.FirstOrDefaultAsync(s => s.Id == serviceId);
-
-            if (service == null)
+            var isDeleted = await _serviceService.DeleteServiceAsync(serviceId);
+            if (!isDeleted)
             {
                 return NotFound(ApiResponse<bool>.FailureResponse($"Service with ID {serviceId} was not found.", statusCode: 404));
             }
-
-            _context.Services.Remove(service);
-            await _context.SaveChangesAsync();
 
             return Ok(ApiResponse<bool>.SuccessResponse(true, "Service deleted successfully"));
         }
