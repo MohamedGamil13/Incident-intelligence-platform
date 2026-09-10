@@ -48,12 +48,16 @@ namespace Incident_intelligence_platform.Controllers
             {
                 return BadRequest("User Not Found");
             }
+            if (!await userManager.CheckPasswordAsync(oldUser, user.Password))
+            {
+                return BadRequest("Invalid Email Or Password");
+            }
             List<Claim> claims = new List<Claim>();
 
             claims.Add(new Claim(ClaimTypes.NameIdentifier, oldUser.Id));
             claims.Add(new Claim(ClaimTypes.Name, oldUser.UserName!));
             claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
-
+            claims.Add(new Claim(ClaimTypes.Email, oldUser.Email!));
 
             var userRoles = await userManager.GetRolesAsync(oldUser);
             foreach (var role in userRoles)
