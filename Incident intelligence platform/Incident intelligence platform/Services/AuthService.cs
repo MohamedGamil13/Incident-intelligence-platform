@@ -70,7 +70,7 @@ namespace Incident_intelligence_platform.Services
                 return new AuthResultDto { IsSuccess = false, Message = "Invalid request or user not found" };
             }
 
-            var result = await _authRepo.ResetPasswordAsync(user, resetDto.Token, resetDto.NewPassword);
+            var result = await _authRepo.ResetPasswordAsync(user, resetDto.NewPassword);
             if (!result.Succeeded)
             {
                 return new AuthResultDto
