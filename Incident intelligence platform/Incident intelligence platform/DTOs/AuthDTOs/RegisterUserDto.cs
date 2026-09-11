@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Incident_intelligence_platform.DTOs
+namespace Incident_intelligence_platform.DTOs.AuthDTOs
 {
     public class RegisterUserDto
     {
