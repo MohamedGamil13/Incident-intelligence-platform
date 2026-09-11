@@ -28,6 +28,7 @@ namespace Incident_intelligence_platform.Services
                 UserName = newUserDto.Name
             };
 
+
             var result = await _authRepo.CreateUserAsync(user, newUserDto.Password);
             if (!result.Succeeded)
             {

@@ -18,9 +18,8 @@ namespace Incident_intelligence_platform.Controllers
             _incidentService = incidentService;
         }
 
-        // متاحة لجميع المستخدمين المسجلين (أو المسموح لهم بالعرض)
         [HttpGet("{pageNumber:int}/{pageSize:int}")]
-        [Authorize(Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager},{AppUsersRoles.Developer},{AppUsersRoles.Viewer}")]
+        [Authorize]
         public async Task<ActionResult> GetAllIncidents(int pageNumber, int pageSize)
         {
             var incidents = await _incidentService.GetAllIncidentsAsync(pageNumber, pageSize);
