@@ -1,6 +1,7 @@
 ﻿using Incident_intelligence_platform.DTOs;
 using Incident_intelligence_platform.DTOs.AuthDTOs;
 using Incident_intelligence_platform.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Incident_intelligence_platform.Controllers
@@ -17,7 +18,8 @@ namespace Incident_intelligence_platform.Controllers
         }
 
         [HttpPost("Register")]
-        public async Task<IActionResult> Register(RegisterUserDto newUser)
+        [AllowAnonymous]
+        public async Task<IActionResult> Register([FromBody] RegisterUserDto newUser)
         {
             var result = await _authService.RegisterAsync(newUser);
             if (!result.IsSuccess)
@@ -29,7 +31,8 @@ namespace Incident_intelligence_platform.Controllers
         }
 
         [HttpPost("Login")]
-        public async Task<IActionResult> Login(LoginRequest user)
+        [AllowAnonymous]
+        public async Task<IActionResult> Login([FromBody] LoginRequest user)
         {
             var result = await _authService.LoginAsync(user);
             if (!result.IsSuccess)
@@ -42,7 +45,8 @@ namespace Incident_intelligence_platform.Controllers
         }
 
         [HttpPut("ForgetPassword")]
-        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
         {
             var result = await _authService.ResetPasswordAsync(request);
             if (!result.IsSuccess)

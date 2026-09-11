@@ -18,18 +18,17 @@ namespace Incident_intelligence_platform.Controllers
             _incidentService = incidentService;
         }
 
-
-
+        // متاحة لجميع المستخدمين المسجلين (أو المسموح لهم بالعرض)
         [HttpGet("{pageNumber:int}/{pageSize:int}")]
+        [Authorize(Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager},{AppUsersRoles.Developer},{AppUsersRoles.Viewer}")]
         public async Task<ActionResult> GetAllIncidents(int pageNumber, int pageSize)
         {
             var incidents = await _incidentService.GetAllIncidentsAsync(pageNumber, pageSize);
             return Ok(ApiResponse<IEnumerable<GetIncidentResponseDTO>>.SuccessResponse(incidents, "Incidents retrieved successfully"));
         }
 
-
-
         [HttpGet("{incidentId:int}")]
+        [Authorize]
         public async Task<ActionResult> GetIncident(int incidentId)
         {
             var incidentDto = await _incidentService.GetIncidentByIdAsync(incidentId);
@@ -40,7 +39,6 @@ namespace Incident_intelligence_platform.Controllers
 
             return Ok(ApiResponse<GetIncidentResponseDTO>.SuccessResponse(incidentDto));
         }
-
 
 
         [HttpPost]
@@ -59,9 +57,8 @@ namespace Incident_intelligence_platform.Controllers
 
 
 
-
         [HttpPut("{incidentId:int}")]
-        [Authorize(Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager}")]
+        [Authorize(Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager},{AppUsersRoles.Developer}")]
         public async Task<ActionResult> UpdateIncident(int incidentId, [FromBody] UpdateIncidentRequestDTO requestDto)
         {
             var updatedIncident = await _incidentService.UpdateIncidentAsync(incidentId, requestDto);
@@ -74,10 +71,8 @@ namespace Incident_intelligence_platform.Controllers
         }
 
 
-
-
         [HttpDelete("{incidentId:int}")]
-        [Authorize(Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager}")]
+        [Authorize(Roles = AppUsersRoles.Admin)]
         public async Task<ActionResult> DeleteIncident(int incidentId)
         {
             var isDeleted = await _incidentService.DeleteIncidentAsync(incidentId);
