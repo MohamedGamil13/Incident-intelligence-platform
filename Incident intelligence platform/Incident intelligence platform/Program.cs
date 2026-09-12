@@ -118,12 +118,14 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<AuthRepo>();
 builder.Services.AddScoped<IncidentRepository>();
 builder.Services.AddScoped<ServiceRepository>();
+builder.Services.AddScoped<IncidentEventRepo>();
 
 // Register Services
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IncidentService>();
 builder.Services.AddScoped<ServiceManagementService>();
+builder.Services.AddScoped<IncidentEventService>();
 
 // Logging Host
 builder.Host.AddSerilogLogging();
