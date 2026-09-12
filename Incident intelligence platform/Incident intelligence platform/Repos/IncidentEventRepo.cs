@@ -23,6 +23,12 @@ namespace Incident_intelligence_platform.Repos
             return en;
 
         }
+
+
+        public async Task AddEvent(IncidentEvent newEvent)
+        {
+            await appDbcontext.IncidentEvents.AddAsync(newEvent);
+        }
     }
 }//Get All Events For Spicfic Incident , Add Event
 
@@ -31,7 +37,7 @@ namespace Incident_intelligence_platform.Repos
   1 -Create Model done
   2- Set Relations done
   3- Add Model To DbContext done
-  4- Create Repo to Deal with this Model
+  4- Create Repo to Deal with this Model done
   5- Create Service , Controller to Deal with it
   6-Create End Points Dtos 
   7- Register Repo and Service in Program.cs
