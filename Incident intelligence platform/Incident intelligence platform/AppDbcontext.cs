@@ -11,7 +11,16 @@ namespace Incident_intelligence_platform
         {
 
         }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.ApplyConfigurationsFromAssembly(
+                typeof(AppDbcontext).Assembly
+            );
+        }
         public DbSet<Service> Services { get; set; }
         public DbSet<Incident> Incidents { get; set; }
+        public DbSet<IncidentEvent> IncidentEvents { get; set; }
     }
 }
