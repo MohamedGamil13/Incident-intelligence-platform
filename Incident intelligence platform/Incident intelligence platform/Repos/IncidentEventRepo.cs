@@ -7,9 +7,9 @@
 
 //  
 /* 
-  1 -Create Model
-  2- Set Relations
-  3- Add Model To DbContext 
+  1 -Create Model done
+  2- Set Relations done
+  3- Add Model To DbContext done
   4- Create Repo to Deal with this Model
   5- Create Service , Controller to Deal with it
   6-Create End Points Dtos 
