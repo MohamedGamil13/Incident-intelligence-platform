@@ -11,7 +11,7 @@ namespace Incident_intelligence_platform.Repos
         {
             this.appDbcontext = appDbcontext;
         }
-        public async Task<IEnumerable<IncidentEvent>> GetIncidentTimeLine(int incidentId, int pageSize, int pageNumber)
+        public async Task<IEnumerable<IncidentEvent>> GetIncidentTimeLineAsync(int incidentId, int pageSize, int pageNumber)
         {
             var en = await appDbcontext.IncidentEvents
            .AsNoTracking()
@@ -28,6 +28,12 @@ namespace Incident_intelligence_platform.Repos
         public async Task AddEvent(IncidentEvent newEvent)
         {
             await appDbcontext.IncidentEvents.AddAsync(newEvent);
+        }
+
+
+        public async Task<bool> CheckIncidentExist(int incidentId)
+        {
+            return await appDbcontext.Incidents.AnyAsync(i => i.Id == incidentId);
         }
     }
 }//Get All Events For Spicfic Incident , Add Event
