@@ -1,5 +1,4 @@
 ﻿using Incident_intelligence_platform.DTOs.IcidentEventDTOs;
-using Incident_intelligence_platform.Enums;
 using Incident_intelligence_platform.Models;
 using Incident_intelligence_platform.Repos;
 using Incident_intelligence_platform.Repositories;
@@ -11,53 +10,89 @@ namespace Incident_intelligence_platform.Services
         private readonly IncidentEventRepo incidentEventRepo;
         private readonly IncidentRepository incidentRepository;
 
-        public IncidentEventService(IncidentEventRepo incidentEventRepo, IncidentRepository incidentRepository)
+        public IncidentEventService(
+            IncidentEventRepo incidentEventRepo,
+            IncidentRepository incidentRepository)
         {
             this.incidentEventRepo = incidentEventRepo;
             this.incidentRepository = incidentRepository;
         }
 
-        public async Task<IEnumerable<IncidentEvent>> GetIncidentTimeLine(GetTimeLineRequest dto)
+        public async Task<IEnumerable<IncidentEvent>> GetIncidentTimeLine(
+            int incidentId,
+            int pageSize,
+            int pageNumber)
         {
-            return await incidentEventRepo.GetIncidentTimeLineAsync(dto.IncidentId, dto.PageSize, dto.PageNumber);
+            return await incidentEventRepo.GetIncidentTimeLineAsync(
+                incidentId,
+                pageSize,
+                pageNumber
+            );
         }
 
-        public async Task<(bool Success, AddIncidentEventResponse? Data, string ErrorMessage)> AddEvent(AddIncidentEventDto dto)
+        public async Task<(
+            bool Success,
+            AddIncidentEventResponse? Data,
+            string ErrorMessage
+        )> AddEvent(
+            int incidentId,
+            AddIncidentEventDto dto)
         {
             if (dto == null)
             {
                 return (false, null, "Invalid Input");
             }
-            bool incidentExist = await incidentEventRepo.CheckIncidentExist(dto.IncidentId);
+
+            bool incidentExist =
+                await incidentEventRepo.CheckIncidentExistAsync(incidentId);
+
             if (!incidentExist)
             {
-                return (true, null, $"ServiceId {dto.IncidentId} does not exist.");
+                return (
+                    false,
+                    null,
+                    $"IncidentId {incidentId} does not exist."
+                );
             }
-            Incident? incident = await incidentRepository.GetByIdAsync(dto.IncidentId);
 
-            IncidentEvent incidentEvent = new IncidentEvent()
+            Incident? incident =
+                await incidentRepository.GetByIdAsync(incidentId);
+
+            if (incident == null)
+            {
+                return (
+                    false,
+                    null,
+                    $"IncidentId {incidentId} does not exist."
+                );
+            }
+
+            IncidentEvent incidentEvent = new IncidentEvent
             {
                 Title = dto.Title,
                 Description = dto.Description,
-                IncidentId = dto.IncidentId,
-                TimeStamp = IncidentEventTimeStamp.Created,
-                Date = DateTime.Now,
+                IncidentId = incidentId,
+                TimeStamp = dto.TimeStamp,
+                Date = DateTime.UtcNow
             };
 
-            return (Success: true, Data: new AddIncidentEventResponse
-            {
-                IncidentId = dto.IncidentId,
-                Description = dto.Description,
-                Title = dto.Title,
-                IncidentName = incident.Title,
-                IcidentStatus = incident.Status,
-                IncidentDate = incident.CreatedAt.ToString(),
-            },
-            ErrorMessage: string.Empty
+            await incidentEventRepo.AddEventAsync(incidentEvent);
+
+            return (
+                Success: true,
+
+                Data: new AddIncidentEventResponse
+                {
+                    IncidentId = incidentId,
+                    Description = dto.Description,
+                    Title = dto.Title,
+                    IncidentName = incident.Title,
+                    IcidentStatus = incident.Status,
+                    IncidentDate = incident.CreatedAt.ToString()
+                },
+
+                ErrorMessage: string.Empty
             );
         }
-
-
-
     }
 }

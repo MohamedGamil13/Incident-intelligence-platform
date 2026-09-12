@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
 namespace Incident_intelligence_platform.Models
 {
     public class IncidentEventConfigClass : IEntityTypeConfiguration<IncidentEvent>
@@ -7,9 +8,6 @@ namespace Incident_intelligence_platform.Models
         public void Configure(EntityTypeBuilder<IncidentEvent> builder)
         {
             builder.HasKey(e => e.Id);
-
-            builder.Property(e => e.Id)
-                .ValueGeneratedOnAdd();
 
             builder.Property(e => e.TimeStamp)
                 .IsRequired();
