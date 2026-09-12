@@ -21,6 +21,6 @@ namespace Incident_intelligence_platform
         }
         public DbSet<Service> Services { get; set; }
         public DbSet<Incident> Incidents { get; set; }
-        public DbSet<Incident> IncidentEvents { get; set; }
+        public DbSet<IncidentEvent> IncidentEvents { get; set; }
     }
 }

@@ -1,9 +1,30 @@
-﻿namespace Incident_intelligence_platform.Repos
+﻿using Incident_intelligence_platform.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace Incident_intelligence_platform.Repos
 {
     public class IncidentEventRepo
     {
+        private readonly AppDbcontext appDbcontext;
+
+        public IncidentEventRepo(AppDbcontext appDbcontext)
+        {
+            this.appDbcontext = appDbcontext;
+        }
+        public async Task<IEnumerable<IncidentEvent>> GetIncidentTimeLine(int incidentId, int pageSize, int pageNumber)
+        {
+            var en = await appDbcontext.IncidentEvents
+           .AsNoTracking()
+           .Where(i => i.Id == incidentId)
+           .Skip((pageNumber - 1) * pageSize)
+           .Take(pageSize)
+           .ToListAsync();
+
+            return en;
+
+        }
     }
-}
+}//Get All Events For Spicfic Incident , Add Event
 
 //  
 /* 
