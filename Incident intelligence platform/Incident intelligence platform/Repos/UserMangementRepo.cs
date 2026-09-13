@@ -8,38 +8,37 @@ namespace Incident_intelligence_platform.Repos
     {
         private readonly AppDbcontext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public UserMangementRepo(AppDbcontext context, UserManager<ApplicationUser> userManager)
+        public UserMangementRepo(
+            AppDbcontext context,
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager)
         {
             _context = context;
             _userManager = userManager;
+            _roleManager = roleManager;
         }
-
 
         public async Task<IdentityResult> AddUserAsync(ApplicationUser newUser, string password)
         {
             return await _userManager.CreateAsync(newUser, password);
         }
 
-
         public async Task<IdentityResult> DeleteUserAsync(ApplicationUser user)
         {
             return await _userManager.DeleteAsync(user);
         }
-
 
         public async Task<ApplicationUser?> GetUserDataAsync(string userId)
         {
             return await _userManager.FindByIdAsync(userId);
         }
 
-
         public async Task<IdentityResult> UpdateUserDataAsync(ApplicationUser user)
         {
             return await _userManager.UpdateAsync(user);
-
         }
-
 
         public async Task<IEnumerable<ApplicationUser>> GetAllUsersAsync(int pageNumber, int pageSize)
         {
@@ -49,7 +48,6 @@ namespace Incident_intelligence_platform.Repos
                 .Take(pageSize)
                 .ToListAsync();
         }
-
 
         public async Task<IEnumerable<ApplicationUser>> GetUsersByRoleAsync(int pageNumber, int pageSize, string role)
         {
@@ -61,10 +59,16 @@ namespace Incident_intelligence_platform.Repos
                 .ToList();
         }
 
-        public async Task<IdentityResult> AddUserRole(ApplicationUser user, string role)
-        {
 
+        public async Task<IdentityResult> AddUserRoleAsync(ApplicationUser user, string role)
+        {
             return await _userManager.AddToRoleAsync(user, role);
+        }
+
+
+        public async Task<bool> RoleExistsAsync(string roleName)
+        {
+            return await _roleManager.RoleExistsAsync(roleName);
         }
 
         public async Task SaveChangesAsync()

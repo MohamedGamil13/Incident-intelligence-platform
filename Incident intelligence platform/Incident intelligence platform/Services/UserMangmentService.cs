@@ -6,49 +6,62 @@ namespace Incident_intelligence_platform.Services
 {
     public class UserMangmentService
     {
-        private readonly UserMangementRepo userMangementRepo;
-
+        private readonly UserMangementRepo _userMangementRepo;
 
         public UserMangmentService(UserMangementRepo userMangementRepo)
         {
-            this.userMangementRepo = userMangementRepo;
+            _userMangementRepo = userMangementRepo;
         }
-
 
         public async Task<IEnumerable<ApplicationUser>> GetAllUsers(int pageNumber, int pageSize)
         {
-            return await userMangementRepo.GetAllUsersAsync(pageNumber, pageSize);
+            return await _userMangementRepo.GetAllUsersAsync(pageNumber, pageSize);
         }
 
-        public async Task<IEnumerable<ApplicationUser>> GetUsersByType(int pageNumber, int PageSize, string role)
+        public async Task<IEnumerable<ApplicationUser>> GetUsersByType(int pageNumber, int pageSize, string role)
         {
-            return await userMangementRepo.GetUsersByRoleAsync(pageNumber, PageSize, role);
+            return await _userMangementRepo.GetUsersByRoleAsync(pageNumber, pageSize, role);
         }
-
 
         public async Task<bool> DeleteUser(string id)
         {
-            var user = await userMangementRepo.GetUserDataAsync(id);
+            var user = await _userMangementRepo.GetUserDataAsync(id);
             if (user == null)
             {
                 return false;
             }
-            return true;
 
+            var result = await _userMangementRepo.DeleteUserAsync(user);
+            return result.Succeeded;
         }
 
-
-        public async Task<(bool Success, string Data, string ErrorMassege, IdentityResult res)> AddUserRole(string userId, string role)
+        public async Task<(bool Success, string Message, IdentityResult? IdentityResult)> AddUserRole(string userId, string role)
         {
 
-            var user = await userMangementRepo.GetUserDataAsync(userId);
-
+            var user = await _userMangementRepo.GetUserDataAsync(userId);
             if (user == null)
             {
-                return (false, string.Empty, "User not found");
+                return (false, "User not found", null);
             }
-            var res = await userMangementRepo.AddUserRole(user, role);
-            return (false, string.Empty, "User Role Added Successfully", res);
+
+
+            var roleExists = await _userMangementRepo.RoleExistsAsync(role);
+            if (!roleExists)
+            {
+                return (false, $"Role '{role}' does not exist in the system", null);
+            }
+
+
+            var result = await _userMangementRepo.AddUserRoleAsync(user, role);
+
+            if (!result.Succeeded)
+            {
+
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                return (false, errors, result);
+            }
+
+            return (true, "User Role Added Successfully", result);
         }
     }
 }
