@@ -3,6 +3,7 @@ using Incident_intelligence_platform.DTOs.AuthDTOs;
 using Incident_intelligence_platform.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Incident_intelligence_platform.Controllers
 {
@@ -55,6 +56,19 @@ namespace Incident_intelligence_platform.Controllers
             }
 
             return Ok(ApiResponse<string>.SuccessResponse(message: result.Message));
+        }
+
+        [HttpGet("UserRole")]
+        [Authorize]
+        public IActionResult GetMyRolesFromToken()
+        {
+
+            var roles = User.Claims
+                            .Where(c => c.Type == ClaimTypes.Role)
+                            .Select(c => c.Value)
+                            .ToList();
+
+            return Ok(ApiResponse<IEnumerable<string>>.SuccessResponse(roles, "User roles retrieved from token successfully"));
         }
     }
 }
