@@ -1,5 +1,4 @@
-﻿using Incident_intelligence_platform.Models;
-
+﻿using Domain.Entities.Incident;
 public class Service
 {
     public int Id { get; set; }

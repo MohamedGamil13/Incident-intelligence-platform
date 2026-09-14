@@ -1,4 +1,6 @@
-﻿namespace Incident_intelligence_platform.Models
+﻿using Domain.Enums.Incident;
+
+namespace Domain.Entities.Incident
 {
     public class Incident
     {
@@ -14,12 +16,6 @@
         public Service? Service { get; set; }
 
     }
- 
-    public enum IncidentStatus
-    {
-        Open,
-        Investigating,
-        Mitigated,
-        Resolved
-    }
+
+
 }
