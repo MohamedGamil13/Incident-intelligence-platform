@@ -10,33 +10,18 @@ namespace Incident_intelligence_platform.Services
         private readonly IncidentEventRepo incidentEventRepo;
         private readonly IncidentRepository incidentRepository;
 
-        public IncidentEventService(
-            IncidentEventRepo incidentEventRepo,
-            IncidentRepository incidentRepository)
+        public IncidentEventService(IncidentEventRepo incidentEventRepo, IncidentRepository incidentRepository)
         {
             this.incidentEventRepo = incidentEventRepo;
             this.incidentRepository = incidentRepository;
         }
 
-        public async Task<IEnumerable<IncidentEvent>> GetIncidentTimeLine(
-            int incidentId,
-            int pageSize,
-            int pageNumber)
+        public async Task<IEnumerable<IncidentEvent>> GetIncidentTimeLine(int incidentId, int pageSize, int pageNumber)
         {
-            return await incidentEventRepo.GetIncidentTimeLineAsync(
-                incidentId,
-                pageSize,
-                pageNumber
-            );
+            return await incidentEventRepo.GetIncidentTimeLineAsync(incidentId, pageSize, pageNumber);
         }
 
-        public async Task<(
-            bool Success,
-            AddIncidentEventResponse? Data,
-            string ErrorMessage
-        )> AddEvent(
-            int incidentId,
-            AddIncidentEventDto dto)
+        public async Task<(bool Success, AddIncidentEventResponse? Data, string ErrorMessage)> AddEvent(int incidentId, AddIncidentEventDto dto)
         {
             if (dto == null)
             {
