@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Incident_intelligence_platform.Repositories
+namespace Presistance.Repositories.Service
 {
     public class ServiceRepository
     {

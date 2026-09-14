@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Incident_intelligence_platform.Repos
+namespace Presistance.Repositories.Auth
 {
     public class UserMangementRepo
     {

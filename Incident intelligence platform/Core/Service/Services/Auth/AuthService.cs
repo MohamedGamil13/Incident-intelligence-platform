@@ -1,8 +1,4 @@
-﻿using Incident_intelligence_platform.DTOs.AuthDTOs;
-using Incident_intelligence_platform.Models;
-using Incident_intelligence_platform.Repos;
-
-namespace Incident_intelligence_platform.Services
+﻿namespace Service.Services.Auth
 {
     public class AuthService
     {
