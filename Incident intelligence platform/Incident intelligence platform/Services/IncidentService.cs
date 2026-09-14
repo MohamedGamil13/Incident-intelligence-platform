@@ -48,6 +48,10 @@ namespace Incident_intelligence_platform.Services
         {
             var incident = await _incidentRepo.GetByIdAsync(id);
             if (incident == null) return null;
+            if (!CanTransition(dto.Status, incident.Status))
+            {
+                return null;
+            }
 
             dto.Adapt(incident);
 
@@ -55,7 +59,6 @@ namespace Incident_intelligence_platform.Services
             {
                 incident.ResolvedAt = DateTime.UtcNow;
             }
-
             _incidentRepo.Update(incident);
             await _incidentRepo.SaveChangesAsync();
 
@@ -70,6 +73,14 @@ namespace Incident_intelligence_platform.Services
             _incidentRepo.Delete(incident);
             await _incidentRepo.SaveChangesAsync();
 
+            return true;
+        }
+        private bool CanTransition(IncidentStatus Current, IncidentStatus next)
+        {
+            if (Current > next)
+            {
+                return false;
+            }
             return true;
         }
     }
