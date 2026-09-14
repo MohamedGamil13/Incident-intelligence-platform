@@ -58,11 +58,10 @@ namespace Incident_intelligence_platform.Controllers
             return Ok(ApiResponse<string>.SuccessResponse(message: result.Message));
         }
 
-        [HttpGet("UserRole")]
+        [HttpGet("my-roles")]
         [Authorize]
         public IActionResult GetMyRolesFromToken()
         {
-
             var roles = User.Claims
                             .Where(c => c.Type == ClaimTypes.Role)
                             .Select(c => c.Value)
@@ -70,5 +69,6 @@ namespace Incident_intelligence_platform.Controllers
 
             return Ok(ApiResponse<IEnumerable<string>>.SuccessResponse(roles, "User roles retrieved from token successfully"));
         }
+
     }
 }
