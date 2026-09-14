@@ -1,7 +1,7 @@
-﻿using Incident_intelligence_platform.Enums;
+﻿using Domain.Enums.Incident;
 using System.ComponentModel.DataAnnotations;
 
-namespace Incident_intelligence_platform.Models
+namespace Domain.Entities.Icident
 {
     public class IncidentEvent
     {

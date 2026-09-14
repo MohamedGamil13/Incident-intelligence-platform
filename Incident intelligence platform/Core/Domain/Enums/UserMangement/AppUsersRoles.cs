@@ -1,4 +1,4 @@
-﻿namespace Incident_intelligence_platform.Enums
+﻿namespace Domain.Enums
 {
     public static class AppUsersRoles
     {
