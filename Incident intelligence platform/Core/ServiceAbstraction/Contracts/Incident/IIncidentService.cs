@@ -9,6 +9,5 @@ namespace ServiceAbstraction.Contracts.Incident
         public Task<(bool Success, GetIncidentResponseDTO? Data, string ErrorMessage)> CreateIncidentAsync(CreateIncidentRequestDTO dto);
         public Task<GetIncidentResponseDTO?> UpdateIncidentAsync(int id, UpdateIncidentRequestDTO dto);
         public Task<bool> DeleteIncidentAsync(int id);
-
     }
 }

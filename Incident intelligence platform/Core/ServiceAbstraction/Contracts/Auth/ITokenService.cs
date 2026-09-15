@@ -2,7 +2,7 @@
 
 namespace ServiceAbstraction.Contracts.Auth
 {
-    internal interface ITokenService
+    public interface ITokenService
     {
         public (string Token, DateTime Expiration) CreateTokenAsync(ApplicationUser user, IList<string> roles);
 

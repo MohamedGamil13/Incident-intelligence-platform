@@ -1,11 +1,12 @@
 ﻿using Domain.Contracts.Incident;
 using Domain.Entities.Incident;
+using ServiceAbstraction.Contracts.Incident;
 using Shared.Dtos.IcidentEventDTOs;
 
 
 namespace Incident_intelligence_platform.Services
 {
-    public class IncidentEventService
+    public class IncidentEventService : IIncidentEventService
     {
         private readonly IIncidentEventRepo incidentEventRepo;
         private readonly IIncidentRepo incidentRepository;

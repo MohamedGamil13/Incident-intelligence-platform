@@ -1,10 +1,11 @@
 ﻿using Domain.Contracts.Auth;
 using Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity;
+using ServiceAbstraction.Contracts.Auth;
 
 namespace Service.Services.Auth
 {
-    public class UserMangmentService
+    public class UserMangmentService : IUserMangementService
     {
         private readonly IUserMangementRepo _userMangementRepo;
 
