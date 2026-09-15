@@ -1,5 +1,4 @@
-﻿using Incident_intelligence_platform.Models;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Incident_intelligence_platform

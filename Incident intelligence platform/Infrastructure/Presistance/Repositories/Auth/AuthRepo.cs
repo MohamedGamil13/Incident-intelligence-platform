@@ -1,11 +1,12 @@
-﻿using Incident_intelligence_platform.Enums;
-using Incident_intelligence_platform.Models;
+﻿using Domain.Contracts.Auth;
+using Domain.Entities.Users;
+using Domain.Enums.UserMangement;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Presistance.Repositories.Auth
+namespace Persistence.Repositories.Auth
 {
-    public class AuthRepo
+    public class AuthRepo : IAuthRepo
     {
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -23,19 +24,14 @@ namespace Presistance.Repositories.Auth
         {
             return await _userManager.CheckPasswordAsync(user, password);
         }
-
         public async Task<IdentityResult> CreateUserAsync(ApplicationUser user, string password)
         {
-
             var result = await _userManager.CreateAsync(user, password);
-
 
             if (result.Succeeded)
             {
 
-                await _userManager.AddToRoleAsync(user, AppUsersRoles.Viewer);
-
-
+                await _userManager.AddToRoleAsync(user, AppUsersRoles.Viewer.ToString());
             }
 
             return result;

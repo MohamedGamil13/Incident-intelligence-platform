@@ -1,11 +1,16 @@
-﻿namespace Service.Services.Auth
+﻿using Domain.Contracts.Auth;
+using Domain.Entities.Users;
+using Incident_intelligence_platform.DTOs.AuthDTOs;
+using ServiceAbstraction.Contracts.Auth;
+
+namespace Service.Services.Auth
 {
-    public class AuthService
+    public class AuthService : IAuthService
     {
-        private readonly AuthRepo _authRepo;
+        private readonly IAuthRepo _authRepo;
         private readonly TokenService _tokenService;
 
-        public AuthService(AuthRepo authRepo, TokenService tokenService)
+        public AuthService(IAuthRepo authRepo, TokenService tokenService)
         {
             _authRepo = authRepo;
             _tokenService = tokenService;

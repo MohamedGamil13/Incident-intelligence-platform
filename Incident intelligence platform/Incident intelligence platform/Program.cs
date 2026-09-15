@@ -1,10 +1,8 @@
+using Domain.Entities.Users;
 using Incident_intelligence_platform;
 using Incident_intelligence_platform.Config;
 using Incident_intelligence_platform.DTOs;
 using Incident_intelligence_platform.Middlewares;
-using Incident_intelligence_platform.Models;
-using Incident_intelligence_platform.Repos;
-using Incident_intelligence_platform.Repositories;
 using Incident_intelligence_platform.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -12,6 +10,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Presistance.Repositories.Auth;
+using Presistance.Repositories.Incident;
+using Presistance.Repositories.Service;
+using Service.Services.Auth;
 using System.Reflection;
 using System.Text;
 
