@@ -1,15 +1,15 @@
-﻿using Incident_intelligence_platform.DTOs.IncidentDTOs;
-using Incident_intelligence_platform.Models;
-using Incident_intelligence_platform.Repositories;
-using Mapster;
+﻿using Domain.Contracts.Incident;
+using Domain.Enums.Incident;
+using Incident_intelligence_platform.DTOs.IncidentDTOs;
+
 
 namespace Incident_intelligence_platform.Services
 {
     public class IncidentService
     {
-        private readonly IncidentRepository _incidentRepo;
+        private readonly IIncidentRepo _incidentRepo;
 
-        public IncidentService(IncidentRepository incidentRepo)
+        public IncidentService(IIncidentRepo incidentRepo)
         {
             _incidentRepo = incidentRepo;
         }

@@ -1,16 +1,16 @@
-﻿using Incident_intelligence_platform.DTOs.IcidentEventDTOs;
-using Incident_intelligence_platform.Models;
-using Incident_intelligence_platform.Repos;
-using Incident_intelligence_platform.Repositories;
+﻿using Domain.Contracts.Incident;
+using Domain.Entities.Incident;
+using Shared.Dtos.IcidentEventDTOs;
+
 
 namespace Incident_intelligence_platform.Services
 {
     public class IncidentEventService
     {
-        private readonly IncidentEventRepo incidentEventRepo;
-        private readonly IncidentRepository incidentRepository;
+        private readonly IIncidentEventRepo incidentEventRepo;
+        private readonly IIncidentRepo incidentRepository;
 
-        public IncidentEventService(IncidentEventRepo incidentEventRepo, IncidentRepository incidentRepository)
+        public IncidentEventService(IIncidentEventRepo incidentEventRepo, IIncidentRepo incidentRepository)
         {
             this.incidentEventRepo = incidentEventRepo;
             this.incidentRepository = incidentRepository;
@@ -40,7 +40,7 @@ namespace Incident_intelligence_platform.Services
                 );
             }
 
-            Incident? incident =
+            IncidentModel? incident =
                 await incidentRepository.GetByIdAsync(incidentId);
 
             if (incident == null)

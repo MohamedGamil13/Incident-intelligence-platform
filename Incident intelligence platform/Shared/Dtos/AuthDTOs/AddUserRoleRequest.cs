@@ -1,4 +1,4 @@
-﻿namespace Incident_intelligence_platform.DTOs.AuthDTOs
+﻿namespace Shared.Dtos.AuthDTOs
 {
     public class AddUserRoleRequest
     {

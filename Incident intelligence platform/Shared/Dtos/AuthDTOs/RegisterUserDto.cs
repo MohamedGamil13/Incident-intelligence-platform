@@ -1,14 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Incident_intelligence_platform.DTOs.AuthDTOs
+namespace Shared.Dtos.AuthDTOs
 {
     public class RegisterUserDto
     {
         [Required]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         [Required]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
         [Required]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
     }
 }

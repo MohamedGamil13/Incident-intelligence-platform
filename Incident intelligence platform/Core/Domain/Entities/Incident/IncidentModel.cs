@@ -2,7 +2,7 @@
 
 namespace Domain.Entities.Incident
 {
-    public class Incident
+    public class IncidentModel
     {
         public int Id { get; set; }
         public required string Title { get; set; }
@@ -13,7 +13,7 @@ namespace Domain.Entities.Incident
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ResolvedAt { get; set; }
-        public Service? Service { get; set; }
+        public ServiceModel? Service { get; set; }
 
     }
 

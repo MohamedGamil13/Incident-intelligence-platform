@@ -1,6 +1,4 @@
-﻿using Incident_intelligence_platform.Models;
-
-namespace Incident_intelligence_platform.DTOs.IcidentEventDTOs
+﻿namespace Shared.Dtos.IcidentEventDTOs
 {
     public class AddIncidentEventResponse
     {

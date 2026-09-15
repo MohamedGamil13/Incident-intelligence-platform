@@ -1,14 +1,14 @@
-﻿using Incident_intelligence_platform.DTOs.ServiceDTOs;
-using Incident_intelligence_platform.Repositories;
-using Mapster;
+﻿using Domain.Contracts.Service;
+using Incident_intelligence_platform.DTOs.ServiceDTOs;
+
 
 namespace Incident_intelligence_platform.Services
 {
     public class ServiceManagementService
     {
-        private readonly ServiceRepository _serviceRepo;
+        private readonly IServiceRepo _serviceRepo;
 
-        public ServiceManagementService(ServiceRepository serviceRepo)
+        public ServiceManagementService(IServiceRepo serviceRepo)
         {
             _serviceRepo = serviceRepo;
         }

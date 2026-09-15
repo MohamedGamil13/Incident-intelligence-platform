@@ -1,7 +1,7 @@
 ﻿using Domain.Contracts.Auth;
 using Domain.Entities.Users;
-using Incident_intelligence_platform.DTOs.AuthDTOs;
 using ServiceAbstraction.Contracts.Auth;
+using Shared.Dtos.AuthDTOs;
 
 namespace Service.Services.Auth
 {

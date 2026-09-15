@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Domain.Contracts.Auth
 {
-    internal interface IUserMangementRepo
+    public interface IUserMangementRepo
     {
         public Task<IdentityResult> AddUserAsync(ApplicationUser newUser, string password);
         public Task<IdentityResult> DeleteUserAsync(ApplicationUser user);

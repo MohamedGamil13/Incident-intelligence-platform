@@ -1,5 +1,5 @@
 ﻿using Domain.Entities.Incident;
-public class Service
+public class ServiceModel
 {
     public int Id { get; set; }
 
@@ -9,5 +9,5 @@ public class Service
 
     public DateTime CreatedAt { get; set; }
 
-    public ICollection<Incident>? Incidents { get; set; }
+    public ICollection<IncidentModel>? Incidents { get; set; }
 }

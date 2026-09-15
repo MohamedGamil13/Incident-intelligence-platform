@@ -1,7 +1,6 @@
-﻿using Incident_intelligence_platform.Enums;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace Incident_intelligence_platform.DTOs.IcidentEventDTOs
+namespace Shared.Dtos.IcidentEventDTOs
 {
     public class AddIncidentEventDto
     {

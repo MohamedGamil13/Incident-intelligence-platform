@@ -1,4 +1,4 @@
-﻿using Incident_intelligence_platform.DTOs.AuthDTOs;
+﻿using Shared.Dtos.AuthDTOs;
 namespace ServiceAbstraction.Contracts.Auth
 {
     public interface IAuthService
