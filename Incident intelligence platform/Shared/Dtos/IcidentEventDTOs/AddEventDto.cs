@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Domain.Enums.Incident;
+using System.ComponentModel.DataAnnotations;
 
 namespace Shared.Dtos.IcidentEventDTOs
 {

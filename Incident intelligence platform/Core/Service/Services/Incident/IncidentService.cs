@@ -1,11 +1,14 @@
 ﻿using Domain.Contracts.Incident;
+using Domain.Entities.Incident;
 using Domain.Enums.Incident;
 using Incident_intelligence_platform.DTOs.IncidentDTOs;
+using Mapster;
+using ServiceAbstraction.Contracts.Incident;
 
 
 namespace Incident_intelligence_platform.Services
 {
-    public class IncidentService
+    public class IncidentService : IIncidentService
     {
         private readonly IIncidentRepo _incidentRepo;
 
@@ -34,7 +37,7 @@ namespace Incident_intelligence_platform.Services
                 return (false, null, $"ServiceId {dto.ServiceId} does not exist.");
             }
 
-            var incident = dto.Adapt<Incident>();
+            var incident = dto.Adapt<IncidentModel>();
             incident.Status = IncidentStatus.Open;
             incident.CreatedAt = DateTime.UtcNow;
 

@@ -1,4 +1,4 @@
-﻿using Incident_intelligence_platform.Models;
+﻿using Domain.Enums.Incident;
 using System.ComponentModel.DataAnnotations;
 
 namespace Incident_intelligence_platform.DTOs.IncidentDTOs

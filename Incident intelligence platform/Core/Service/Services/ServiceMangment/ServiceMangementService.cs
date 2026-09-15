@@ -1,10 +1,12 @@
 ﻿using Domain.Contracts.Service;
 using Incident_intelligence_platform.DTOs.ServiceDTOs;
+using Mapster;
+using ServiceAbstraction.Contracts.ServiceMangment;
 
 
 namespace Incident_intelligence_platform.Services
 {
-    public class ServiceManagementService
+    public class ServiceManagementService : IServiceMangementService
     {
         private readonly IServiceRepo _serviceRepo;
 
@@ -27,7 +29,7 @@ namespace Incident_intelligence_platform.Services
 
         public async Task<GetServiceResponseDTO> CreateServiceAsync(CreateServiceRequestDTO dto)
         {
-            var service = dto.Adapt<Service>();
+            var service = dto.Adapt<ServiceModel>();
 
             await _serviceRepo.AddAsync(service);
             await _serviceRepo.SaveChangesAsync();
