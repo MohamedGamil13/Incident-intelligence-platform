@@ -1,4 +1,4 @@
-﻿using Domain.Entities.Incident;
+﻿using Domain.Entities.Incidents;
 using Shared.Dtos.IcidentEventDTOs;
 
 namespace ServiceAbstraction.Contracts.Incident

@@ -1,4 +1,6 @@
-﻿namespace Shared.Dtos.IcidentEventDTOs
+﻿using Domain.Enums.Incident;
+
+namespace Shared.Dtos.IcidentEventDTOs
 {
     public class AddIncidentEventResponse
     {

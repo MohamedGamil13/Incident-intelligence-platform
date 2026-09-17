@@ -6,7 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Service.Services.Auth
+namespace ServiceLayer.Services.Auth
 {
     public class TokenService : ITokenService
     {

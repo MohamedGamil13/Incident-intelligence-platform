@@ -3,7 +3,7 @@ using Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using ServiceAbstraction.Contracts.Auth;
 
-namespace Service.Services.Auth
+namespace ServiceLayer.Services.Auth
 {
     public class UserMangmentService : IUserMangementService
     {

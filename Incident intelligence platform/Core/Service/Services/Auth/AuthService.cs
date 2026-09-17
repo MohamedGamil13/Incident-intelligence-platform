@@ -3,7 +3,7 @@ using Domain.Entities.Users;
 using ServiceAbstraction.Contracts.Auth;
 using Shared.Dtos.AuthDTOs;
 
-namespace Service.Services.Auth
+namespace ServiceLayer.Services.Auth
 {
     public class AuthService : IAuthService
     {

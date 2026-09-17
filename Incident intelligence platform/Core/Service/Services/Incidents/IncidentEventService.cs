@@ -1,10 +1,10 @@
-﻿using Domain.Contracts.Incident;
-using Domain.Entities.Incident;
+﻿using Domain.Contracts.Incidents;
+using Domain.Entities.Incidents;
 using ServiceAbstraction.Contracts.Incident;
 using Shared.Dtos.IcidentEventDTOs;
 
 
-namespace Incident_intelligence_platform.Services
+namespace ServiceLayer.Services.Incidents
 {
     public class IncidentEventService : IIncidentEventService
     {

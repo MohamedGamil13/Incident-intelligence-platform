@@ -1,12 +1,12 @@
-﻿using Domain.Contracts.Incident;
-using Domain.Entities.Incident;
+﻿using Domain.Contracts.Incidents;
+using Domain.Entities.Incidents;
 using Domain.Enums.Incident;
 using Incident_intelligence_platform.DTOs.IncidentDTOs;
 using Mapster;
 using ServiceAbstraction.Contracts.Incident;
 
 
-namespace Incident_intelligence_platform.Services
+namespace ServiceLayer.Services.Incidents
 {
     public class IncidentService : IIncidentService
     {
