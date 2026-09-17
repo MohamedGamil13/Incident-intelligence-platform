@@ -1,4 +1,7 @@
 ﻿using Incident_intelligence_platform.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ServiceAbstraction.Contracts.Auth;
 using Shared.Dtos.AuthDTOs;
 using System.Security.Claims;
 
@@ -8,9 +11,9 @@ namespace Incident_intelligence_platform.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
 
-        public AccountController(AuthService authService)
+        public AccountController(IAuthService authService)
         {
             _authService = authService;
         }

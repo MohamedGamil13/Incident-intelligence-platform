@@ -1,9 +1,9 @@
-﻿using Incident_intelligence_platform.DTOs;
-using Incident_intelligence_platform.Enums;
-using Incident_intelligence_platform.Models;
-using Incident_intelligence_platform.Services;
+﻿using Domain.Entities.Users;
+using Domain.Enums.UserMangement;
+using Incident_intelligence_platform.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ServiceAbstraction.Contracts.Auth;
 
 namespace Incident_intelligence_platform.Controllers
 {
@@ -12,9 +12,9 @@ namespace Incident_intelligence_platform.Controllers
     [Authorize(Roles = $"{AppUsersRoles.Admin}")]
     public class UserMangementController : ControllerBase
     {
-        private readonly UserMangmentService _userManagementService;
+        private readonly IUserMangementService _userManagementService;
 
-        public UserMangementController(UserMangmentService userManagementService)
+        public UserMangementController(IUserMangementService userManagementService)
         {
             _userManagementService = userManagementService;
         }

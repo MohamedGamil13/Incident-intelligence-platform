@@ -1,9 +1,9 @@
-﻿using Incident_intelligence_platform.DTOs;
+﻿using Domain.Enums.UserMangement;
+using Incident_intelligence_platform.DTOs;
 using Incident_intelligence_platform.DTOs.ServiceDTOs;
-using Incident_intelligence_platform.Enums;
-using Incident_intelligence_platform.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ServiceAbstraction.Contracts.ServiceMangment;
 
 namespace Incident_intelligence_platform.Controllers
 {
@@ -11,9 +11,9 @@ namespace Incident_intelligence_platform.Controllers
     [Route("api/[controller]")]
     public class ServicesController : ControllerBase
     {
-        private readonly ServiceManagementService _serviceService;
+        private readonly IServiceMangementService _serviceService;
 
-        public ServicesController(ServiceManagementService serviceService)
+        public ServicesController(IServiceMangementService serviceService)
         {
             _serviceService = serviceService;
         }

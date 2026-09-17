@@ -1,8 +1,8 @@
-﻿using Incident_intelligence_platform.DTOs;
-using Incident_intelligence_platform.DTOs.IcidentEventDTOs;
-using Incident_intelligence_platform.Models;
-using Incident_intelligence_platform.Services;
+﻿using Domain.Entities.Incident;
+using Incident_intelligence_platform.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using ServiceAbstraction.Contracts.Incident;
+using Shared.Dtos.IcidentEventDTOs;
 
 namespace Incident_intelligence_platform.Controllers
 {
@@ -10,10 +10,10 @@ namespace Incident_intelligence_platform.Controllers
     [ApiController]
     public class IncidentEventController : ControllerBase
     {
-        private readonly IncidentEventService incidentEventService;
+        private readonly IIncidentEventService incidentEventService;
 
         public IncidentEventController(
-            IncidentEventService incidentEventService)
+            IIncidentEventService incidentEventService)
         {
             this.incidentEventService = incidentEventService;
         }
