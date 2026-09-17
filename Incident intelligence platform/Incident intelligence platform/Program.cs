@@ -24,6 +24,7 @@ using ServiceLayer.Services.Incidents;
 using ServiceLayer.Services.ServiceMangment;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -126,6 +127,41 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]!)
         )
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnChallenge = async context =>
+        {
+
+            context.HandleResponse();
+
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            context.Response.ContentType = "application/json";
+
+            var response = new
+            {
+                status = 401,
+                error = "Unauthorized",
+                message = "You are not authorized to access this resource. Please provide a valid token."
+            };
+
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        },
+        OnForbidden = async context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            context.Response.ContentType = "application/json";
+
+            var response = new
+            {
+                status = 403,
+                error = "Forbidden",
+                message = "You do not have permission to access this resource."
+            };
+
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
     };
 });
 #endregion

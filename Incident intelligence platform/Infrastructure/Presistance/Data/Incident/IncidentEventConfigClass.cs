@@ -24,15 +24,10 @@ namespace Incident_intelligence_platform.Models
             builder.Property(e => e.Date)
                 .IsRequired();
 
-            builder.Property(e => e.IncidentId)
-                .IsRequired();
-
-
             builder.HasOne<Incident>()
-                .WithMany()
+                .WithMany(i => i.Events)
                 .HasForeignKey(e => e.IncidentId)
                 .OnDelete(DeleteBehavior.Cascade);
-
 
             builder.HasIndex(e => new { e.IncidentId, e.Date });
         }

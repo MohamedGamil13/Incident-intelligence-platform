@@ -14,5 +14,6 @@ namespace Domain.Entities.Incidents
         public DateTime Date { get; set; }
 
         public int IncidentId { get; set; }
+        public Incident? Incident { get; set; }
     }
 }

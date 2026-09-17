@@ -26,7 +26,10 @@ namespace ServiceLayer.Services.Incidents
         public async Task<GetIncidentResponseDTO?> GetIncidentByIdAsync(int id)
         {
             var incident = await _incidentRepo.GetByIdAsync(id);
-            return incident?.Adapt<GetIncidentResponseDTO>();
+
+            var response = incident?.Adapt<GetIncidentResponseDTO>();
+
+            return response;
         }
 
         public async Task<(bool Success, GetIncidentResponseDTO? Data, string ErrorMessage)> CreateIncidentAsync(CreateIncidentRequestDTO dto)
@@ -50,10 +53,12 @@ namespace ServiceLayer.Services.Incidents
         public async Task<GetIncidentResponseDTO?> UpdateIncidentAsync(int id, UpdateIncidentRequestDTO dto)
         {
             var incident = await _incidentRepo.GetByIdAsync(id);
+
+
             if (incident == null) return null;
             if (!CanTransition(dto.Status, incident.Status))
             {
-                return null;
+                throw new InvalidOperationException($"Invalid status transition from {incident.Status} to {dto.Status}.");
             }
 
             dto.Adapt(incident);
