@@ -28,7 +28,7 @@ namespace Incident_intelligence_platform.Models
                 .IsRequired();
 
 
-            builder.HasOne<IncidentModel>()
+            builder.HasOne<Incident>()
                 .WithMany()
                 .HasForeignKey(e => e.IncidentId)
                 .OnDelete(DeleteBehavior.Cascade);

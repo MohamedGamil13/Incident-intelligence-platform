@@ -1,6 +1,6 @@
 ﻿using Domain.Enums.Incident;
 
-namespace Domain.Entities.Incident
+namespace Domain.Entities.Incidents
 {
     public class IncidentEvent
     {

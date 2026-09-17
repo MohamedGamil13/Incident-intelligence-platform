@@ -1,9 +1,10 @@
-﻿using Incident_intelligence_platform.Models;
+﻿using Domain.Contracts.Incident;
+using Incident_intelligence_platform;
 using Microsoft.EntityFrameworkCore;
 
 namespace Presistance.Repositories.Incident
 {
-    public class IncidentRepository
+    public class IncidentRepository : IIncidentRepo
     {
         private readonly AppDbcontext _context;
 
@@ -12,7 +13,7 @@ namespace Presistance.Repositories.Incident
             _context = context;
         }
 
-        public async Task<IEnumerable<Incident>> GetAllAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<Domain.Entities.Incident.Incident>> GetAllAsync(int pageNumber, int pageSize)
         {
             return await _context.Incidents
                 .AsNoTracking()
@@ -21,22 +22,22 @@ namespace Presistance.Repositories.Incident
                 .ToListAsync();
         }
 
-        public async Task<Incident?> GetByIdAsync(int id)
+        public async Task<Domain.Entities.Incident.Incident?> GetByIdAsync(int id)
         {
             return await _context.Incidents.FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        public async Task AddAsync(Incident incident)
+        public async Task AddAsync(Domain.Entities.Incident.Incident incident)
         {
             await _context.Incidents.AddAsync(incident);
         }
 
-        public void Update(Incident incident)
+        public void Update(Domain.Entities.Incident.Incident incident)
         {
             _context.Incidents.Update(incident);
         }
 
-        public void Delete(Incident incident)
+        public void Delete(Domain.Entities.Incident.Incident incident)
         {
             _context.Incidents.Remove(incident);
         }

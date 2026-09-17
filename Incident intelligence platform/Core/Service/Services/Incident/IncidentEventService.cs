@@ -41,7 +41,7 @@ namespace Incident_intelligence_platform.Services
                 );
             }
 
-            IncidentModel? incident =
+            Incident? incident =
                 await incidentRepository.GetByIdAsync(incidentId);
 
             if (incident == null)

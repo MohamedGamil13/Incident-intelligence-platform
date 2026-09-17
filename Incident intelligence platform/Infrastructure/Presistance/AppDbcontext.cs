@@ -18,8 +18,8 @@ namespace Incident_intelligence_platform
                 typeof(AppDbcontext).Assembly
             );
         }
-        public DbSet<Service> Services { get; set; }
-        public DbSet<Incident> Incidents { get; set; }
+        public DbSet<ServiceModel> Services { get; set; }
+        public DbSet<IncidentModel> Incidents { get; set; }
         public DbSet<IncidentEvent> IncidentEvents { get; set; }
     }
 }

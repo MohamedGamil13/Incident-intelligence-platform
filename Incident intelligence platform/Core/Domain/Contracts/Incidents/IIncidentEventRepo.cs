@@ -1,6 +1,6 @@
-﻿using Domain.Entities.Incident;
+﻿using Domain.Entities.Incidents;
 
-namespace Domain.Contracts.Incident
+namespace Domain.Contracts.Incidents
 {
     public interface IIncidentEventRepo
     {

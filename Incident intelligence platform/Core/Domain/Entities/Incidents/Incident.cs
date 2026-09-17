@@ -1,8 +1,9 @@
-﻿using Domain.Enums.Incident;
+﻿using Domain.Entities.Services;
+using Domain.Enums.Incident;
 
-namespace Domain.Entities.Incident
+namespace Domain.Entities.Incidents
 {
-    public class IncidentModel
+    public class Incident
     {
         public int Id { get; set; }
         public required string Title { get; set; }
@@ -13,7 +14,7 @@ namespace Domain.Entities.Incident
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ResolvedAt { get; set; }
-        public ServiceModel? Service { get; set; }
+        public Service? Service { get; set; }
 
     }
 

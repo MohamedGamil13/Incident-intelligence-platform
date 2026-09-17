@@ -37,7 +37,7 @@ namespace Incident_intelligence_platform.Services
                 return (false, null, $"ServiceId {dto.ServiceId} does not exist.");
             }
 
-            var incident = dto.Adapt<IncidentModel>();
+            var incident = dto.Adapt<Incident>();
             incident.Status = IncidentStatus.Open;
             incident.CreatedAt = DateTime.UtcNow;
 

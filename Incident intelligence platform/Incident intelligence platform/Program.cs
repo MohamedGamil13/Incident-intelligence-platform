@@ -1,4 +1,5 @@
 using Domain.Contracts.Auth;
+using Domain.Contracts.Incident;
 using Domain.Entities.Users;
 using Incident_intelligence_platform;
 using Incident_intelligence_platform.Config;
@@ -14,7 +15,6 @@ using Microsoft.OpenApi;
 using Persistence.Repositories.Auth;
 using Presistance.Repositories.Incident;
 using Presistance.Repositories.Service;
-using Service.Services.Auth;
 using System.Reflection;
 using System.Text;
 
@@ -119,7 +119,7 @@ builder.Services.AddAuthentication(options =>
 
 // Register Repositories
 builder.Services.AddScoped<IAuthRepo, AuthRepo>();
-builder.Services.AddScoped<IncidentRepository>();
+builder.Services.AddScoped<IIncidentRepo, IncidentRepository>();
 builder.Services.AddScoped<ServiceRepository>();
 builder.Services.AddScoped<IncidentEventRepo>();
 
