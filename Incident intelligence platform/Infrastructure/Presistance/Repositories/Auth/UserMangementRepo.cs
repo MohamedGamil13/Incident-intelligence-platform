@@ -1,7 +1,6 @@
-﻿using Incident_intelligence_platform.Models;
+﻿using Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
 namespace Presistance.Repositories.Auth
 {
     public class UserMangementRepo

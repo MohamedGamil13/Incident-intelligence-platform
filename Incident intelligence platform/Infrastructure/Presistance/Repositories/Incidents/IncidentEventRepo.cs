@@ -1,7 +1,7 @@
-﻿using Incident_intelligence_platform.Models;
+﻿using Domain.Entities.Incidents;
 using Microsoft.EntityFrameworkCore;
 
-namespace Presistance.Repositories.Incident
+namespace Presistance.Repositories.Incidents
 {
     public class IncidentEventRepo
     {

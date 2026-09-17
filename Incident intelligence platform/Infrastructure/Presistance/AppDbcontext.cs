@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Domain.Entities.Incidents;
+using Domain.Entities.Services;
+using Domain.Entities.Users;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Incident_intelligence_platform
+namespace Presistance
 {
     public class AppDbcontext : IdentityDbContext<ApplicationUser>
     {
@@ -18,8 +21,8 @@ namespace Incident_intelligence_platform
                 typeof(AppDbcontext).Assembly
             );
         }
-        public DbSet<ServiceModel> Services { get; set; }
-        public DbSet<IncidentModel> Incidents { get; set; }
+        public DbSet<Service> Services { get; set; }
+        public DbSet<Incident> Incidents { get; set; }
         public DbSet<IncidentEvent> IncidentEvents { get; set; }
     }
 }

@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Domain.Entities.Services;
+using Microsoft.EntityFrameworkCore;
 
-namespace Presistance.Repositories.Service
+namespace Presistance.Repositories.Services
 {
     public class ServiceRepository
     {

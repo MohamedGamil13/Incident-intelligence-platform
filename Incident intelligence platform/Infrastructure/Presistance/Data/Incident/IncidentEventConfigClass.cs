@@ -1,4 +1,4 @@
-﻿using Domain.Entities.Incident;
+﻿using Domain.Entities.Incidents;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
