@@ -1,8 +1,5 @@
 ﻿using Incident_intelligence_platform.DTOs;
-using Incident_intelligence_platform.DTOs.AuthDTOs;
-using Incident_intelligence_platform.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using Shared.Dtos.AuthDTOs;
 using System.Security.Claims;
 
 namespace Incident_intelligence_platform.Controllers
