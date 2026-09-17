@@ -16,6 +16,8 @@ namespace Domain.Entities.Incidents
         public DateTime? ResolvedAt { get; set; }
         public Service? Service { get; set; }
 
+        public ICollection<IncidentEvent>? Events { get; set; }
+
     }
 
 
