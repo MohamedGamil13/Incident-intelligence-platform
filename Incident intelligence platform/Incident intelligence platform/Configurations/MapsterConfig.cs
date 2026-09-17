@@ -1,5 +1,5 @@
-﻿using Incident_intelligence_platform.DTOs.IncidentDTOs;
-using Incident_intelligence_platform.Models;
+﻿using Domain.Entities.Incidents;
+using Incident_intelligence_platform.DTOs.IncidentDTOs;
 using Mapster;
 
 public static class MapsterConfig

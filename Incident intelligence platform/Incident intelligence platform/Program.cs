@@ -1,26 +1,40 @@
-using Incident_intelligence_platform;
+using Domain.Contracts.Auth;
+using Domain.Contracts.Incidents;
+using Domain.Contracts.Services;
+using Domain.Entities.Users;
 using Incident_intelligence_platform.Config;
 using Incident_intelligence_platform.DTOs;
 using Incident_intelligence_platform.Middlewares;
-using Incident_intelligence_platform.Models;
-using Incident_intelligence_platform.Repos;
-using Incident_intelligence_platform.Repositories;
-using Incident_intelligence_platform.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Persistence.Repositories.Auth;
+using Presistance;
+using Presistance.Repositories.Auth;
+using Presistance.Repositories.Incidents;
+using Presistance.Repositories.Services;
+using ServiceAbstraction.Contracts.Auth;
+using ServiceAbstraction.Contracts.Incident;
+using ServiceAbstraction.Contracts.ServiceMangment;
+using ServiceLayer.Services.Auth;
+using ServiceLayer.Services.Incidents;
+using ServiceLayer.Services.ServiceMangment;
 using System.Reflection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+#region Host Configurations
+builder.Host.AddSerilogLogging();
+#endregion
+
+#region Core Services & Frameworks
 builder.Services.AddControllers();
 
-// Standard Response Configuration for Validation Failures
+// Custom Validation Response Format
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
@@ -41,15 +55,20 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
-#region RegisterAPIdoc
+// AutoMapper / Mapster Config
+builder.Services.RegisterMapsterConfiguration();
+#endregion
+
+#region Swagger / API Documentation
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new()
     {
-        Title = "My API",
+        Title = "Incident Intelligence Platform API",
         Version = "v1",
-        Description = "API Documentation with Role-Based Access"
+        Description = "API Documentation with Role-Based Access Control"
     });
+
     options.OperationFilter<SwaggerRoleFilter>();
 
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -64,7 +83,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Enter Token In This Way : Bearer {token}"
+        Description = "Enter Token in this format: Bearer {token}"
     });
 
     options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
@@ -72,25 +91,22 @@ builder.Services.AddSwaggerGen(options =>
         [new OpenApiSecuritySchemeReference("Bearer", document)] = []
     });
 });
-
 #endregion
 
-builder.Services.RegisterMapsterConfiguration();
-
-
-// Database Context
+#region Infrastructure & Database
 builder.Services.AddDbContext<AppDbcontext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        b => b.MigrationsAssembly(typeof(AppDbcontext).Assembly.FullName)
     ));
 
-//Idenetity Config
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbcontext>()
     .AddDefaultTokenProviders();
+#endregion
 
-
+#region Authentication & Authorization
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -105,7 +121,6 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-
         ValidIssuer = builder.Configuration["JWT:Issuer"],
         ValidAudience = builder.Configuration["JWT:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
@@ -113,38 +128,47 @@ builder.Services.AddAuthentication(options =>
         )
     };
 });
+#endregion
 
-// Register Repositories
-builder.Services.AddScoped<AuthRepo>();
-builder.Services.AddScoped<IncidentRepository>();
-builder.Services.AddScoped<ServiceRepository>();
-builder.Services.AddScoped<IncidentEventRepo>();
+#region Dependency Injection - Repositories
+// Auth Repositories
+builder.Services.AddScoped<IAuthRepo, AuthRepo>();
+builder.Services.AddScoped<IUserMangementRepo, UserMangementRepo>();
 
-// Register Services
+// Incident Repositories
+builder.Services.AddScoped<IIncidentRepo, IncidentRepository>();
+builder.Services.AddScoped<IIncidentEventRepo, IncidentEventRepo>();
+
+// Service Repositories
+builder.Services.AddScoped<IServiceRepo, ServiceRepository>();
+#endregion
+
+#region Dependency Injection - Application Services
+// Auth Services
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<TokenService>();
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<IncidentService>();
-builder.Services.AddScoped<ServiceManagementService>();
-builder.Services.AddScoped<IncidentEventService>();
 
-// Logging Host
-builder.Host.AddSerilogLogging();
+// Incident Services
+builder.Services.AddScoped<IIncidentEventService, IncidentEventService>();
+builder.Services.AddScoped<IIncidentService, IncidentService>();
+
+// Service Management Services
+builder.Services.AddScoped<IServiceMangementService, ServiceManagementService>();
+#endregion
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+#region HTTP Request Pipeline & Middlewares
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Custom Middlewares
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 app.UseMiddleware<RequestTimingMiddleware>();
 
 app.UseHttpsRedirection();
-
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -152,3 +176,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+#endregion

@@ -1,0 +1,69 @@
+﻿using Domain.Entities.Incidents;
+using Incident_intelligence_platform.DTOs;
+using Microsoft.AspNetCore.Mvc;
+using ServiceAbstraction.Contracts.Incident;
+using Shared.Dtos.IcidentEventDTOs;
+
+namespace Presentation.Controllers.Incidents
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class IncidentEventController : ControllerBase
+    {
+        private readonly IIncidentEventService incidentEventService;
+
+        public IncidentEventController(
+            IIncidentEventService incidentEventService)
+        {
+            this.incidentEventService = incidentEventService;
+        }
+
+
+
+        [HttpGet("/api/incidents/{id:int}/timeline")]
+        public async Task<ActionResult> TimeLine(
+            [FromRoute] int id,
+            [FromQuery] GetTimeLineRequest request)
+        {
+            var result =
+                await incidentEventService.GetIncidentTimeLine(
+                    id,
+                    request.PageSize,
+                    request.PageNumber
+                );
+
+            return Ok(
+                ApiResponse<IEnumerable<IncidentEvent>>
+                    .SuccessResponse(data: result)
+            );
+        }
+
+
+
+        [HttpPost("/api/incidents/{id:int}/events")]
+        public async Task<ActionResult> AddEvent(
+            [FromRoute] int id,
+            [FromBody] AddIncidentEventDto dto)
+        {
+            var result =
+                await incidentEventService.AddEvent(id, dto);
+
+            if (!result.Success)
+            {
+                return BadRequest(
+                    ApiResponse<AddIncidentEventResponse>
+                        .FailureResponse(
+                            message: result.ErrorMessage
+                        )
+                );
+            }
+
+            return Ok(
+                ApiResponse<AddIncidentEventResponse>
+                    .SuccessResponse(
+                        data: result.Data
+                    )
+            );
+        }
+    }
+}
