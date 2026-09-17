@@ -1,9 +1,10 @@
-﻿using Domain.Entities.Services;
+﻿using Domain.Contracts.Services;
+using Domain.Entities.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Presistance.Repositories.Services
 {
-    public class ServiceRepository
+    public class ServiceRepository : IServiceRepo
     {
         private readonly AppDbcontext _context;
 

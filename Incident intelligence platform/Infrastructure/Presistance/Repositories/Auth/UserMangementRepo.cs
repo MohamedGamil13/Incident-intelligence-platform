@@ -1,9 +1,10 @@
-﻿using Domain.Entities.Users;
+﻿using Domain.Contracts.Auth;
+using Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 namespace Presistance.Repositories.Auth
 {
-    public class UserMangementRepo
+    public class UserMangementRepo : IUserMangementRepo
     {
         private readonly AppDbcontext _context;
         private readonly UserManager<ApplicationUser> _userManager;

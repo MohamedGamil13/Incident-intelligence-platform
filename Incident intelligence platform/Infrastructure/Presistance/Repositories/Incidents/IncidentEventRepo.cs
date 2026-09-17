@@ -1,9 +1,10 @@
-﻿using Domain.Entities.Incidents;
+﻿using Domain.Contracts.Incidents;
+using Domain.Entities.Incidents;
 using Microsoft.EntityFrameworkCore;
 
 namespace Presistance.Repositories.Incidents
 {
-    public class IncidentEventRepo
+    public class IncidentEventRepo : IIncidentEventRepo
     {
         private readonly AppDbcontext appDbcontext;
 
