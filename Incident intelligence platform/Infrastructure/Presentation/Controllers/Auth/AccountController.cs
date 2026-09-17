@@ -5,7 +5,7 @@ using ServiceAbstraction.Contracts.Auth;
 using Shared.Dtos.AuthDTOs;
 using System.Security.Claims;
 
-namespace Incident_intelligence_platform.Controllers
+namespace Presentation.Controllers.Auth
 {
     [Route("api/[controller]")]
     [ApiController]

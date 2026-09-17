@@ -1,10 +1,10 @@
-﻿using Domain.Entities.Incident;
+﻿using Domain.Entities.Incidents;
 using Incident_intelligence_platform.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using ServiceAbstraction.Contracts.Incident;
 using Shared.Dtos.IcidentEventDTOs;
 
-namespace Incident_intelligence_platform.Controllers
+namespace Presentation.Controllers.Incidents
 {
     [Route("api/[controller]")]
     [ApiController]

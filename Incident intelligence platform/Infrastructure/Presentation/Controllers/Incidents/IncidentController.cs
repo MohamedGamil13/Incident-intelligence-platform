@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServiceAbstraction.Contracts.Incident;
 
-namespace Incident_intelligence_platform.Controllers
+namespace Presentation.Controllers.Incidents
 {
     [ApiController]
     [Route("api/[controller]")]
