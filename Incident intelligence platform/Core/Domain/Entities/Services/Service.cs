@@ -1,4 +1,5 @@
 ﻿using Domain.Entities.Incidents;
+using Domain.Entities.Logs;
 
 namespace Domain.Entities.Services
 {
@@ -13,5 +14,6 @@ namespace Domain.Entities.Services
         public DateTime CreatedAt { get; set; }
 
         public ICollection<Incident>? Incidents { get; set; }
+        public ICollection<Log>? Logs { get; set; }
     }
 }
