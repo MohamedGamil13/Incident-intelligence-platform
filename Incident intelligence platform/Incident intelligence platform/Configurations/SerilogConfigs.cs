@@ -9,7 +9,7 @@ namespace Incident_intelligence_platform.Config
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.Console()
-                .WriteTo.File("logs/myapp-.txt", rollingInterval: RollingInterval.Day)
+                .WriteTo.File("RunTimelogs/myapp-.txt", rollingInterval: RollingInterval.Day)
                 .WriteTo.Seq("http://localhost:5341")
                 .CreateLogger();
 
