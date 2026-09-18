@@ -1,5 +1,6 @@
 using Domain.Contracts.Auth;
 using Domain.Contracts.Incidents;
+using Domain.Contracts.Logs;
 using Domain.Contracts.Services;
 using Domain.Entities.Users;
 using Incident_intelligence_platform.Config;
@@ -15,6 +16,7 @@ using Persistence.Repositories.Auth;
 using Presistance;
 using Presistance.Repositories.Auth;
 using Presistance.Repositories.Incidents;
+using Presistance.Repositories.Logs;
 using Presistance.Repositories.Services;
 using ServiceAbstraction.Contracts.Auth;
 using ServiceAbstraction.Contracts.Incident;
@@ -177,6 +179,9 @@ builder.Services.AddScoped<IIncidentEventRepo, IncidentEventRepo>();
 
 // Service Repositories
 builder.Services.AddScoped<IServiceRepo, ServiceRepository>();
+
+//Logs Repositories
+builder.Services.AddScoped<ILogsRepo, LogsRepo>();
 #endregion
 
 #region Dependency Injection - Application Services
