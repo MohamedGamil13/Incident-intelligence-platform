@@ -4,11 +4,13 @@ namespace Domain.Contracts.Logs
 {
     public interface ILogsRepo
     {
-        public Task<IEnumerable<Log>> GetLogs(int pageNumber, int pageSize);
-        public Task<Log> GetLog(int Id);
-        public void Delete(Log log);
-        public void Update(Log log);
-        public Task Add(Log log);
-        public Task<bool> CheckExist(Log log);
+        Task<IEnumerable<Log>> GetLogsAsync(int pageNumber, int pageSize);
+        Task<Log?> GetLogByIdAsync(int logId);
+        Task<IEnumerable<Log>> GetLogsByServiceIdAsync(int serviceId, int pageNumber, int pageSize);
+        Task<IEnumerable<Log>> GetLogsByTraceIdAsync(Guid traceId);
+        Task AddAsync(Log log);
+        void Update(Log log);
+        void Delete(Log log);
+        Task<bool> CheckExistAsync(int logId);
     }
 }

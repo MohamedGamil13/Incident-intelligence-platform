@@ -1,38 +1,79 @@
 ﻿using Domain.Contracts.Logs;
 using Domain.Entities.Logs;
+using Microsoft.EntityFrameworkCore;
 
 namespace Presistance.Repositories.Logs
 {
     public class LogsRepo : ILogsRepo
     {
-        public Task Add(Log log)
+        private readonly AppDbcontext _context;
+
+        public LogsRepo(AppDbcontext context)
         {
-            throw new NotImplementedException();
+            _context = context;
         }
 
-        public Task<bool> CheckExist(Log log)
+        public async Task AddAsync(Log log)
         {
-            throw new NotImplementedException();
+            await _context.Logs.AddAsync(log);
+        }
+
+        public async Task<bool> CheckExistAsync(int logId)
+        {
+            return await _context.Logs
+                .AsNoTracking()
+                .AnyAsync(l => l.Id == logId);
         }
 
         public void Delete(Log log)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<Log> GetLog(int Id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<Log>> GetLogs(int pageNumber, int pageSize)
-        {
-            throw new NotImplementedException();
+            _context.Logs.Remove(log);
         }
 
         public void Update(Log log)
         {
-            throw new NotImplementedException();
+            _context.Logs.Update(log);
+        }
+
+        public async Task<Log?> GetLogByIdAsync(int logId)
+        {
+            return await _context.Logs
+                .AsNoTracking()
+                .Include(l => l.Service)
+                .FirstOrDefaultAsync(l => l.Id == logId);
+        }
+
+        public async Task<IEnumerable<Log>> GetLogsAsync(int pageNumber, int pageSize)
+        {
+            return await _context.Logs
+                .AsNoTracking()
+                .Include(l => l.Service)
+                .OrderByDescending(l => l.Timestamp)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Log>> GetLogsByServiceIdAsync(int serviceId, int pageNumber, int pageSize)
+        {
+            return await _context.Logs
+                .AsNoTracking()
+                .Include(l => l.Service)
+                .Where(l => l.ServiceId == serviceId)
+                .OrderByDescending(l => l.Timestamp)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Log>> GetLogsByTraceIdAsync(Guid traceId)
+        {
+            return await _context.Logs
+                .AsNoTracking()
+                .Include(l => l.Service)
+                .Where(l => l.TraceId == traceId)
+                .OrderByDescending(l => l.Timestamp)
+                .ToListAsync();
         }
     }
 }
