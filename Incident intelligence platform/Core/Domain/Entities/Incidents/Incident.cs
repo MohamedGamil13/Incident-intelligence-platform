@@ -5,6 +5,10 @@ namespace Domain.Entities.Incidents
 {
     public class Incident
     {
+
+
+
+
         public int Id { get; set; }
         public required string Title { get; set; }
         public required string Description { get; set; }

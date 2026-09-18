@@ -1,7 +1,10 @@
 ﻿using Domain.Contracts.Logs;
 using Domain.Contracts.Services;
 using Domain.Entities.Logs;
+using Domain.Enums.Logs;
+using MediatR;
 using ServiceAbstraction.Contracts.Logs;
+using ServiceLayer.Services.Logs.Commands;
 using Shared.Dtos.Logs;
 
 namespace ServiceLayer.Services.Logs
@@ -10,11 +13,12 @@ namespace ServiceLayer.Services.Logs
     {
         private readonly ILogsRepo _logsRepo;
         private readonly IServiceRepo _serviceRepo;
-
-        public LogsService(ILogsRepo logsRepo, IServiceRepo serviceRepo)
+        private readonly IMediator mediator;
+        public LogsService(ILogsRepo logsRepo, IServiceRepo serviceRepo, IMediator mediator)
         {
             _logsRepo = logsRepo;
             _serviceRepo = serviceRepo;
+            this.mediator = mediator;
         }
 
         public async Task<(bool Success, LogResponseDto? Data, string? ErrorMessage)> CreateLogAsync(CreateLogDto dto, Guid traceId)
@@ -35,9 +39,16 @@ namespace ServiceLayer.Services.Logs
                 Timestamp = DateTime.UtcNow
             };
 
-            await _logsRepo.AddAsync(log);
-            await _serviceRepo.SaveChangesAsync();
 
+            await _logsRepo.AddAsync(log);
+            await _logsRepo.SaveChangesAsync();
+
+
+            if (log.LogLevel == LogLevel.Error || log.LogLevel == LogLevel.Critical)
+            {
+
+                await mediator.Publish(new LogIngestedEvent(log, log.ServiceId));
+            }
 
             var createdLog = await _logsRepo.GetLogByIdAsync(log.Id);
 

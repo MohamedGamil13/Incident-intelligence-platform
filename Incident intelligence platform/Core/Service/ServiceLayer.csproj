@@ -17,4 +17,8 @@
     <ProjectReference Include="..\ServiceAbstraction\ServiceAbstraction.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\Incidents\Commands\" />
+  </ItemGroup>
+
 </Project>

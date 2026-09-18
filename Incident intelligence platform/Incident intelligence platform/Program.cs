@@ -26,6 +26,7 @@ using ServiceAbstraction.Contracts.ServiceMangment;
 using ServiceLayer.Services.Auth;
 using ServiceLayer.Services.Incidents;
 using ServiceLayer.Services.Logs;
+using ServiceLayer.Services.Logs.Commands;
 using ServiceLayer.Services.ServiceMangment;
 using System.Reflection;
 using System.Text;
@@ -63,6 +64,17 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 
 // AutoMapper / Mapster Config
 builder.Services.RegisterMapsterConfiguration();
+
+
+// MediatR 
+builder.Services.AddMediatR(cfg =>
+{
+
+    cfg.RegisterServicesFromAssembly(typeof(LogThresholdHandler).Assembly);
+
+
+    cfg.RegisterServicesFromAssembly(typeof(LogIngestedEvent).Assembly);
+});
 #endregion
 
 #region Swagger / API Documentation
