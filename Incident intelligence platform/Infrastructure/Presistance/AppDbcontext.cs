@@ -1,4 +1,6 @@
 ﻿using Domain.Entities.Incidents;
+using Domain.Entities.Logs;
+using Domain.Entities.ServiceDeployments;
 using Domain.Entities.Services;
 using Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -24,5 +26,7 @@ namespace Presistance
         public DbSet<Service> Services { get; set; }
         public DbSet<Incident> Incidents { get; set; }
         public DbSet<IncidentEvent> IncidentEvents { get; set; }
+        public DbSet<Log> Logs { get; set; }
+        public DbSet<ServiceDeployment> ServiceDeployments { get; set; }
     }
 }

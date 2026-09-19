@@ -8,12 +8,17 @@
 
   <ItemGroup>
     <PackageReference Include="Mapster" Version="10.0.12" />
+    <PackageReference Include="MediatR" Version="14.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.19" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.csproj" />
     <ProjectReference Include="..\ServiceAbstraction\ServiceAbstraction.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\Incidents\Commands\" />
   </ItemGroup>
 
 </Project>

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Presistance;
 
@@ -11,9 +12,11 @@ using Presistance;
 namespace Presistance.Migrations
 {
     [DbContext(typeof(AppDbcontext))]
-    partial class AppDbcontextModelSnapshot : ModelSnapshot
+    [Migration("20260918072447_AddLogTable")]
+    partial class AddLogTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -134,39 +137,6 @@ namespace Presistance.Migrations
                         .HasFilter("\"LogLevel\" IN (2, 3)");
 
                     b.ToTable("Logs");
-                });
-
-            modelBuilder.Entity("Domain.Entities.ServiceDeployments.ServiceDeployment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("DeployedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeployedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ServiceId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Version")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ServiceId", "Version");
-
-                    b.ToTable("ServiceDeployments");
                 });
 
             modelBuilder.Entity("Domain.Entities.Services.Service", b =>
@@ -424,17 +394,6 @@ namespace Presistance.Migrations
                     b.Navigation("Service");
                 });
 
-            modelBuilder.Entity("Domain.Entities.ServiceDeployments.ServiceDeployment", b =>
-                {
-                    b.HasOne("Domain.Entities.Services.Service", "Service")
-                        .WithMany("ServiceDepolyments")
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Service");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -496,8 +455,6 @@ namespace Presistance.Migrations
                     b.Navigation("Incidents");
 
                     b.Navigation("Logs");
-
-                    b.Navigation("ServiceDepolyments");
                 });
 #pragma warning restore 612, 618
         }
