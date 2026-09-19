@@ -1,5 +1,6 @@
 ﻿using Domain.Contracts.Logs;
 using Domain.Entities.Logs;
+using Domain.Enums.Logs;
 using Microsoft.EntityFrameworkCore;
 
 namespace Presistance.Repositories.Logs
@@ -74,6 +75,23 @@ namespace Presistance.Repositories.Logs
                 .Where(l => l.TraceId == traceId)
                 .OrderByDescending(l => l.Timestamp)
                 .ToListAsync();
+        }
+
+        public async Task<int> GetErrorsNumberByWindowFunction(int serviceId, int timeWindowInMinutes = 5)
+        {
+            var windowTime = DateTime.UtcNow.AddMinutes(-timeWindowInMinutes);
+
+            return await _context.Logs
+                .AsNoTracking()
+                .Where(l => l.ServiceId == serviceId
+                         && l.LogLevel >= LogLevel.Error
+                         && l.Timestamp >= windowTime)
+                .CountAsync();
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

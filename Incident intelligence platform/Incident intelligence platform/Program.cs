@@ -67,6 +67,17 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 
 // AutoMapper / Mapster Config
 builder.Services.RegisterMapsterConfiguration();
+
+
+// MediatR 
+builder.Services.AddMediatR(cfg =>
+{
+
+    cfg.RegisterServicesFromAssembly(typeof(LogThresholdHandler).Assembly);
+
+
+    cfg.RegisterServicesFromAssembly(typeof(LogIngestedEvent).Assembly);
+});
 #endregion
 
 #region Swagger / API Documentation
