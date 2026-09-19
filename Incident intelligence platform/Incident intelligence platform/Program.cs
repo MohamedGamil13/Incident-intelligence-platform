@@ -29,6 +29,7 @@ using ServiceAbstraction.Contracts.ServiceMangment;
 using ServiceLayer.Services.Auth;
 using ServiceLayer.Services.Incidents;
 using ServiceLayer.Services.Logs;
+using ServiceLayer.Services.Logs.Commands;
 using ServiceLayer.Services.ServiceDeployments;
 using ServiceLayer.Services.ServiceMangment;
 using System.Reflection;

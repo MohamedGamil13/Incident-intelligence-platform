@@ -2,6 +2,7 @@
 using Domain.Contracts.Services;
 using Domain.Entities.Logs;
 using Domain.Enums.Logs;
+using MediatR;
 using ServiceAbstraction.Contracts.Logs;
 using ServiceLayer.Services.Logs.Commands;
 using Shared.Dtos.Logs;
