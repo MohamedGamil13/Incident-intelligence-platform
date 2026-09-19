@@ -9,5 +9,7 @@ namespace Domain.Contracts.ServiceDeployments
         public Task<ServiceDeployment?> GetLatestDeploymentByServiceIdAsync(int serviceId);
 
         public Task<IEnumerable<ServiceDeployment>> GetAllDeploymentByService(int serviceId);
+
+        public Task SaveChangesAsync();
     }
 }

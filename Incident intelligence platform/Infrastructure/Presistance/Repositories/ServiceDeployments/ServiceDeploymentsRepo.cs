@@ -32,5 +32,11 @@ namespace Presistance.Repositories.ServiceDeployments
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.ServiceId == serviceId);
         }
+
+
+        public async Task SaveChangesAsync()
+        {
+            await context.SaveChangesAsync();
+        }
     }
 }
