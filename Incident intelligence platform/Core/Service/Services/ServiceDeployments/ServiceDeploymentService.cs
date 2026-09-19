@@ -16,7 +16,7 @@ namespace ServiceLayer.Services.ServiceDeployments
             this.deploymentsRepo = deploymentsRepo;
             this.serviceRepo = serviceRepo;
         }
-        public async Task<(bool Success, ServiceDeployment? data, string errorMessage)> RecordDeploymentAsync(int serviceId, CreateServiceDeploymentRequest dto)
+        public async Task<(bool Success, ServiceDeploymentResponseDto? data, string errorMessage)> RecordDeploymentAsync(int serviceId, CreateServiceDeploymentRequest dto)
         {
             var service = await serviceRepo.GetByIdAsync(serviceId);
             if (service == null)
@@ -33,10 +33,22 @@ namespace ServiceLayer.Services.ServiceDeployments
                 Version = dto.Version,
                 DeployedBy = dto.DeployedBy,
             };
+
             await deploymentsRepo.AddAsync(newDep);
             await deploymentsRepo.SaveChangesAsync();
 
-            return (true, newDep, string.Empty);
+
+            var responseDto = new ServiceDeploymentResponseDto
+            {
+                Id = newDep.Id,
+                ServiceId = newDep.ServiceId,
+                Title = newDep.Title,
+                Version = newDep.Version,
+                DeployedBy = newDep.DeployedBy,
+                DeployedAt = newDep.DeployedAt
+            };
+
+            return (true, responseDto, string.Empty);
         }
     }
 }

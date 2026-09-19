@@ -1,6 +1,7 @@
 using Domain.Contracts.Auth;
 using Domain.Contracts.Incidents;
 using Domain.Contracts.Logs;
+using Domain.Contracts.ServiceDeployments;
 using Domain.Contracts.Services;
 using Domain.Entities.Users;
 using Incident_intelligence_platform.Config;
@@ -18,14 +19,17 @@ using Presistance;
 using Presistance.Repositories.Auth;
 using Presistance.Repositories.Incidents;
 using Presistance.Repositories.Logs;
+using Presistance.Repositories.ServiceDeployments;
 using Presistance.Repositories.Services;
 using ServiceAbstraction.Contracts.Auth;
 using ServiceAbstraction.Contracts.Incident;
 using ServiceAbstraction.Contracts.Logs;
+using ServiceAbstraction.Contracts.ServiceDeployments;
 using ServiceAbstraction.Contracts.ServiceMangment;
 using ServiceLayer.Services.Auth;
 using ServiceLayer.Services.Incidents;
 using ServiceLayer.Services.Logs;
+using ServiceLayer.Services.ServiceDeployments;
 using ServiceLayer.Services.ServiceMangment;
 using System.Reflection;
 using System.Text;
@@ -185,6 +189,9 @@ builder.Services.AddScoped<IServiceRepo, ServiceRepository>();
 
 //Logs Repositories
 builder.Services.AddScoped<ILogsRepo, LogsRepo>();
+
+//ServiceDeployment Repositories
+builder.Services.AddScoped<IServiceDeploymentsRepo, ServiceDeploymentsRepo>();
 #endregion
 
 #region Dependency Injection - Application Services
@@ -201,6 +208,9 @@ builder.Services.AddScoped<IServiceMangementService, ServiceManagementService>()
 
 //Logs Services
 builder.Services.AddScoped<ILogsService, LogsService>();
+
+//Service Depolyment Services
+builder.Services.AddScoped<IServiceDeploymentService, ServiceDeploymentService>();
 #endregion
 
 var app = builder.Build();
