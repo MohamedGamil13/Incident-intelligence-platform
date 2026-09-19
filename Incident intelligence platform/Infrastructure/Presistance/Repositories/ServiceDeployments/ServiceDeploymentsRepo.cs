@@ -28,9 +28,12 @@ namespace Presistance.Repositories.ServiceDeployments
 
         public async Task<ServiceDeployment?> GetLatestDeploymentByServiceIdAsync(int serviceId)
         {
-            return await context.ServiceDeployments
-                .AsNoTracking()
-                .FirstOrDefaultAsync(d => d.ServiceId == serviceId);
+            return await context.
+                ServiceDeployments
+                            .AsNoTracking()
+                            .Where(d => d.ServiceId == serviceId)
+                            .OrderByDescending(d => d.DeployedAt)
+                            .FirstOrDefaultAsync();
         }
 
 
