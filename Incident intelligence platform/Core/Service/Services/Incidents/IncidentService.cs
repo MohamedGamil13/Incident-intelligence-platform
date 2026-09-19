@@ -83,7 +83,7 @@ namespace ServiceLayer.Services.Incidents
 
             return true;
         }
-        private bool CanTransition(IncidentStatus Current, IncidentStatus next)
+        private bool CanTransition(IncidentStatus? Current, IncidentStatus next)
         {
             if (Current > next)
             {
