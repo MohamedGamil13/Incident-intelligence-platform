@@ -16,9 +16,6 @@ namespace Shared.Dtos.ServiceDepolyments
         [MaxLength(50, ErrorMessage = "Deployer name cannot exceed 50 characters.")]
         public string DeployedBy { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Deployment date is required.")]
-        public DateTime? DeployedAt { get; set; }
-
         [Range(1, int.MaxValue, ErrorMessage = "ServiceId must be greater than 0.")]
         public int ServiceId { get; set; }
     }
