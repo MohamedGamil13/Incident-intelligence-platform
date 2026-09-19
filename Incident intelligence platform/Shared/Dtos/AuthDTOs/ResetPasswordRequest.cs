@@ -1,10 +1,21 @@
-﻿namespace Shared.Dtos.AuthDTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Shared.Dtos.AuthDTOs
 {
     public class ResetPasswordRequest
     {
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email address.")]
+        [MaxLength(150, ErrorMessage = "Email cannot exceed 150 characters.")]
         public string Email { get; set; } = string.Empty;
-        public string NewPassword { get; set; } = string.Empty;
-        public string ConfirmPassword { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "New password is required.")]
+        [MinLength(6, ErrorMessage = "Password must be at least 6 characters.")]
+        [MaxLength(100, ErrorMessage = "Password cannot exceed 100 characters.")]
+        public string NewPassword { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Confirm password is required.")]
+        [Compare(nameof(NewPassword), ErrorMessage = "Passwords do not match.")]
+        public string ConfirmPassword { get; set; } = string.Empty;
     }
 }

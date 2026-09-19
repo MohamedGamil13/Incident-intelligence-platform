@@ -2,7 +2,6 @@
 using Domain.Contracts.Services;
 using Domain.Entities.Logs;
 using Domain.Enums.Logs;
-using MediatR;
 using ServiceAbstraction.Contracts.Logs;
 using ServiceLayer.Services.Logs.Commands;
 using Shared.Dtos.Logs;
@@ -31,7 +30,7 @@ namespace ServiceLayer.Services.Logs
 
             var log = new Log
             {
-                LogLevel = dto.LogLevel,
+                LogLevel = dto.LogLevel ?? LogLevel.Info,
                 Message = dto.Message,
                 Description = dto.Description,
                 ServiceId = dto.ServiceId,
