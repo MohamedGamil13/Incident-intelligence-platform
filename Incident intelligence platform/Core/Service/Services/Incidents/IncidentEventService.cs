@@ -1,5 +1,6 @@
 ﻿using Domain.Contracts.Incidents;
 using Domain.Entities.Incidents;
+using Domain.Enums.Incident;
 using ServiceAbstraction.Contracts.Incident;
 using Shared.Dtos.IcidentEventDTOs;
 
@@ -58,7 +59,7 @@ namespace ServiceLayer.Services.Incidents
                 Title = dto.Title,
                 Description = dto.Description,
                 IncidentId = incidentId,
-                TimeStamp = dto.TimeStamp,
+                TimeStamp = dto.TimeStamp ?? IncidentEventTimeStamp.Created,
                 Date = DateTime.UtcNow
             };
 
