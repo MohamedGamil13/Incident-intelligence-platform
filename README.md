@@ -617,6 +617,6 @@ Ain Shams University
 
 ---
 
-## ⭐ Project Vision
+##  Project Vision
 
 > Build an incident management platform that doesn't just tell engineers **that something went wrong**, but helps them understand **what happened, why it happened, and what they can do about it**.
