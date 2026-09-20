@@ -1,4 +1,4 @@
-# 🚨 Incident Intelligence Platform
+#  Incident Intelligence Platform
 
 A production-oriented **incident management and root-cause analysis platform** built with **ASP.NET Core**.
 
@@ -8,7 +8,7 @@ The project starts as a structured RESTful API for managing services and inciden
 
 ---
 
-## 🎯 Project Goal
+##  Project Goal
 
 The goal of this project is to explore and implement **real-world backend engineering concepts** rather than building another simple CRUD application.
 
@@ -26,7 +26,7 @@ The platform is designed to solve problems engineering teams face when dealing w
 
 ---
 
-## ✨ Planned Features
+##  Planned Features
 
 ### Core Incident Management
 
@@ -102,7 +102,7 @@ The AI will provide:
 
 ---
 
-## 🏗️ Architecture Evolution
+##  Architecture Evolution
 
 The system will evolve incrementally:
 
@@ -142,7 +142,7 @@ Each phase introduces a new backend engineering concept while producing a visibl
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Backend
 
@@ -199,7 +199,7 @@ Each phase introduces a new backend engineering concept while producing a visibl
 
 ---
 
-## 📚 Backend Concepts Explored
+##  Backend Concepts Explored
 
 One of the main purposes of this project is to understand how production backend systems are designed.
 
@@ -232,7 +232,7 @@ The project will cover concepts such as:
 
 ---
 
-## 🗺️ Development Roadmap
+##  Development Roadmap
 
 ### Phase 1 — Core Incident API
 
@@ -448,7 +448,7 @@ Final improvements include:
 
 ---
 
-## 📂 Planned Project Structure
+##  Planned Project Structure
 
 The exact structure may evolve during development, but the project is expected to follow a separation similar to:
 
@@ -475,7 +475,7 @@ IncidentIntelligencePlatform/
 
 ---
 
-## 🔄 Example Incident Flow
+##  Example Incident Flow
 
 A simplified future flow could look like:
 
@@ -516,7 +516,7 @@ Background Worker
 
 ---
 
-## 🎓 What This Project Demonstrates
+##  What This Project Demonstrates
 
 This project is intended to demonstrate practical understanding of:
 
@@ -564,7 +564,7 @@ This project is intended to demonstrate practical understanding of:
 
 ---
 
-## 🚧 Project Status
+##  Project Status
 
 **Currently under active development.**
 
@@ -574,7 +574,7 @@ Features listed in the roadmap are **planned capabilities** and may not all be i
 
 ---
 
-## 📌 Philosophy
+##  Philosophy
 
 This project is not intended to be just another CRUD application.
 
@@ -606,7 +606,7 @@ Each step introduces a new engineering problem and a corresponding solution.
 
 ---
 
-## 👨‍💻 Author
+##  Author
 
 **Mohamed Gamil**
 
