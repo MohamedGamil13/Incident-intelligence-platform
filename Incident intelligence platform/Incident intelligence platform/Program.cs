@@ -4,6 +4,7 @@ using Domain.Contracts.Logs;
 using Domain.Contracts.ServiceDeployments;
 using Domain.Contracts.Services;
 using Domain.Entities.Users;
+using Hangfire;
 using Incident_intelligence_platform.Config;
 using Incident_intelligence_platform.DTOs;
 using Incident_intelligence_platform.Middleware;
@@ -78,6 +79,20 @@ builder.Services.AddMediatR(cfg =>
 
 
     cfg.RegisterServicesFromAssembly(typeof(LogIngestedEvent).Assembly);
+});
+
+//Hangfire
+// Add Hangfire services.
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add the processing server as IHostedService
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = Environment.ProcessorCount * 2;
 });
 #endregion
 
@@ -233,14 +248,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseMiddleware<HandleTraceIdMiddleware>();
+
+//Hangfire Dashboard
+
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 app.UseMiddleware<RequestTimingMiddleware>();
+app.UseMiddleware<HandleTraceIdMiddleware>();
 
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseHangfireDashboard("/hangfire");
 
 app.MapControllers();
 
@@ -258,7 +277,7 @@ app.Run();
  * I will  use Hangfire 
  *
  *   Prerequisites:
- *  - Install: Hangfire, Hangfire.SqlServer
+ *  - Install: Hangfire, Hangfire.SqlServer done
  *  - Register Hangfire Services & Add Dashboard in Program.cs
  *  - Configure Hangfire Storage to use SQL Server 
  *
