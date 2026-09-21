@@ -246,3 +246,51 @@ app.MapControllers();
 
 app.Run();
 #endregion
+
+
+
+
+
+
+
+/*
+ * Phase 6: Async Analysis Pipeline
+ * I will  use Hangfire 
+ *
+ *   Prerequisites:
+ *  - Install: Hangfire, Hangfire.SqlServer
+ *  - Register Hangfire Services & Add Dashboard in Program.cs
+ *  - Configure Hangfire Storage to use SQL Server 
+ *
+ * Phase 6 as a BlackBox:
+ *   Inputs :
+ *      - Incident Repository : Get Active Incidents Count Per Service 
+ *      - Log Repository      : Get Error Count per Service within a Time Window , Get Average Latency (Ms) per Service within a Time Window..
+ *    
+ *    
+ *    
+ *    
+ *    
+ *   Processing & Core Logic:
+ *      - Hangfire Recurring Job runs periodically every 5 minutes for example (i will Be Customizeable)
+ *      - Creates an isolated IServiceScope per execution via IServiceScopeFactory 
+ *      - Evaluates Error Rates and Latency metrics against predefined thresholds 
+ *
+ *   Outputs & Expected Results:
+ *      - Automated Incident Creation (creates a new Incident when threshold are exceeded)
+ *      - Execution Logs & Health Tracking in Hangfire Dashboard 
+ *      - Service Health Status Report (Logged or stored for health monitoring)
+ *
+ * Planned Execution Steps:
+ *  Step 1: Update Incident Repository -> GetActiveIncidentsCountPerServiceAsync(serviceId)   
+ *  
+ *  
+ *  Step 2: Update Log Repository      -> GetErrorCountAsync(serviceId, timeWindow)
+ *                                     -> GetAverageLatencyAsync(serviceId, timeWindow)
+ *                                     
+ *                                     
+ *  Step 3: Implement Background Job   -> AnalyzeServicesJob (Fetch Services -> Iterate & Analyze Metrics -> Evaluate Thresholds)
+ *  
+ *  
+ *  Step 4: Register & Schedule Job    -> Register RecurringJob in Program.cs with Cron expression
+ */
