@@ -278,13 +278,13 @@ app.Run();
  *
  *   Prerequisites:
  *  - Install: Hangfire, Hangfire.SqlServer done
- *  - Register Hangfire Services & Add Dashboard in Program.cs
- *  - Configure Hangfire Storage to use SQL Server 
+ *  - Register Hangfire Services & Add Dashboard in Program.cs done
+ *  - Configure Hangfire Storage to use SQL Server done
  *
  * Phase 6 as a BlackBox:
  *   Inputs :
- *      - Incident Repository : Get Active Incidents Count Per Service 
- *      - Log Repository      : Get Error Count per Service within a Time Window , Get Average Latency (Ms) per Service within a Time Window..
+ *      - Incident Repository : Get Active Incidents Count Per Service done
+ *      - Log Repository      : Get Error Count per Service within a Time Window , Get Average Latency (Ms) per Service within a Time Window.. done
  *    
  *    
  *    

@@ -45,6 +45,8 @@ namespace Incident_intelligence_platform.Middlewares
                         "SLOW REQUEST WARNING: HTTP {Method} {Path} took {ElapsedMs} ms!",
                         requestMethod, requestPath, elapsedMilliseconds);
                 }
+
+                context.Items["RequestLatencyMs"] = elapsedMilliseconds;
             }
         }
     }

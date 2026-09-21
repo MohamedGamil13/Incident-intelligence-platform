@@ -10,6 +10,8 @@ namespace Domain.Contracts.Incidents
         public void Update(Incident incident);
         public void Delete(Incident incident);
         public Task<bool> ServiceExistsAsync(int serviceId);
+        public Task<IEnumerable<Incident>> GetActiveIncidentPerService(int serviceId, int timeWindowInMin = 5);
+        public Task<int> GetActiveIncidentCountPerService(int serviceId, int timeWindowInMin = 5);
         public Task SaveChangesAsync();
 
     }

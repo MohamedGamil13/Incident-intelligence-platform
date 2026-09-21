@@ -13,6 +13,7 @@ namespace Domain.Contracts.Logs
         void Delete(Log log);
         Task<bool> CheckExistAsync(int logId);
         Task<int> GetErrorsNumberByWindowFunction(int serviceId, int time = 5);
+        Task<double> GetAvgLatencyPerService(int serviceId, int timeWindowInMin = 5);
         public Task SaveChangesAsync();
     }
 }
