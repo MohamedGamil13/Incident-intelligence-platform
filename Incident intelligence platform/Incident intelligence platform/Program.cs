@@ -94,6 +94,14 @@ builder.Services.AddHangfireServer(options =>
 {
     options.WorkerCount = Environment.ProcessorCount * 2;
 });
+
+//Register Redis Cache
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "IncidentPlatform_";
+
+});
 #endregion
 
 #region Swagger / API Documentation
