@@ -232,6 +232,7 @@ builder.Services.AddScoped<IIncidentService, IncidentService>();
 
 // Service Management Services
 builder.Services.AddScoped<IServiceMangementService, ServiceManagementService>();
+builder.Services.AddScoped<IAnalyzeServiceJob, AnalyzeServicesJob>();
 
 //Logs Services
 builder.Services.AddScoped<ILogsService, LogsService>();
