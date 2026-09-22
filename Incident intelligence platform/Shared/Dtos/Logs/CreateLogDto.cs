@@ -19,5 +19,6 @@ namespace Shared.Dtos.Logs
 
         [Range(1, int.MaxValue, ErrorMessage = "ServiceId must be greater than 0.")]
         public int ServiceId { get; set; }
+        public long LatencyMs { get; set; }
     }
 }

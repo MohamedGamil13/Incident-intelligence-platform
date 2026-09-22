@@ -301,7 +301,7 @@ app.Run();
  *      - Service Health Status Report (Logged or stored for health monitoring)
  *
  * Planned Execution Steps:
- *  Step 1: Update Incident Repository -> GetActiveIncidentsCountPerServiceAsync(serviceId)   
+ *  Step 1: Update Incident Repository -> GetActiveIncidentsCountPerServiceAsync(serviceId)   done
  *  
  *  
  *  Step 2: Update Log Repository      -> GetErrorCountAsync(serviceId, timeWindow)

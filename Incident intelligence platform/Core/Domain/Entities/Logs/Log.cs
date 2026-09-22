@@ -13,7 +13,7 @@ namespace Domain.Entities.Logs
         public Guid TraceId { get; set; }
         public int ServiceId { get; set; }
         public Service Service { get; set; }
-        public int LatencyMs { get; set; }
+        public long LatencyMs { get; set; }
 
     }
 }
