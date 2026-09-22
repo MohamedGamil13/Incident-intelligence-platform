@@ -4,6 +4,7 @@ namespace ServiceAbstraction.Contracts.ServiceMangment
 {
     public interface IAnalyzeServiceJob
     {
-        public Task AnalyzeServices(AnalyzeServiceRequest analyzeServiceDto); // Check Error Nums Per Service , latancy Per Request perServices  
+        public Task AnalyzeOneService(AnalyzeServiceRequest analyzeServiceDto);
+        public Task AnalyzeAllServices(AnalyzeAllServicesRequest dto);
     }
 }

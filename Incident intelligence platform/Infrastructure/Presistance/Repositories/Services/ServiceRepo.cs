@@ -46,5 +46,13 @@ namespace Presistance.Repositories.Services
         {
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IReadOnlyList<int>> GetAllServiceIdsAsync()
+        {
+            return await _context.Services
+                                 .AsNoTracking()
+                                 .Select(s => s.Id)
+                                 .ToListAsync();
+        }
     }
 }

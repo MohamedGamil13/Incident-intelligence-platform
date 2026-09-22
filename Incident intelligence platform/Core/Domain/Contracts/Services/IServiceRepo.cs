@@ -9,6 +9,7 @@ namespace Domain.Contracts.Services
         public Task AddAsync(Service service);
         public void Update(Service service);
         public void Delete(Service service);
+        public Task<IReadOnlyList<int>> GetAllServiceIdsAsync();
         public Task SaveChangesAsync();
 
     }

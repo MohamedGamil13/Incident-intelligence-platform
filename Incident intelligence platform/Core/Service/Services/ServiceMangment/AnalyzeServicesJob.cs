@@ -1,5 +1,6 @@
 ﻿using Domain.Contracts.Incidents;
 using Domain.Contracts.Logs;
+using Domain.Contracts.Services;
 using Domain.Entities.Incidents;
 using Domain.Enums.Incident;
 using Incident_intelligence_platform.DTOs.IncidentDTOs;
@@ -12,14 +13,25 @@ namespace ServiceLayer.Services.ServiceMangment
     {
         private readonly IIncidentRepo _incidentRepo;
         private readonly ILogsRepo _logsRepo;
+        private readonly IServiceRepo _serviceRepo;
 
-        public AnalyzeServicesJob(IIncidentRepo incidentRepo, ILogsRepo logsRepo)
+        public AnalyzeServicesJob(IIncidentRepo incidentRepo, ILogsRepo logsRepo, IServiceRepo serviceRepo)
         {
             _incidentRepo = incidentRepo;
             _logsRepo = logsRepo;
+            _serviceRepo = serviceRepo;
         }
 
-        public async Task AnalyzeServices(AnalyzeServiceRequest dto)
+        public async Task AnalyzeAllServices(AnalyzeAllServicesRequest dto)
+        {
+            var servicesId = await _serviceRepo.GetAllServiceIdsAsync();
+            foreach (int serviceId in servicesId)
+            {
+                await AnalyzeOneService(new AnalyzeServiceRequest(dto, serviceId));
+            }
+        }
+
+        public async Task AnalyzeOneService(AnalyzeServiceRequest dto)
         {
             long maxLatency = dto.MaxLatancy;
             int serviceId = dto.ServiceId;
