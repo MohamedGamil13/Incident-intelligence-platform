@@ -21,9 +21,9 @@ namespace Presentation.Controllers.Services
 
         [HttpGet("{pageNumber:int}/{pageSize:int}")]
         [Authorize]
-        public async Task<IActionResult> GetAllServices(int pageNumber, int pageSize)
+        public async Task<IActionResult> GetAllServices(int pageNumber, int pageSize, CancellationToken cancellationToken)
         {
-            var services = await _serviceService.GetAllServicesAsync(pageNumber, pageSize);
+            var services = await _serviceService.GetAllServicesAsync(pageNumber, pageSize, cancellationToken);
             return Ok(ApiResponse<IEnumerable<GetServiceResponseDTO>>.SuccessResponse(services, "Services retrieved successfully"));
         }
 

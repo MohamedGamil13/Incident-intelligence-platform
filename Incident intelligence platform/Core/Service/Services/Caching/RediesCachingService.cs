@@ -8,28 +8,48 @@ namespace ServiceLayer.Services.Caching
     {
         private readonly IDistributedCache _cache;
 
-        public RediesCachingService(IDistributedCache _cache)
+
+
+
+        public RediesCachingService(IDistributedCache cache)
         {
-            this._cache = _cache;
+            _cache = cache;
         }
-        public async Task<T?> GetData<T>(string key)
+
+        public async Task<T?> GetData<T>(string key, CancellationToken cancellationToken)
         {
-            var data = await _cache.GetStringAsync(key);
-            if (data == null)
+            var data = await _cache.GetStringAsync(key, cancellationToken);
+
+            if (string.IsNullOrEmpty(data))
             {
-                return default(T);
+                return default;
             }
-            return JsonSerializer.Deserialize<T>(data);
 
+            return JsonSerializer.Deserialize<T>(data);
         }
 
-        public async Task SetData<T>(string key, T data)
+
+        public Task<T?> GetData<T>(string key)
         {
-            var option = new DistributedCacheEntryOptions()
+            return GetData<T>(key, CancellationToken.None);
+        }
+
+        public async Task SetData<T>(string key, T data, TimeSpan timeSpan, CancellationToken cancellationToken)
+        {
+            var options = new DistributedCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+                AbsoluteExpirationRelativeToNow = timeSpan
             };
-            await _cache.SetStringAsync(key, JsonSerializer.Serialize(data), option);
+
+            var serializedData = JsonSerializer.Serialize(data);
+
+            await _cache.SetStringAsync(key, serializedData, options, cancellationToken);
+        }
+
+
+        public Task SetData<T>(string key, T data)
+        {
+            return SetData(key, data, TimeSpan.FromMinutes(5), CancellationToken.None);
         }
     }
 }

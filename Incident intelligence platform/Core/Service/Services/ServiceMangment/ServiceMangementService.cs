@@ -2,6 +2,7 @@
 using Domain.Entities.Services;
 using Incident_intelligence_platform.DTOs.ServiceDTOs;
 using Mapster;
+using ServiceAbstraction.Contracts.Caching;
 using ServiceAbstraction.Contracts.ServiceMangment;
 
 namespace ServiceLayer.Services.ServiceMangment
@@ -9,16 +10,40 @@ namespace ServiceLayer.Services.ServiceMangment
     public class ServiceManagementService : IServiceMangementService
     {
         private readonly IServiceRepo _serviceRepo;
+        private readonly IRediesCachingService cachingService;
 
-        public ServiceManagementService(IServiceRepo serviceRepo)
+        public ServiceManagementService(IServiceRepo serviceRepo, IRediesCachingService cachingService)
         {
             _serviceRepo = serviceRepo;
+            this.cachingService = cachingService;
         }
 
-        public async Task<IEnumerable<GetServiceResponseDTO>> GetAllServicesAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<GetServiceResponseDTO>> GetAllServicesAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
-            var services = await _serviceRepo.GetAllAsync(pageNumber, pageSize);
-            return services.Adapt<IEnumerable<GetServiceResponseDTO>>();
+
+            string cacheKey = $"services:page:{pageNumber}:size:{pageSize}";
+
+
+            var cachedData = await cachingService.GetData<IEnumerable<GetServiceResponseDTO>>(cacheKey, cancellationToken);
+            if (cachedData is not null)
+            {
+                return cachedData;
+            }
+
+
+            var servicesEntity = await _serviceRepo.GetAllAsync(pageNumber, pageSize);
+            if (servicesEntity is null)
+            {
+                return Enumerable.Empty<GetServiceResponseDTO>();
+            }
+
+
+            var servicesDto = servicesEntity.Adapt<IEnumerable<GetServiceResponseDTO>>();
+
+
+            await cachingService.SetData(cacheKey, servicesDto, TimeSpan.FromMinutes(10), cancellationToken);
+
+            return servicesDto;
         }
 
         public async Task<GetServiceResponseDTO?> GetServiceByIdAsync(int id)
