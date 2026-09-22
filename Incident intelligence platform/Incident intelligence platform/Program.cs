@@ -305,7 +305,7 @@ app.Run();
  *  
  *  
  *  Step 2: Update Log Repository      -> GetErrorCountAsync(serviceId, timeWindow)
- *                                     -> GetAverageLatencyAsync(serviceId, timeWindow)
+ *                                     -> GetAverageLatencyAsync(serviceId, timeWindow)  Done
  *                                     
  *                                     
  *  Step 3: Implement Background Job   -> AnalyzeServicesJob (Fetch Services -> Iterate & Analyze Metrics -> Evaluate Thresholds)
