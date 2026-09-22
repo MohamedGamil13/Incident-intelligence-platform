@@ -21,7 +21,7 @@ namespace ServiceLayer.Services.Logs
             this.mediator = mediator;
         }
 
-        public async Task<(bool Success, LogResponseDto? Data, string? ErrorMessage)> CreateLogAsync(CreateLogDto dto, Guid traceId)
+        public async Task<(bool Success, LogResponseDto? Data, string? ErrorMessage)> CreateLogAsync(CreateLogDto dto, Guid traceId, long LatancyTime)
         {
             var serviceExists = await _serviceRepo.GetByIdAsync(dto.ServiceId);
             if (serviceExists == null)
@@ -36,7 +36,8 @@ namespace ServiceLayer.Services.Logs
                 Description = dto.Description,
                 ServiceId = dto.ServiceId,
                 TraceId = traceId,
-                Timestamp = DateTime.UtcNow
+                Timestamp = DateTime.UtcNow,
+                LatencyMs = LatancyTime
             };
 
 

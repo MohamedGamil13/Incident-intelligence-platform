@@ -1,5 +1,6 @@
 ﻿using Domain.Contracts.Incidents;
 using Domain.Entities.Incidents;
+using Domain.Enums.Incident;
 using Microsoft.EntityFrameworkCore;
 namespace Presistance.Repositories.Incidents
 {
@@ -45,10 +46,36 @@ namespace Presistance.Repositories.Incidents
         {
             return await _context.Services.AnyAsync(s => s.Id == serviceId);
         }
+        public async Task<IEnumerable<Incident>> GetActiveIncidentPerService(int serviceId, int timeWindowInMin = 5)
+        {
+            var targetTime = DateTime.UtcNow.AddMinutes(-timeWindowInMin);
+
+            return await _context.Incidents
+                .AsNoTracking()
+                .Where(i => i.ServiceId == serviceId
+                         && i.Status != IncidentStatus.Resolved
+                         && i.CreatedAt >= targetTime)
+                .OrderByDescending(i => i.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetActiveIncidentCountPerService(int serviceId, int timeWindowInMin = 5)
+        {
+            var targetTime = DateTime.UtcNow.AddMinutes(-timeWindowInMin);
+
+            return await _context.Incidents
+                .AsNoTracking()
+                .Where(i => i.ServiceId == serviceId
+                         && i.Status != IncidentStatus.Resolved
+                         && i.CreatedAt >= targetTime)
+                .OrderByDescending(i => i.CreatedAt)
+                .CountAsync();
+        }
 
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
         }
+
     }
 }

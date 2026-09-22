@@ -4,6 +4,7 @@ using Domain.Contracts.Logs;
 using Domain.Contracts.ServiceDeployments;
 using Domain.Contracts.Services;
 using Domain.Entities.Users;
+using Hangfire;
 using Incident_intelligence_platform.Config;
 using Incident_intelligence_platform.DTOs;
 using Incident_intelligence_platform.Middleware;
@@ -78,6 +79,20 @@ builder.Services.AddMediatR(cfg =>
 
 
     cfg.RegisterServicesFromAssembly(typeof(LogIngestedEvent).Assembly);
+});
+
+//Hangfire
+// Add Hangfire services.
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add the processing server as IHostedService
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = Environment.ProcessorCount * 2;
 });
 #endregion
 
@@ -217,6 +232,7 @@ builder.Services.AddScoped<IIncidentService, IncidentService>();
 
 // Service Management Services
 builder.Services.AddScoped<IServiceMangementService, ServiceManagementService>();
+builder.Services.AddScoped<IAnalyzeServiceJob, AnalyzeServicesJob>();
 
 //Logs Services
 builder.Services.AddScoped<ILogsService, LogsService>();
@@ -233,16 +249,68 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseMiddleware<HandleTraceIdMiddleware>();
+
+
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 app.UseMiddleware<RequestTimingMiddleware>();
+app.UseMiddleware<HandleTraceIdMiddleware>();
 
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+//Hangfire 
+app.RegisterHangfireJobs();
+app.UseHangfireDashboard("/hangfire");
 app.MapControllers();
 
 app.Run();
 #endregion
+
+
+
+
+
+
+
+/*
+ * Phase 6: Async Analysis Pipeline
+ * I will  use Hangfire 
+ *
+ *   Prerequisites:
+ *  - Install: Hangfire, Hangfire.SqlServer done
+ *  - Register Hangfire Services & Add Dashboard in Program.cs done
+ *  - Configure Hangfire Storage to use SQL Server done
+ *
+ * Phase 6 as a BlackBox:
+ *   Inputs :
+ *      - Incident Repository : Get Active Incidents Count Per Service done
+ *      - Log Repository      : Get Error Count per Service within a Time Window , Get Average Latency (Ms) per Service within a Time Window.. done
+ *    
+ *    
+ *    
+ *    
+ *    
+ *   Processing & Core Logic:
+ *      - Hangfire Recurring Job runs periodically every 5 minutes for example (i will Be Customizeable)
+ *      - Creates an isolated IServiceScope per execution via IServiceScopeFactory 
+ *      - Evaluates Error Rates and Latency metrics against predefined thresholds 
+ *
+ *   Outputs & Expected Results:
+ *      - Automated Incident Creation (creates a new Incident when threshold are exceeded)
+ *      - Execution Logs & Health Tracking in Hangfire Dashboard 
+ *      - Service Health Status Report (Logged or stored for health monitoring)
+ *
+ * Planned Execution Steps:
+ *  Step 1: Update Incident Repository -> GetActiveIncidentsCountPerServiceAsync(serviceId)   done
+ *  
+ *  
+ *  Step 2: Update Log Repository      -> GetErrorCountAsync(serviceId, timeWindow)
+ *                                     -> GetAverageLatencyAsync(serviceId, timeWindow)  Done
+ *                                     
+ *                                     
+ *  Step 3: Implement Background Job   -> AnalyzeServicesJob (Fetch Services -> Iterate & Analyze Metrics -> Evaluate Thresholds)
+ *  
+ *  
+ *  Step 4: Register & Schedule Job    -> Register RecurringJob in Program.cs with Cron expression
+ */

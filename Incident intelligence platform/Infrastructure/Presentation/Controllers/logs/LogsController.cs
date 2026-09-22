@@ -22,8 +22,14 @@ namespace Presentation.Controllers.Logs
         [AllowAnonymous]
         public async Task<ActionResult> CreateLog([FromBody] CreateLogDto dto)
         {
+            long latencyTime = dto.LatencyMs;
+            if (HttpContext.Items.TryGetValue("RequestLatencyMs", out var itemVal) && itemVal is long elapsed)
+            {
+                latencyTime = elapsed;
+            }
+
             var traceId = Guid.Parse(HttpContext.TraceIdentifier);
-            var result = await _logsService.CreateLogAsync(dto, traceId);
+            var result = await _logsService.CreateLogAsync(dto, traceId, LatancyTime: (long)latencyTime);
             if (!result.Success)
             {
                 return NotFound(ApiResponse<LogResponseDto>.FailureResponse(result.ErrorMessage!, statusCode: 404));

@@ -88,10 +88,21 @@ namespace Presistance.Repositories.Logs
                          && l.Timestamp >= windowTime)
                 .CountAsync();
         }
+        public async Task<double> GetAvgLatencyPerService(int serviceId, int timeWindowInMin = 5)
+        {
+            var targetTime = DateTime.UtcNow.AddMinutes(-timeWindowInMin);
+            var avgLatency = await _context.Logs
+                .AsNoTracking()
+                .Where(l => l.ServiceId == serviceId && l.Timestamp >= targetTime)
+                .Select(l => (double?)l.LatencyMs)
+                .AverageAsync();
 
+            return avgLatency ?? 0.0;
+        }
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
         }
+
     }
 }
