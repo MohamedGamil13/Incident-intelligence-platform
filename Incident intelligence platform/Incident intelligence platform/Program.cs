@@ -250,7 +250,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//Hangfire Dashboard
 
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 app.UseMiddleware<RequestTimingMiddleware>();
@@ -260,8 +259,9 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+//Hangfire 
+app.RegisterHangfireJobs();
 app.UseHangfireDashboard("/hangfire");
-
 app.MapControllers();
 
 app.Run();

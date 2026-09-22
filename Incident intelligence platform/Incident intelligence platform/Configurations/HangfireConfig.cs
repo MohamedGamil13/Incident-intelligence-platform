@@ -2,32 +2,32 @@
 using ServiceAbstraction.Contracts.ServiceMangment;
 using Shared.Dtos.ServiceDTOs;
 
-namespace Incident_intelligence_platform.Extensions
+namespace Incident_intelligence_platform.Config
 {
     public static class HangfireJobExtensions
     {
         public static IApplicationBuilder RegisterHangfireJobs(this IApplicationBuilder app)
         {
+
             using (var scope = app.ApplicationServices.CreateScope())
             {
                 var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
 
 
-                var analysisRequest = new AnalyzeServiceRequest
+                var globalThresholds = new AnalyzeAllServicesRequest
                 {
-                    ServiceId = 2,
                     MaxLatancy = 500,
                     MaxIncidentsPerService = 3,
                     ServiceErrorTimeWindow = 5,
-                    IncidentTimeWindow = 15
+                    IncidentTimeWindow = 15,
+                    MaxErrorsPerService = 3,
                 };
 
 
                 recurringJobManager.AddOrUpdate<IAnalyzeServiceJob>(
-                    "analyze-service-health-job",
-                    job => job.AnalyzeServices(analysisRequest),
-                    Cron.MinuteInterval(5)
-                );
+                    recurringJobId: "analyze-all-services-health-job",
+                    methodCall: job => job.AnalyzeAllServices(globalThresholds),
+                    cronExpression: Cron.MinuteInterval(5));
             }
 
             return app;
