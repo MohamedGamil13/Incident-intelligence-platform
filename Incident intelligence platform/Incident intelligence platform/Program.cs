@@ -23,11 +23,13 @@ using Presistance.Repositories.Logs;
 using Presistance.Repositories.ServiceDeployments;
 using Presistance.Repositories.Services;
 using ServiceAbstraction.Contracts.Auth;
+using ServiceAbstraction.Contracts.Caching;
 using ServiceAbstraction.Contracts.Incident;
 using ServiceAbstraction.Contracts.Logs;
 using ServiceAbstraction.Contracts.ServiceDeployments;
 using ServiceAbstraction.Contracts.ServiceMangment;
 using ServiceLayer.Services.Auth;
+using ServiceLayer.Services.Caching;
 using ServiceLayer.Services.Incidents;
 using ServiceLayer.Services.Logs;
 using ServiceLayer.Services.Logs.Commands;
@@ -93,6 +95,14 @@ builder.Services.AddHangfire(configuration => configuration
 builder.Services.AddHangfireServer(options =>
 {
     options.WorkerCount = Environment.ProcessorCount * 2;
+});
+
+//Register Redis Cache
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "IncidentPlatform_";
+
 });
 #endregion
 
@@ -239,6 +249,9 @@ builder.Services.AddScoped<ILogsService, LogsService>();
 
 //Service Depolyment Services
 builder.Services.AddScoped<IServiceDeploymentService, ServiceDeploymentService>();
+
+//Redis Services
+builder.Services.AddScoped<IRediesCachingService, RediesCachingService>();
 #endregion
 
 var app = builder.Build();
@@ -266,51 +279,3 @@ app.MapControllers();
 
 app.Run();
 #endregion
-
-
-
-
-
-
-
-/*
- * Phase 6: Async Analysis Pipeline
- * I will  use Hangfire 
- *
- *   Prerequisites:
- *  - Install: Hangfire, Hangfire.SqlServer done
- *  - Register Hangfire Services & Add Dashboard in Program.cs done
- *  - Configure Hangfire Storage to use SQL Server done
- *
- * Phase 6 as a BlackBox:
- *   Inputs :
- *      - Incident Repository : Get Active Incidents Count Per Service done
- *      - Log Repository      : Get Error Count per Service within a Time Window , Get Average Latency (Ms) per Service within a Time Window.. done
- *    
- *    
- *    
- *    
- *    
- *   Processing & Core Logic:
- *      - Hangfire Recurring Job runs periodically every 5 minutes for example (i will Be Customizeable)
- *      - Creates an isolated IServiceScope per execution via IServiceScopeFactory 
- *      - Evaluates Error Rates and Latency metrics against predefined thresholds 
- *
- *   Outputs & Expected Results:
- *      - Automated Incident Creation (creates a new Incident when threshold are exceeded)
- *      - Execution Logs & Health Tracking in Hangfire Dashboard 
- *      - Service Health Status Report (Logged or stored for health monitoring)
- *
- * Planned Execution Steps:
- *  Step 1: Update Incident Repository -> GetActiveIncidentsCountPerServiceAsync(serviceId)   done
- *  
- *  
- *  Step 2: Update Log Repository      -> GetErrorCountAsync(serviceId, timeWindow)
- *                                     -> GetAverageLatencyAsync(serviceId, timeWindow)  Done
- *                                     
- *                                     
- *  Step 3: Implement Background Job   -> AnalyzeServicesJob (Fetch Services -> Iterate & Analyze Metrics -> Evaluate Thresholds)
- *  
- *  
- *  Step 4: Register & Schedule Job    -> Register RecurringJob in Program.cs with Cron expression
- */
