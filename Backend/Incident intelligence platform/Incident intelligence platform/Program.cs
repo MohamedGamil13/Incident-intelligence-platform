@@ -1,9 +1,5 @@
 using Domain.Contracts;
 using Domain.Contracts.Auth;
-using Domain.Contracts.Incidents;
-using Domain.Contracts.Logs;
-using Domain.Contracts.ServiceDeployments;
-using Domain.Contracts.Services;
 using Domain.Entities.Users;
 using Hangfire;
 using Incident_intelligence_platform.Config;
@@ -20,10 +16,6 @@ using Persistence.Repositories.Auth;
 using Presistance;
 using Presistance.Repositories;
 using Presistance.Repositories.Auth;
-using Presistance.Repositories.Incidents;
-using Presistance.Repositories.Logs;
-using Presistance.Repositories.ServiceDeployments;
-using Presistance.Repositories.Services;
 using ServiceAbstraction.Contracts.Auth;
 using ServiceAbstraction.Contracts.Caching;
 using ServiceAbstraction.Contracts.Incident;
@@ -218,19 +210,8 @@ builder.Services.AddAuthentication(options =>
 // Auth Repositories
 builder.Services.AddScoped<IAuthRepo, AuthRepo>();
 builder.Services.AddScoped<IUserMangementRepo, UserMangementRepo>();
-
 // Incident Repositories
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IIncidentEventRepo, IncidentEventRepo>();
-
-// Service Repositories
-builder.Services.AddScoped<IServiceRepo, ServiceRepository>();
-
-//Logs Repositories
-builder.Services.AddScoped<ILogsRepo, LogsRepo>();
-
-//ServiceDeployment Repositories
-builder.Services.AddScoped<IServiceDeploymentsRepo, ServiceDeploymentsRepo>();
 #endregion
 
 #region Dependency Injection - Application Services

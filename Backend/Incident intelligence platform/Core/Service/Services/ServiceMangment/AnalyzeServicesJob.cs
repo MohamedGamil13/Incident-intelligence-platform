@@ -1,7 +1,4 @@
 ﻿using Domain.Contracts;
-using Domain.Contracts.Incidents;
-using Domain.Contracts.Logs;
-using Domain.Contracts.Services;
 using Domain.Entities.Incidents;
 using Domain.Enums.Incident;
 using Incident_intelligence_platform.DTOs.IncidentDTOs;
@@ -13,26 +10,16 @@ namespace ServiceLayer.Services.ServiceMangment
 {
     public class AnalyzeServicesJob : IAnalyzeServiceJob
     {
-        private readonly IIncidentRepo _incidentRepo;
-        private readonly ILogsRepo _logsRepo;
-        private readonly IServiceRepo _serviceRepo;
         private readonly IUnitOfWork _unitOfWork;
 
-        public AnalyzeServicesJob(
-            IIncidentRepo incidentRepo,
-            ILogsRepo logsRepo,
-            IServiceRepo serviceRepo,
-            IUnitOfWork unitOfWork)
+        public AnalyzeServicesJob(IUnitOfWork unitOfWork)
         {
-            _incidentRepo = incidentRepo;
-            _logsRepo = logsRepo;
-            _serviceRepo = serviceRepo;
             _unitOfWork = unitOfWork;
         }
 
         public async Task AnalyzeAllServices(AnalyzeAllServicesRequest dto)
         {
-            var servicesId = await _serviceRepo.GetAllServiceIdsAsync();
+            var servicesId = await _unitOfWork.ServiceRepo.GetAllServiceIdsAsync();
             foreach (int serviceId in servicesId)
             {
                 await AnalyzeOneService(new AnalyzeServiceRequest(dto, serviceId));
@@ -44,12 +31,11 @@ namespace ServiceLayer.Services.ServiceMangment
             long maxLatency = dto.MaxLatancy;
             int serviceId = dto.ServiceId;
 
-            // استخدام CountAsync المعتمدة على الـ Specification بدلاً من الدالة المحذوفة
             var spec = new ActiveIncidentsPerServiceSpecification(serviceId, dto.IncidentTimeWindow);
-            var activeIncidentsCount = await _incidentRepo.CountAsync(spec);
+            var activeIncidentsCount = await _unitOfWork.GetRepository<Incident, int>().CountAsync(spec);
 
-            var errorCount = await _logsRepo.GetErrorsNumberByWindowFunction(serviceId, dto.ServiceErrorTimeWindow);
-            var avgLatency = await _logsRepo.GetAvgLatencyPerService(serviceId, dto.ServiceErrorTimeWindow);
+            var errorCount = await _unitOfWork.LogsRepo.GetErrorsNumberByWindowFunction(serviceId, dto.ServiceErrorTimeWindow);
+            var avgLatency = await _unitOfWork.LogsRepo.GetAvgLatencyPerService(serviceId, dto.ServiceErrorTimeWindow);
 
             if (activeIncidentsCount > dto.MaxIncidentsPerService)
             {
@@ -98,7 +84,7 @@ namespace ServiceLayer.Services.ServiceMangment
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _incidentRepo.AddAsync(incident);
+            await _unitOfWork.GetRepository<Incident, int>().AddAsync(incident);
             await _unitOfWork.SaveChangesAsync();
         }
     }
