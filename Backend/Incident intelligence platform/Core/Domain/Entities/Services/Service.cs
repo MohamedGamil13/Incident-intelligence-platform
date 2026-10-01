@@ -4,9 +4,9 @@ using Domain.Entities.ServiceDeployments;
 
 namespace Domain.Entities.Services
 {
-    public class Service
+    public class Service : BaseEntity<int>
     {
-        public int Id { get; set; }
+
 
         public required string Name { get; set; }
 

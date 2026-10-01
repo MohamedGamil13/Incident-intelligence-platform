@@ -3,9 +3,9 @@ using Domain.Enums.Logs;
 
 namespace Domain.Entities.Logs
 {
-    public class Log
+    public class Log : BaseEntity<int>
     {
-        public int Id { get; set; }
+
         public LogLevel LogLevel { get; set; }
         public string Message { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
