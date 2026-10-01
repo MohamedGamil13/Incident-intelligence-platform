@@ -17,5 +17,21 @@ namespace Presistance.Repositories
         public void Update(TEntity entity) => context.Set<TEntity>().Update(entity);
         public async Task<IEnumerable<TEntity>> GetAllAsync(bool asNoTracking = false) => asNoTracking ? await context.Set<TEntity>().AsNoTracking().ToListAsync() : await context.Set<TEntity>().ToListAsync();
         public async Task<TEntity?> GetByIdAsync(TKey id) => await context.Set<TEntity>().FindAsync(id);
+
+        #region Specifications
+        public async Task<IEnumerable<TEntity>> GetAllAsync(ISpecification<TEntity, TKey> specification)
+        {
+            return await SpecificationEvaluator.CreateQuery(context.Set<TEntity>(), specification).ToListAsync();
+        }
+
+        public async Task<TEntity?> GetByIdAsync(ISpecification<TEntity, TKey> specification)
+
+         => await SpecificationEvaluator.CreateQuery(context.Set<TEntity>(), specification).FirstOrDefaultAsync();
+
+        public async Task<int> CountAsync(ISpecification<TEntity, TKey> specification)
+        {
+            return await SpecificationEvaluator.CreateQuery(context.Set<TEntity>(), specification).CountAsync();
+        }
+        #endregion
     }
 }
