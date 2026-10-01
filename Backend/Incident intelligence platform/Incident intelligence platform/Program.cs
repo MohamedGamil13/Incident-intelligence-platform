@@ -1,3 +1,4 @@
+using Domain.Contracts;
 using Domain.Contracts.Auth;
 using Domain.Contracts.Incidents;
 using Domain.Contracts.Logs;
@@ -17,6 +18,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Persistence.Repositories.Auth;
 using Presistance;
+using Presistance.Repositories;
 using Presistance.Repositories.Auth;
 using Presistance.Repositories.Incidents;
 using Presistance.Repositories.Logs;
@@ -218,7 +220,7 @@ builder.Services.AddScoped<IAuthRepo, AuthRepo>();
 builder.Services.AddScoped<IUserMangementRepo, UserMangementRepo>();
 
 // Incident Repositories
-builder.Services.AddScoped<IIncidentRepo, IncidentRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IIncidentEventRepo, IncidentEventRepo>();
 
 // Service Repositories

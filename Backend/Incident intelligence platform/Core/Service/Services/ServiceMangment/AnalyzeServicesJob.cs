@@ -1,10 +1,12 @@
-﻿using Domain.Contracts.Incidents;
+﻿using Domain.Contracts;
+using Domain.Contracts.Incidents;
 using Domain.Contracts.Logs;
 using Domain.Contracts.Services;
 using Domain.Entities.Incidents;
 using Domain.Enums.Incident;
 using Incident_intelligence_platform.DTOs.IncidentDTOs;
 using ServiceAbstraction.Contracts.ServiceMangment;
+using ServiceLayer.Services.Specifications;
 using Shared.Dtos.ServiceDTOs;
 
 namespace ServiceLayer.Services.ServiceMangment
@@ -14,12 +16,18 @@ namespace ServiceLayer.Services.ServiceMangment
         private readonly IIncidentRepo _incidentRepo;
         private readonly ILogsRepo _logsRepo;
         private readonly IServiceRepo _serviceRepo;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AnalyzeServicesJob(IIncidentRepo incidentRepo, ILogsRepo logsRepo, IServiceRepo serviceRepo)
+        public AnalyzeServicesJob(
+            IIncidentRepo incidentRepo,
+            ILogsRepo logsRepo,
+            IServiceRepo serviceRepo,
+            IUnitOfWork unitOfWork)
         {
             _incidentRepo = incidentRepo;
             _logsRepo = logsRepo;
             _serviceRepo = serviceRepo;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task AnalyzeAllServices(AnalyzeAllServicesRequest dto)
@@ -36,7 +44,10 @@ namespace ServiceLayer.Services.ServiceMangment
             long maxLatency = dto.MaxLatancy;
             int serviceId = dto.ServiceId;
 
-            var activeIncidentsCount = await _incidentRepo.GetActiveIncidentCountPerService(serviceId, dto.MaxIncidentsPerService);
+            // استخدام CountAsync المعتمدة على الـ Specification بدلاً من الدالة المحذوفة
+            var spec = new ActiveIncidentsPerServiceSpecification(serviceId, dto.IncidentTimeWindow);
+            var activeIncidentsCount = await _incidentRepo.CountAsync(spec);
+
             var errorCount = await _logsRepo.GetErrorsNumberByWindowFunction(serviceId, dto.ServiceErrorTimeWindow);
             var avgLatency = await _logsRepo.GetAvgLatencyPerService(serviceId, dto.ServiceErrorTimeWindow);
 
@@ -49,8 +60,7 @@ namespace ServiceLayer.Services.ServiceMangment
                     Description = $"CRITICAL: Service #{serviceId} currently has {activeIncidentsCount} active incidents within the last {dto.IncidentTimeWindow} minutes, exceeding the threshold of {dto.MaxIncidentsPerService}.",
                     Severity = IncidentSeverity.High
                 });
-            } //High Amout of Incident in Service
-
+            }
 
             int maxAllowedErrors = dto.MaxErrorsPerService;
             if (errorCount > maxAllowedErrors)
@@ -62,8 +72,7 @@ namespace ServiceLayer.Services.ServiceMangment
                     Description = $"WARNING: Service #{serviceId} reported {errorCount} errors within the last {dto.ServiceErrorTimeWindow} minutes window. Threshold is {maxAllowedErrors} errors.",
                     Severity = IncidentSeverity.Critical
                 });
-            }//High amount of Errors
-
+            }
 
             if (avgLatency > maxLatency)
             {
@@ -74,9 +83,8 @@ namespace ServiceLayer.Services.ServiceMangment
                     Description = $"PERFORMANCE DEGRADATION: Average latency for Service #{serviceId} reached {avgLatency:F2} ms over the last {dto.ServiceErrorTimeWindow} minutes (Exceeded max threshold of {maxLatency} ms).",
                     Severity = IncidentSeverity.Medium
                 });
-            }//High Latency 
+            }
         }
-
 
         public async Task CreateIncident(CreateIncidentRequestDTO dto)
         {
@@ -91,7 +99,7 @@ namespace ServiceLayer.Services.ServiceMangment
             };
 
             await _incidentRepo.AddAsync(incident);
-            await _incidentRepo.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

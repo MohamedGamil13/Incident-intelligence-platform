@@ -1,4 +1,5 @@
-﻿using Domain.Contracts.Incidents;
+﻿using Domain.Contracts;
+using Domain.Contracts.Incidents;
 using Domain.Contracts.Logs;
 using Domain.Contracts.ServiceDeployments;
 using Domain.Entities.Incidents;
@@ -11,12 +12,18 @@ public class LogThresholdHandler : INotificationHandler<LogIngestedEvent>
     private readonly ILogsRepo _logsRepo;
     private readonly IIncidentRepo _incidentRepo;
     private readonly IServiceDeploymentsRepo _deploymentsRepo;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public LogThresholdHandler(ILogsRepo logsRepo, IIncidentRepo incidentRepo, IServiceDeploymentsRepo deploymentsRepo)
+    public LogThresholdHandler(
+        ILogsRepo logsRepo,
+        IIncidentRepo incidentRepo,
+        IServiceDeploymentsRepo deploymentsRepo,
+        IUnitOfWork unitOfWork)
     {
         _logsRepo = logsRepo;
         _incidentRepo = incidentRepo;
         _deploymentsRepo = deploymentsRepo;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task Handle(LogIngestedEvent notification, CancellationToken cancellationToken)
@@ -29,7 +36,6 @@ public class LogThresholdHandler : INotificationHandler<LogIngestedEvent>
 
         if (errorsNumber >= threshold)
         {
-
             var lastDeploy = await _deploymentsRepo.GetLatestDeploymentByServiceIdAsync(notification.ServiceId);
 
             string deploymentCorrelationDetails = "\n\n[Correlation Analysis]: No recent deployments detected.";
@@ -57,7 +63,7 @@ public class LogThresholdHandler : INotificationHandler<LogIngestedEvent>
             };
 
             await _incidentRepo.AddAsync(incident);
-            await _incidentRepo.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }
