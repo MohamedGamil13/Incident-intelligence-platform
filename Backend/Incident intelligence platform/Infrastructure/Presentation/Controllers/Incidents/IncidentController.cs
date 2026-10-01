@@ -4,6 +4,7 @@ using Incident_intelligence_platform.DTOs.IncidentDTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServiceAbstraction.Contracts.Incident;
+using Shared;
 
 namespace Presentation.Controllers.Incidents
 {
@@ -18,11 +19,11 @@ namespace Presentation.Controllers.Incidents
             _incidentService = incidentService;
         }
 
-        [HttpGet("{pageNumber:int}/{pageSize:int}")]
+        [HttpGet]
         [Authorize]
-        public async Task<ActionResult> GetAllIncidents(int pageNumber, int pageSize)
+        public async Task<ActionResult> GetAllIncidents([FromQuery] IncidentSpecParams specParams)
         {
-            var incidents = await _incidentService.GetAllIncidentsAsync(pageNumber, pageSize);
+            var incidents = await _incidentService.GetAllIncidentsAsync(specParams);
             return Ok(ApiResponse<IEnumerable<GetIncidentResponseDTO>>.SuccessResponse(incidents, "Incidents retrieved successfully"));
         }
 
@@ -39,7 +40,6 @@ namespace Presentation.Controllers.Incidents
             return Ok(ApiResponse<GetIncidentResponseDTO>.SuccessResponse(incidentDto));
         }
 
-
         [HttpPost]
         [Authorize(Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager}")]
         public async Task<ActionResult> CreateIncident([FromBody] CreateIncidentRequestDTO requestDto)
@@ -54,8 +54,6 @@ namespace Presentation.Controllers.Incidents
             return CreatedAtAction(nameof(GetIncident), new { incidentId = result.Data!.Id }, apiResponse);
         }
 
-
-
         [HttpPut("{incidentId:int}")]
         [Authorize(Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager},{AppUsersRoles.Developer}")]
         public async Task<ActionResult> UpdateIncident(int incidentId, [FromBody] UpdateIncidentRequestDTO requestDto)
@@ -68,7 +66,6 @@ namespace Presentation.Controllers.Incidents
 
             return Ok(ApiResponse<GetIncidentResponseDTO>.SuccessResponse(updatedIncident, "Incident updated successfully"));
         }
-
 
         [HttpDelete("{incidentId:int}")]
         [Authorize(Roles = AppUsersRoles.Admin)]

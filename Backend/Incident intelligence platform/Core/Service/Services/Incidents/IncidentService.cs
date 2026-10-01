@@ -4,7 +4,8 @@ using Domain.Enums.Incident;
 using Incident_intelligence_platform.DTOs.IncidentDTOs;
 using Mapster;
 using ServiceAbstraction.Contracts.Incident;
-
+using ServiceLayer.Services.Specifications;
+using Shared;
 
 namespace ServiceLayer.Services.Incidents
 {
@@ -17,19 +18,20 @@ namespace ServiceLayer.Services.Incidents
             _incidentRepo = incidentRepo;
         }
 
-        public async Task<IEnumerable<GetIncidentResponseDTO>> GetAllIncidentsAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<GetIncidentResponseDTO>> GetAllIncidentsAsync(IncidentSpecParams specParams)
         {
-            var incidents = await _incidentRepo.GetAllAsync(pageNumber, pageSize);
+            var spec = new IncidentWithDetailsSpecification(specParams);
+            var incidents = await _incidentRepo.GetAllAsync(spec);
+
             return incidents.Adapt<IEnumerable<GetIncidentResponseDTO>>();
         }
 
         public async Task<GetIncidentResponseDTO?> GetIncidentByIdAsync(int id)
         {
-            var incident = await _incidentRepo.GetByIdAsync(id);
+            var spec = new IncidentWithDetailsSpecification(id);
+            var incident = await _incidentRepo.GetByIdAsync(spec);
 
-            var response = incident?.Adapt<GetIncidentResponseDTO>();
-
-            return response;
+            return incident?.Adapt<GetIncidentResponseDTO>();
         }
 
         public async Task<(bool Success, GetIncidentResponseDTO? Data, string ErrorMessage)> CreateIncidentAsync(CreateIncidentRequestDTO dto)
@@ -45,7 +47,7 @@ namespace ServiceLayer.Services.Incidents
             incident.CreatedAt = DateTime.UtcNow;
 
             await _incidentRepo.AddAsync(incident);
-            await _incidentRepo.SaveChangesAsync();
+
 
             return (true, incident.Adapt<GetIncidentResponseDTO>(), string.Empty);
         }
@@ -53,10 +55,9 @@ namespace ServiceLayer.Services.Incidents
         public async Task<GetIncidentResponseDTO?> UpdateIncidentAsync(int id, UpdateIncidentRequestDTO dto)
         {
             var incident = await _incidentRepo.GetByIdAsync(id);
-
-
             if (incident == null) return null;
-            if (!CanTransition(dto.Status, incident.Status))
+
+            if (!CanTransition(incident.Status, dto.Status))
             {
                 throw new InvalidOperationException($"Invalid status transition from {incident.Status} to {dto.Status}.");
             }
@@ -67,8 +68,8 @@ namespace ServiceLayer.Services.Incidents
             {
                 incident.ResolvedAt = DateTime.UtcNow;
             }
+
             _incidentRepo.Update(incident);
-            await _incidentRepo.SaveChangesAsync();
 
             return incident.Adapt<GetIncidentResponseDTO>();
         }
@@ -79,17 +80,13 @@ namespace ServiceLayer.Services.Incidents
             if (incident == null) return false;
 
             _incidentRepo.Delete(incident);
-            await _incidentRepo.SaveChangesAsync();
-
             return true;
         }
-        private bool CanTransition(IncidentStatus? Current, IncidentStatus next)
+
+        private bool CanTransition(IncidentStatus current, IncidentStatus? next)
         {
-            if (Current > next)
-            {
-                return false;
-            }
-            return true;
+            if (!next.HasValue) return true;
+            return current <= next.Value;
         }
     }
 }

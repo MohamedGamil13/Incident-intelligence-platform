@@ -1,13 +1,14 @@
 ﻿using Incident_intelligence_platform.DTOs.IncidentDTOs;
+using Shared;
 
 namespace ServiceAbstraction.Contracts.Incident
 {
     public interface IIncidentService
     {
-        public Task<IEnumerable<GetIncidentResponseDTO>> GetAllIncidentsAsync(int pageNumber, int pageSize);
-        public Task<GetIncidentResponseDTO?> GetIncidentByIdAsync(int id);
-        public Task<(bool Success, GetIncidentResponseDTO? Data, string ErrorMessage)> CreateIncidentAsync(CreateIncidentRequestDTO dto);
-        public Task<GetIncidentResponseDTO?> UpdateIncidentAsync(int id, UpdateIncidentRequestDTO dto);
-        public Task<bool> DeleteIncidentAsync(int id);
+        Task<IEnumerable<GetIncidentResponseDTO>> GetAllIncidentsAsync(IncidentSpecParams specParams);
+        Task<GetIncidentResponseDTO?> GetIncidentByIdAsync(int id);
+        Task<(bool Success, GetIncidentResponseDTO? Data, string ErrorMessage)> CreateIncidentAsync(CreateIncidentRequestDTO dto);
+        Task<GetIncidentResponseDTO?> UpdateIncidentAsync(int id, UpdateIncidentRequestDTO dto);
+        Task<bool> DeleteIncidentAsync(int id);
     }
 }
