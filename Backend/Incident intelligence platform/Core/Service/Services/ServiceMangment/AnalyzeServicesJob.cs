@@ -1,5 +1,6 @@
 ﻿using Domain.Contracts;
 using Domain.Entities.Incidents;
+using Domain.Entities.Logs;
 using Domain.Entities.Services;
 using Domain.Enums.Incident;
 using Incident_intelligence_platform.DTOs.IncidentDTOs;
@@ -37,7 +38,9 @@ namespace ServiceLayer.Services.ServiceMangment
             var spec = new ActiveIncidentsPerServiceSpecification(serviceId, dto.IncidentTimeWindow);
             var activeIncidentsCount = await _unitOfWork.GetRepository<Incident, int>().CountAsync(spec);
 
-            var errorCount = await _unitOfWork.LogsRepo.GetErrorsNumberByWindowFunction(serviceId, dto.ServiceErrorTimeWindow);
+            var errorCount = await _unitOfWork.GetRepository<Log, int>()
+                .CountAsync(new ErrorLogsInWindowSpecification(serviceId, dto.ServiceErrorTimeWindow));
+
             var avgLatency = await _unitOfWork.LogsRepo.GetAvgLatencyPerService(serviceId, dto.ServiceErrorTimeWindow);
 
             if (activeIncidentsCount > dto.MaxIncidentsPerService)

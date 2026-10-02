@@ -1,33 +1,31 @@
-﻿using Domain.Contracts.Logs;
-using Domain.Contracts.Services;
+﻿using Domain.Contracts;
 using Domain.Entities.Logs;
+using Domain.Entities.Services;
 using Domain.Enums.Logs;
 using MediatR;
 using ServiceAbstraction.Contracts.Logs;
 using ServiceLayer.Services.Logs.Commands;
+using ServiceLayer.Services.Specifications;
 using Shared.Dtos.Logs;
 
 namespace ServiceLayer.Services.Logs
 {
     public class LogsService : ILogsService
     {
-        private readonly ILogsRepo _logsRepo;
-        private readonly IServiceRepo _serviceRepo;
-        private readonly IMediator mediator;
-        public LogsService(ILogsRepo logsRepo, IServiceRepo serviceRepo, IMediator mediator)
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMediator _mediator;
+
+        public LogsService(IUnitOfWork unitOfWork, IMediator mediator)
         {
-            _logsRepo = logsRepo;
-            _serviceRepo = serviceRepo;
-            this.mediator = mediator;
+            _unitOfWork = unitOfWork;
+            _mediator = mediator;
         }
 
         public async Task<(bool Success, LogResponseDto? Data, string? ErrorMessage)> CreateLogAsync(CreateLogDto dto, Guid traceId, long LatancyTime)
         {
-            var serviceExists = await _serviceRepo.GetByIdAsync(dto.ServiceId);
-            if (serviceExists == null)
-            {
+            var service = await _unitOfWork.GetRepository<Service, int>().GetByIdAsync(dto.ServiceId);
+            if (service is null)
                 return (false, null, $"Service with ID {dto.ServiceId} does not exist.");
-            }
 
             var log = new Log
             {
@@ -35,84 +33,69 @@ namespace ServiceLayer.Services.Logs
                 Message = dto.Message,
                 Description = dto.Description,
                 ServiceId = dto.ServiceId,
+                Service = service,
                 TraceId = traceId,
                 Timestamp = DateTime.UtcNow,
                 LatencyMs = LatancyTime
             };
 
+            await _unitOfWork.GetRepository<Log, int>().AddAsync(log);
+            await _unitOfWork.SaveChangesAsync();
 
-            await _logsRepo.AddAsync(log);
-            await _logsRepo.SaveChangesAsync();
-
-
-            if (log.LogLevel == LogLevel.Error || log.LogLevel == LogLevel.Critical)
-            {
-
-                await mediator.Publish(new LogIngestedEvent(log, log.ServiceId));
-            }
-
-            var createdLog = await _logsRepo.GetLogByIdAsync(log.Id);
-
-            return (true, MapToResponseDto(createdLog!), null);
-        }
-
-        public async Task<(bool Success, IEnumerable<LogResponseDto> Data, string? ErrorMessage)> GetAllLogsAsync(int pageNumber = 1, int pageSize = 50)
-        {
-            var logs = await _logsRepo.GetLogsAsync(pageNumber, pageSize);
-            var result = logs.Select(MapToResponseDto);
-
-            return (true, result, null);
-        }
-
-        public async Task<(bool Success, LogResponseDto? Data, string? ErrorMessage)> GetLogByIdAsync(int logId)
-        {
-            var log = await _logsRepo.GetLogByIdAsync(logId);
-            if (log == null)
-            {
-                return (false, null, $"Log with ID {logId} was not found.");
-            }
+            if (log.LogLevel is LogLevel.Error or LogLevel.Critical)
+                await _mediator.Publish(new LogIngestedEvent(log, log.ServiceId));
 
             return (true, MapToResponseDto(log), null);
         }
 
+        public async Task<(bool Success, IEnumerable<LogResponseDto> Data, string? ErrorMessage)> GetAllLogsAsync(int pageNumber = 1, int pageSize = 50)
+        {
+            var logs = await _unitOfWork.GetRepository<Log, int>()
+                .GetAllAsync(new LogsPageSpecification(pageNumber, pageSize));
+
+            return (true, logs.Select(MapToResponseDto).ToList(), null);
+        }
+
+        public async Task<(bool Success, LogResponseDto? Data, string? ErrorMessage)> GetLogByIdAsync(int logId)
+        {
+            var log = await _unitOfWork.GetRepository<Log, int>()
+                .GetByIdAsync(new LogWithServiceSpecification(logId));
+
+            return log is null
+                ? (false, null, $"Log with ID {logId} was not found.")
+                : (true, MapToResponseDto(log), null);
+        }
+
         public async Task<(bool Success, IEnumerable<LogResponseDto> Data, string? ErrorMessage)> GetLogsByServiceIdAsync(int serviceId, int pageNumber = 1, int pageSize = 50)
         {
-            var serviceExists = await _serviceRepo.GetByIdAsync(serviceId);
-            if (serviceExists == null)
-            {
+            var service = await _unitOfWork.GetRepository<Service, int>().GetByIdAsync(serviceId);
+            if (service is null)
                 return (false, Enumerable.Empty<LogResponseDto>(), $"Service with ID {serviceId} does not exist.");
-            }
 
-            var logs = await _logsRepo.GetLogsByServiceIdAsync(serviceId, pageNumber, pageSize);
-            var result = logs.Select(MapToResponseDto);
+            var logs = await _unitOfWork.GetRepository<Log, int>()
+                .GetAllAsync(new LogsPageSpecification(pageNumber, pageSize, serviceId));
 
-            return (true, result, null);
+            return (true, logs.Select(MapToResponseDto).ToList(), null);
         }
 
         public async Task<(bool Success, IEnumerable<LogResponseDto> Data, string? ErrorMessage)> GetLogsByTraceIdAsync(Guid traceId)
         {
-            var logs = await _logsRepo.GetLogsByTraceIdAsync(traceId);
-            var result = logs.Select(MapToResponseDto);
+            var logs = await _unitOfWork.GetRepository<Log, int>()
+                .GetAllAsync(new LogsByTraceSpecification(traceId));
 
-            return (true, result, null);
+            return (true, logs.Select(MapToResponseDto).ToList(), null);
         }
 
-        #region Private Helper Methods
-        private static LogResponseDto MapToResponseDto(Log log)
+        private static LogResponseDto MapToResponseDto(Log log) => new()
         {
-            return new LogResponseDto
-            {
-                Id = log.Id,
-                LogLevel = log.LogLevel,
-                Message = log.Message,
-                Description = log.Description,
-                Timestamp = log.Timestamp,
-                TraceId = log.TraceId,
-                ServiceId = log.ServiceId,
-                ServiceName = log.Service?.Name ?? string.Empty
-            };
-        }
-
-        #endregion
+            Id = log.Id,
+            LogLevel = log.LogLevel,
+            Message = log.Message,
+            Description = log.Description,
+            Timestamp = log.Timestamp,
+            TraceId = log.TraceId,
+            ServiceId = log.ServiceId,
+            ServiceName = log.Service?.Name ?? string.Empty
+        };
     }
 }
