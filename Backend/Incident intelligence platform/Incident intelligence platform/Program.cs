@@ -1,264 +1,29 @@
-using Domain.Contracts;
-using Domain.Contracts.Auth;
-using Domain.Entities.Users;
-using Hangfire;
 using Incident_intelligence_platform.Config;
-using Incident_intelligence_platform.DTOs;
-using Incident_intelligence_platform.Middleware;
-using Incident_intelligence_platform.Middlewares;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
-using Persistence.Repositories.Auth;
-using Presistance;
-using Presistance.Repositories;
-using Presistance.Repositories.Auth;
-using ServiceAbstraction.Contracts.Auth;
-using ServiceAbstraction.Contracts.Caching;
-using ServiceAbstraction.Contracts.Incident;
-using ServiceAbstraction.Contracts.Logs;
-using ServiceAbstraction.Contracts.ServiceDeployments;
-using ServiceAbstraction.Contracts.ServiceMangment;
-using ServiceLayer.Services.Auth;
-using ServiceLayer.Services.Caching;
-using ServiceLayer.Services.Incidents;
-using ServiceLayer.Services.Logs;
-using ServiceLayer.Services.Logs.Commands;
-using ServiceLayer.Services.ServiceDeployments;
-using ServiceLayer.Services.ServiceMangment;
-using System.Reflection;
-using System.Text;
-using System.Text.Json;
+using Incident_intelligence_platform.Extensions;
+using Presistance.Extensions;
+using ServiceLayer.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-#region Host Configurations
 builder.Host.AddSerilogLogging();
-#endregion
-
-#region Core Services & Frameworks
-builder.Services.AddControllers();
-
-// Custom Validation Response Format
-builder.Services.Configure<ApiBehaviorOptions>(options =>
-{
-    options.InvalidModelStateResponseFactory = context =>
-    {
-        var errors = context.ModelState
-            .Where(e => e.Value?.Errors.Count > 0)
-            .SelectMany(e => e.Value!.Errors)
-            .Select(e => e.ErrorMessage)
-            .ToList();
-
-        var response = ApiResponse<object>.FailureResponse(
-            message: "Validation failed",
-            errors: errors,
-            statusCode: 400
-        );
-
-        return new BadRequestObjectResult(response);
-    };
-});
-
-// AutoMapper / Mapster Config
-builder.Services.RegisterMapsterConfiguration();
-
-
-// MediatR 
-builder.Services.AddMediatR(cfg =>
-{
-
-    cfg.RegisterServicesFromAssembly(typeof(LogThresholdHandler).Assembly);
-
-
-    cfg.RegisterServicesFromAssembly(typeof(LogIngestedEvent).Assembly);
-});
-
-//Hangfire
-// Add Hangfire services.
-builder.Services.AddHangfire(configuration => configuration
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Add the processing server as IHostedService
-builder.Services.AddHangfireServer(options =>
-{
-    options.WorkerCount = Environment.ProcessorCount * 2;
-});
-
-//Register Redis Cache
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
-    options.InstanceName = "IncidentPlatform_";
-
-});
-#endregion
-
-#region Swagger / API Documentation
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new()
-    {
-        Title = "Incident Intelligence Platform API",
-        Version = "v1",
-        Description = "API Documentation with Role-Based Access Control"
-    });
-
-    options.OperationFilter<SwaggerRoleFilter>();
-
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    if (File.Exists(xmlPath))
-        options.IncludeXmlComments(xmlPath);
-
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Enter Token in this format: Bearer {token}"
-    });
-
-    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-    {
-        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
-    });
-});
-#endregion
-
-#region Infrastructure & Database
-builder.Services.AddDbContext<AppDbcontext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        b => b.MigrationsAssembly(typeof(AppDbcontext).Assembly.FullName)
-    ));
 
 builder.Services
-    .AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<AppDbcontext>()
-    .AddDefaultTokenProviders();
-#endregion
-
-#region Authentication & Authorization
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["JWT:Issuer"],
-        ValidAudience = builder.Configuration["JWT:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]!)
-        )
-    };
-
-    options.Events = new JwtBearerEvents
-    {
-        OnChallenge = async context =>
-        {
-
-            context.HandleResponse();
-
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            context.Response.ContentType = "application/json";
-
-            var response = new
-            {
-                status = 401,
-                error = "Unauthorized",
-                message = "You are not authorized to access this resource. Please provide a valid token."
-            };
-
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
-        },
-        OnForbidden = async context =>
-        {
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            context.Response.ContentType = "application/json";
-
-            var response = new
-            {
-                status = 403,
-                error = "Forbidden",
-                message = "You do not have permission to access this resource."
-            };
-
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
-        }
-    };
-});
-#endregion
-
-#region Dependency Injection - Repositories
-// Auth Repositories
-builder.Services.AddScoped<IAuthRepo, AuthRepo>();
-builder.Services.AddScoped<IUserMangementRepo, UserMangementRepo>();
-// Incident Repositories
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-#endregion
-
-#region Dependency Injection - Application Services
-// Auth Services
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<TokenService>();
-
-// Incident Services
-builder.Services.AddScoped<IIncidentEventService, IncidentEventService>();
-builder.Services.AddScoped<IIncidentService, IncidentService>();
-
-// Service Management Services
-builder.Services.AddScoped<IServiceMangementService, ServiceManagementService>();
-builder.Services.AddScoped<IAnalyzeServiceJob, AnalyzeServicesJob>();
-
-//Logs Services
-builder.Services.AddScoped<ILogsService, LogsService>();
-
-//Service Depolyment Services
-builder.Services.AddScoped<IServiceDeploymentService, ServiceDeploymentService>();
-
-//Redis Services
-builder.Services.AddScoped<IRediesCachingService, RediesCachingService>();
-#endregion
+    .AddWebApi()
+    .AddSwaggerDocs()
+    .AddJwtAuthentication(builder.Configuration)
+    .AddRedisCaching(builder.Configuration)
+    .AddHangfireServices(builder.Configuration)
+    .AddInfrastructure(builder.Configuration)
+    .AddApplicationServices();
 
 var app = builder.Build();
 
-#region HTTP Request Pipeline & Middlewares
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-
-app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
-app.UseMiddleware<RequestTimingMiddleware>();
-app.UseMiddleware<HandleTraceIdMiddleware>();
-
+app.UseSwaggerDocs();
+app.UseCustomMiddlewares();
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
-//Hangfire 
-app.RegisterHangfireJobs();
-app.UseHangfireDashboard("/hangfire");
+app.UseHangfire();
 app.MapControllers();
 
 app.Run();
-#endregion
