@@ -44,6 +44,7 @@ namespace Presistance.Repositories.Auth
         {
             return await _context.Users
                 .AsNoTracking()
+                .OrderBy(u => u.UserName)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -51,12 +52,19 @@ namespace Presistance.Repositories.Auth
 
         public async Task<IEnumerable<ApplicationUser>> GetUsersByRoleAsync(int pageNumber, int pageSize, string role)
         {
-            var usersInRole = await _userManager.GetUsersInRoleAsync(role);
+            var normalizedRole = role.ToUpperInvariant();
 
-            return usersInRole
+            var query = from u in _context.Users.AsNoTracking()
+                        join ur in _context.UserRoles on u.Id equals ur.UserId
+                        join r in _context.Roles on ur.RoleId equals r.Id
+                        where r.NormalizedName == normalizedRole
+                        orderby u.UserName
+                        select u;
+
+            return await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .ToList();
+                .ToListAsync();
         }
 
 
