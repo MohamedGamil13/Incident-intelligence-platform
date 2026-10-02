@@ -1,6 +1,5 @@
 ﻿using Domain.Contracts;
 using Domain.Contracts.Auth;
-using Domain.Contracts.Incidents;
 using Domain.Contracts.Logs;
 using Domain.Entities;
 using Domain.Entities.Users;
@@ -21,7 +20,6 @@ namespace Presistance.Repositories
 
         private ILogsRepo? _logsRepo;
 
-        private IIncidentRepo? _incidentRepo;
         private IAuthRepo? _authRepo;
         private IUserMangementRepo? _userMangementRepo;
 
@@ -43,7 +41,6 @@ namespace Presistance.Repositories
 
 
         public ILogsRepo LogsRepo => _logsRepo ??= new LogsRepo(_context);
-        public IIncidentRepo IncidentRepo => _incidentRepo ??= new IncidentRepo(_context);
         public IAuthRepo AuthRepo => _authRepo ??= new AuthRepo(_userManger);
         public IUserMangementRepo UserMangementRepo => _userMangementRepo ??= new UserMangementRepo(_context, _userManger, _roleManager);
 
