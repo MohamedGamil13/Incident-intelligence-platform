@@ -1,19 +1,13 @@
 ﻿using Domain.Entities.Services;
-using ServiceLayer.Services.Specifications;
 
-namespace ServiceLayer.Specifications
+namespace ServiceLayer.Services.Specifications
 {
     public class ServiceSpecification : BaseSpecification<Service, int>
     {
-
         public ServiceSpecification(int pageNumber, int pageSize)
         {
-            ApplyPagination((pageNumber - 1) * pageSize, pageSize);
-        }
-
-
-        public ServiceSpecification(int id) : base(s => s.Id == id)
-        {
+            AddOrderBy(s => s.Id);
+            ApplyPagination(pageSize, pageNumber);
         }
     }
 }

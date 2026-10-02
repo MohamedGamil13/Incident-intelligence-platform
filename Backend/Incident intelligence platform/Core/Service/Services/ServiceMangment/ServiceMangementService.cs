@@ -4,7 +4,8 @@ using Incident_intelligence_platform.DTOs.ServiceDTOs;
 using Mapster;
 using ServiceAbstraction.Contracts.Caching;
 using ServiceAbstraction.Contracts.ServiceMangment;
-using ServiceLayer.Specifications;
+using ServiceLayer.Services.Specifications;
+
 
 namespace ServiceLayer.Services.ServiceMangment
 {

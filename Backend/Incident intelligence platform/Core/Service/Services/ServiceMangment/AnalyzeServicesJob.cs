@@ -1,5 +1,6 @@
 ﻿using Domain.Contracts;
 using Domain.Entities.Incidents;
+using Domain.Entities.Services;
 using Domain.Enums.Incident;
 using Incident_intelligence_platform.DTOs.IncidentDTOs;
 using ServiceAbstraction.Contracts.ServiceMangment;
@@ -19,8 +20,10 @@ namespace ServiceLayer.Services.ServiceMangment
 
         public async Task AnalyzeAllServices(AnalyzeAllServicesRequest dto)
         {
-            var servicesId = await _unitOfWork.ServiceRepo.GetAllServiceIdsAsync();
-            foreach (int serviceId in servicesId)
+            var services = await _unitOfWork.GetRepository<Service, int>().GetAllAsync(asNoTracking: true);
+            var serviceIds = services.Select(s => s.Id).ToList();
+
+            foreach (int serviceId in serviceIds)
             {
                 await AnalyzeOneService(new AnalyzeServiceRequest(dto, serviceId));
             }
