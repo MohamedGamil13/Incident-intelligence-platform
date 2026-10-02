@@ -1,63 +1,65 @@
-﻿using Domain.Contracts.Incidents;
-using Domain.Contracts.Logs;
-using Domain.Contracts.ServiceDeployments;
+﻿using Domain.Contracts;
 using Domain.Entities.Incidents;
+using Domain.Entities.Logs;
+using Domain.Entities.ServiceDeployments;
 using Domain.Enums.Incident;
 using MediatR;
 using ServiceLayer.Services.Logs.Commands;
+using ServiceLayer.Services.Specifications;
 
-public class LogThresholdHandler : INotificationHandler<LogIngestedEvent>
+namespace ServiceLayer.Services.Logs
 {
-    private readonly ILogsRepo _logsRepo;
-    private readonly IIncidentRepo _incidentRepo;
-    private readonly IServiceDeploymentsRepo _deploymentsRepo;
-
-    public LogThresholdHandler(ILogsRepo logsRepo, IIncidentRepo incidentRepo, IServiceDeploymentsRepo deploymentsRepo)
+    public class LogThresholdHandler : INotificationHandler<LogIngestedEvent>
     {
-        _logsRepo = logsRepo;
-        _incidentRepo = incidentRepo;
-        _deploymentsRepo = deploymentsRepo;
-    }
+        private readonly IUnitOfWork _unitOfWork;
 
-    public async Task Handle(LogIngestedEvent notification, CancellationToken cancellationToken)
-    {
-        int threshold = 5;
-        int timeWindowMinutes = 10;
-        int deploymentCorrelationWindowMinutes = 30;
-
-        int errorsNumber = await _logsRepo.GetErrorsNumberByWindowFunction(notification.ServiceId, timeWindowMinutes);
-
-        if (errorsNumber >= threshold)
+        public LogThresholdHandler(IUnitOfWork unitOfWork)
         {
+            _unitOfWork = unitOfWork;
+        }
 
-            var lastDeploy = await _deploymentsRepo.GetLatestDeploymentByServiceIdAsync(notification.ServiceId);
+        public async Task Handle(LogIngestedEvent notification, CancellationToken cancellationToken)
+        {
+            const int threshold = 5;
+            const int timeWindowMinutes = 10;
+            const int deploymentCorrelationWindowMinutes = 30;
 
-            string deploymentCorrelationDetails = "\n\n[Correlation Analysis]: No recent deployments detected.";
+            var errorsNumber = await _unitOfWork.GetRepository<Log, int>()
+                .CountAsync(new ErrorLogsInWindowSpecification(notification.ServiceId, timeWindowMinutes));
 
-            if (lastDeploy != null && (DateTime.UtcNow - lastDeploy.DeployedAt).TotalMinutes <= deploymentCorrelationWindowMinutes)
+            if (errorsNumber < threshold) return;
+
+            var lastDeploy = await _unitOfWork.GetRepository<ServiceDeployment, int>()
+                .GetByIdAsync(new DeploymentsByServiceSpecification(notification.ServiceId));
+
+            var deploymentCorrelationDetails = "\n\n[Correlation Analysis]: No recent deployments detected.";
+
+            if (lastDeploy is not null &&
+                (DateTime.UtcNow - lastDeploy.DeployedAt).TotalMinutes <= deploymentCorrelationWindowMinutes)
             {
-                deploymentCorrelationDetails = $"\n\n[POSSIBLE ROOT CAUSE - RECENT DEPLOYMENT DETECTED]:" +
-                                                $"\n- Title: {lastDeploy.Title}" +
-                                                $"\n- Version: {lastDeploy.Version}" +
-                                                $"\n- Deployed By: {lastDeploy.DeployedBy}" +
-                                                $"\n- Deployed At: {lastDeploy.DeployedAt:yyyy-MM-dd HH:mm:ss} UTC";
+                deploymentCorrelationDetails =
+                    $"\n\n[POSSIBLE ROOT CAUSE - RECENT DEPLOYMENT DETECTED]:" +
+                    $"\n- Title: {lastDeploy.Title}" +
+                    $"\n- Version: {lastDeploy.Version}" +
+                    $"\n- Deployed By: {lastDeploy.DeployedBy}" +
+                    $"\n- Deployed At: {lastDeploy.DeployedAt:yyyy-MM-dd HH:mm:ss} UTC";
             }
 
-            var incident = new Incident()
+            var incident = new Incident
             {
                 Title = $"Automated Alert: High Error Rate on Service #{notification.ServiceId}",
                 Description = $"Threshold breached! Received {errorsNumber} errors within the last {timeWindowMinutes} minutes.\n" +
                               $"Latest Error Message: '{notification.log.Message}'\n" +
                               $"Triggering TraceId: {notification.log.TraceId}" +
-                              $"{deploymentCorrelationDetails}",
+                              deploymentCorrelationDetails,
                 CreatedAt = DateTime.UtcNow,
                 Severity = IncidentSeverity.Critical,
                 Status = IncidentStatus.Open,
                 ServiceId = notification.ServiceId
             };
 
-            await _incidentRepo.AddAsync(incident);
-            await _incidentRepo.SaveChangesAsync();
+            await _unitOfWork.GetRepository<Incident, int>().AddAsync(incident);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
     }
 }

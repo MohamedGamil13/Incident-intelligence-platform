@@ -13,7 +13,7 @@ namespace Domain.Contracts.Auth
         public Task<IEnumerable<ApplicationUser>> GetUsersByRoleAsync(int pageNumber, int pageSize, string role);
         public Task<IdentityResult> AddUserRoleAsync(ApplicationUser user, string role);
         public Task<bool> RoleExistsAsync(string roleName);
-        public Task SaveChangesAsync();
+
 
     }
 }

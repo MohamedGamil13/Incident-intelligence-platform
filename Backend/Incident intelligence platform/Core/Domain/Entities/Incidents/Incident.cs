@@ -3,13 +3,8 @@ using Domain.Enums.Incident;
 
 namespace Domain.Entities.Incidents
 {
-    public class Incident
+    public class Incident : BaseEntity<int>
     {
-
-
-
-
-        public int Id { get; set; }
         public required string Title { get; set; }
         public required string Description { get; set; }
         public int ServiceId { get; set; }

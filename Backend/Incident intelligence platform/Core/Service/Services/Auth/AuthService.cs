@@ -8,9 +8,9 @@ namespace ServiceLayer.Services.Auth
     public class AuthService : IAuthService
     {
         private readonly IAuthRepo _authRepo;
-        private readonly TokenService _tokenService;
+        private readonly ITokenService _tokenService;
 
-        public AuthService(IAuthRepo authRepo, TokenService tokenService)
+        public AuthService(IAuthRepo authRepo, ITokenService tokenService)
         {
             _authRepo = authRepo;
             _tokenService = tokenService;

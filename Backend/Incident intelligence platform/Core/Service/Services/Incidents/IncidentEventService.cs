@@ -1,60 +1,37 @@
-﻿using Domain.Contracts.Incidents;
+﻿using Domain.Contracts;
 using Domain.Entities.Incidents;
 using Domain.Enums.Incident;
 using ServiceAbstraction.Contracts.Incident;
+using ServiceLayer.Services.Specifications;
 using Shared.Dtos.IcidentEventDTOs;
-
 
 namespace ServiceLayer.Services.Incidents
 {
     public class IncidentEventService : IIncidentEventService
     {
-        private readonly IIncidentEventRepo incidentEventRepo;
-        private readonly IIncidentRepo incidentRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public IncidentEventService(IIncidentEventRepo incidentEventRepo, IIncidentRepo incidentRepository)
+        public IncidentEventService(IUnitOfWork unitOfWork)
         {
-            this.incidentEventRepo = incidentEventRepo;
-            this.incidentRepository = incidentRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IEnumerable<IncidentEvent>> GetIncidentTimeLine(int incidentId, int pageSize, int pageNumber)
         {
-            return await incidentEventRepo.GetIncidentTimeLineAsync(incidentId, pageSize, pageNumber);
+            var spec = new IncidentEventsByIncidentSpecification(incidentId, pageSize, pageNumber);
+            return await _unitOfWork.GetRepository<IncidentEvent, int>().GetAllAsync(spec);
         }
 
         public async Task<(bool Success, AddIncidentEventResponse? Data, string ErrorMessage)> AddEvent(int incidentId, AddIncidentEventDto dto)
         {
-            if (dto == null)
-            {
+            if (dto is null)
                 return (false, null, "Invalid Input");
-            }
 
-            bool incidentExist =
-                await incidentEventRepo.CheckIncidentExistAsync(incidentId);
+            var incident = await _unitOfWork.GetRepository<Incident, int>().GetByIdAsync(incidentId);
+            if (incident is null)
+                return (false, null, $"IncidentId {incidentId} does not exist.");
 
-            if (!incidentExist)
-            {
-                return (
-                    false,
-                    null,
-                    $"IncidentId {incidentId} does not exist."
-                );
-            }
-
-            Incident? incident =
-                await incidentRepository.GetByIdAsync(incidentId);
-
-            if (incident == null)
-            {
-                return (
-                    false,
-                    null,
-                    $"IncidentId {incidentId} does not exist."
-                );
-            }
-
-            IncidentEvent incidentEvent = new IncidentEvent
+            var incidentEvent = new IncidentEvent
             {
                 Title = dto.Title,
                 Description = dto.Description,
@@ -63,24 +40,18 @@ namespace ServiceLayer.Services.Incidents
                 Date = DateTime.UtcNow
             };
 
-            await incidentEventRepo.AddEventAsync(incidentEvent);
+            await _unitOfWork.GetRepository<IncidentEvent, int>().AddAsync(incidentEvent);
+            await _unitOfWork.SaveChangesAsync();
 
-            return (
-                Success: true,
-
-                Data: new AddIncidentEventResponse
-                {
-                    IncidentId = incidentId,
-                    Description = dto.Description,
-                    Title = dto.Title,
-                    IncidentName = incident.Title,
-                    IcidentStatus = incident.Status,
-                    IncidentDate = incident.CreatedAt.ToString()
-                },
-
-                ErrorMessage: string.Empty
-            );
+            return (true, new AddIncidentEventResponse
+            {
+                IncidentId = incidentId,
+                Description = dto.Description,
+                Title = dto.Title,
+                IncidentName = incident.Title,
+                IcidentStatus = incident.Status,
+                IncidentDate = incident.CreatedAt.ToString()
+            }, string.Empty);
         }
-
     }
 }

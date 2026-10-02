@@ -2,10 +2,8 @@
 
 namespace Domain.Entities.Incidents
 {
-    public class IncidentEvent
+    public class IncidentEvent : BaseEntity<int>
     {
-        public int Id { get; set; }
-
         public IncidentEventTimeStamp TimeStamp { get; set; }
         public string Description { get; set; } = string.Empty;
 

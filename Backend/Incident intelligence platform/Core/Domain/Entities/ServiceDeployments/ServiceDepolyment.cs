@@ -2,9 +2,9 @@
 
 namespace Domain.Entities.ServiceDeployments
 {
-    public class ServiceDeployment
+    public class ServiceDeployment : BaseEntity<int>
     {
-        public int Id { get; set; }
+
         public string Title { get; set; } = string.Empty;
         public string Version { get; set; } = string.Empty;
         public string DeployedBy { get; set; } = string.Empty;

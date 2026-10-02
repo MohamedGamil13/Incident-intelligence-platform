@@ -1,6 +1,6 @@
-﻿using Domain.Contracts.ServiceDeployments;
-using Domain.Contracts.Services;
+﻿using Domain.Contracts;
 using Domain.Entities.ServiceDeployments;
+using Domain.Entities.Services;
 using ServiceAbstraction.Contracts.ServiceDeployments;
 using Shared.Dtos.ServiceDepolyments;
 
@@ -8,47 +8,42 @@ namespace ServiceLayer.Services.ServiceDeployments
 {
     public class ServiceDeploymentService : IServiceDeploymentService
     {
-        private readonly IServiceDeploymentsRepo deploymentsRepo;
-        private readonly IServiceRepo serviceRepo;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ServiceDeploymentService(IServiceDeploymentsRepo deploymentsRepo, IServiceRepo serviceRepo)
+        public ServiceDeploymentService(IUnitOfWork unitOfWork)
         {
-            this.deploymentsRepo = deploymentsRepo;
-            this.serviceRepo = serviceRepo;
+            _unitOfWork = unitOfWork;
         }
+
         public async Task<(bool Success, ServiceDeploymentResponseDto? data, string errorMessage)> RecordDeploymentAsync(int serviceId, CreateServiceDeploymentRequest dto)
         {
-            var service = await serviceRepo.GetByIdAsync(serviceId);
-            if (service == null)
-            {
+            var service = await _unitOfWork.GetRepository<Service, int>().GetByIdAsync(serviceId);
+            if (service is null)
                 return (false, null, "Service not Found");
-            }
 
-            ServiceDeployment newDep = new ServiceDeployment()
+            var deployment = new ServiceDeployment
             {
                 ServiceId = serviceId,
-                Service = service,
                 DeployedAt = DateTime.UtcNow,
                 Title = dto.Title,
                 Version = dto.Version,
-                DeployedBy = dto.DeployedBy,
+                DeployedBy = dto.DeployedBy
             };
 
-            await deploymentsRepo.AddAsync(newDep);
-            await deploymentsRepo.SaveChangesAsync();
+            await _unitOfWork.GetRepository<ServiceDeployment, int>().AddAsync(deployment);
+            await _unitOfWork.SaveChangesAsync();
 
-
-            var responseDto = new ServiceDeploymentResponseDto
+            var response = new ServiceDeploymentResponseDto
             {
-                Id = newDep.Id,
-                ServiceId = newDep.ServiceId,
-                Title = newDep.Title,
-                Version = newDep.Version,
-                DeployedBy = newDep.DeployedBy,
-                DeployedAt = newDep.DeployedAt
+                Id = deployment.Id,
+                ServiceId = deployment.ServiceId,
+                Title = deployment.Title,
+                Version = deployment.Version,
+                DeployedBy = deployment.DeployedBy,
+                DeployedAt = deployment.DeployedAt
             };
 
-            return (true, responseDto, string.Empty);
+            return (true, response, string.Empty);
         }
     }
 }

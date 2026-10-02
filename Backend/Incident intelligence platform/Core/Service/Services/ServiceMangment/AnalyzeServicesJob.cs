@@ -1,31 +1,30 @@
-﻿using Domain.Contracts.Incidents;
-using Domain.Contracts.Logs;
-using Domain.Contracts.Services;
+﻿using Domain.Contracts;
 using Domain.Entities.Incidents;
+using Domain.Entities.Logs;
+using Domain.Entities.Services;
 using Domain.Enums.Incident;
 using Incident_intelligence_platform.DTOs.IncidentDTOs;
 using ServiceAbstraction.Contracts.ServiceMangment;
+using ServiceLayer.Services.Specifications;
 using Shared.Dtos.ServiceDTOs;
 
 namespace ServiceLayer.Services.ServiceMangment
 {
     public class AnalyzeServicesJob : IAnalyzeServiceJob
     {
-        private readonly IIncidentRepo _incidentRepo;
-        private readonly ILogsRepo _logsRepo;
-        private readonly IServiceRepo _serviceRepo;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AnalyzeServicesJob(IIncidentRepo incidentRepo, ILogsRepo logsRepo, IServiceRepo serviceRepo)
+        public AnalyzeServicesJob(IUnitOfWork unitOfWork)
         {
-            _incidentRepo = incidentRepo;
-            _logsRepo = logsRepo;
-            _serviceRepo = serviceRepo;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task AnalyzeAllServices(AnalyzeAllServicesRequest dto)
         {
-            var servicesId = await _serviceRepo.GetAllServiceIdsAsync();
-            foreach (int serviceId in servicesId)
+            var services = await _unitOfWork.GetRepository<Service, int>().GetAllAsync(asNoTracking: true);
+            var serviceIds = services.Select(s => s.Id).ToList();
+
+            foreach (int serviceId in serviceIds)
             {
                 await AnalyzeOneService(new AnalyzeServiceRequest(dto, serviceId));
             }
@@ -36,9 +35,13 @@ namespace ServiceLayer.Services.ServiceMangment
             long maxLatency = dto.MaxLatancy;
             int serviceId = dto.ServiceId;
 
-            var activeIncidentsCount = await _incidentRepo.GetActiveIncidentCountPerService(serviceId, dto.MaxIncidentsPerService);
-            var errorCount = await _logsRepo.GetErrorsNumberByWindowFunction(serviceId, dto.ServiceErrorTimeWindow);
-            var avgLatency = await _logsRepo.GetAvgLatencyPerService(serviceId, dto.ServiceErrorTimeWindow);
+            var spec = new ActiveIncidentsPerServiceSpecification(serviceId, dto.IncidentTimeWindow);
+            var activeIncidentsCount = await _unitOfWork.GetRepository<Incident, int>().CountAsync(spec);
+
+            var errorCount = await _unitOfWork.GetRepository<Log, int>()
+                .CountAsync(new ErrorLogsInWindowSpecification(serviceId, dto.ServiceErrorTimeWindow));
+
+            var avgLatency = await _unitOfWork.LogsRepo.GetAvgLatencyPerService(serviceId, dto.ServiceErrorTimeWindow);
 
             if (activeIncidentsCount > dto.MaxIncidentsPerService)
             {
@@ -49,8 +52,7 @@ namespace ServiceLayer.Services.ServiceMangment
                     Description = $"CRITICAL: Service #{serviceId} currently has {activeIncidentsCount} active incidents within the last {dto.IncidentTimeWindow} minutes, exceeding the threshold of {dto.MaxIncidentsPerService}.",
                     Severity = IncidentSeverity.High
                 });
-            } //High Amout of Incident in Service
-
+            }
 
             int maxAllowedErrors = dto.MaxErrorsPerService;
             if (errorCount > maxAllowedErrors)
@@ -62,8 +64,7 @@ namespace ServiceLayer.Services.ServiceMangment
                     Description = $"WARNING: Service #{serviceId} reported {errorCount} errors within the last {dto.ServiceErrorTimeWindow} minutes window. Threshold is {maxAllowedErrors} errors.",
                     Severity = IncidentSeverity.Critical
                 });
-            }//High amount of Errors
-
+            }
 
             if (avgLatency > maxLatency)
             {
@@ -74,9 +75,8 @@ namespace ServiceLayer.Services.ServiceMangment
                     Description = $"PERFORMANCE DEGRADATION: Average latency for Service #{serviceId} reached {avgLatency:F2} ms over the last {dto.ServiceErrorTimeWindow} minutes (Exceeded max threshold of {maxLatency} ms).",
                     Severity = IncidentSeverity.Medium
                 });
-            }//High Latency 
+            }
         }
-
 
         public async Task CreateIncident(CreateIncidentRequestDTO dto)
         {
@@ -90,8 +90,8 @@ namespace ServiceLayer.Services.ServiceMangment
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _incidentRepo.AddAsync(incident);
-            await _incidentRepo.SaveChangesAsync();
+            await _unitOfWork.GetRepository<Incident, int>().AddAsync(incident);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }
