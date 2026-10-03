@@ -1,5 +1,6 @@
 ﻿using Incident_intelligence_platform.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Controllers.Incidents;
 
 namespace Incident_intelligence_platform.Extensions
 {
@@ -7,7 +8,7 @@ namespace Incident_intelligence_platform.Extensions
     {
         public static IServiceCollection AddWebApi(this IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers().AddApplicationPart(typeof(IncidentsController).Assembly).AddControllersAsServices(); ;
 
             services.Configure<ApiBehaviorOptions>(options =>
             {

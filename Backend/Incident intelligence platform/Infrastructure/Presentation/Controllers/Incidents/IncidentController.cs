@@ -10,11 +10,12 @@ namespace Presentation.Controllers.Incidents
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class IncidentController : ControllerBase
+
+    public class IncidentsController : ControllerBase
     {
         private readonly IIncidentService _incidentService;
 
-        public IncidentController(IIncidentService incidentService)
+        public IncidentsController(IIncidentService incidentService)
         {
             _incidentService = incidentService;
         }

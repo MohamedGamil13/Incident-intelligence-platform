@@ -25,6 +25,7 @@ namespace ServiceLayer.Extensions
             // Auth
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IUserMangementService, UserMangmentService>();
 
             // Incidents
             services.AddScoped<IIncidentService, IncidentService>();

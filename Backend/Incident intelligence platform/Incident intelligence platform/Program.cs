@@ -18,15 +18,14 @@ builder.Services
 
 var app = builder.Build();
 
-app.UseSwaggerDocs();
+
 app.UseCustomMiddlewares();
+app.UseSwaggerDocs();
 app.UseHttpsRedirection();
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseHangfire();
 app.MapControllers();
 
 app.Run();
-
-
-// Refactor To handle all Exceptions ==> 1- URL not

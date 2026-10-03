@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
@@ -11,7 +12,6 @@ namespace Incident_intelligence_platform.Extensions
         {
             var key = configuration["JWT:Key"]
                 ?? throw new InvalidOperationException("JWT:Key is missing.");
-
 
             services.ConfigureApplicationCookie(options =>
             {
@@ -58,6 +58,14 @@ namespace Incident_intelligence_platform.Extensions
                     OnForbidden = context => WriteJsonAsync(context.Response, StatusCodes.Status403Forbidden, "Forbidden",
                         "You do not have permission to access this resource.")
                 };
+            });
+
+
+            services.AddAuthorization(options =>
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+                    .RequireAuthenticatedUser()
+                    .Build();
             });
 
             return services;
