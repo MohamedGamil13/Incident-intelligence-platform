@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Resend;
 using ServiceAbstraction.Contracts.Auth;
 using ServiceAbstraction.Contracts.Caching;
 using ServiceAbstraction.Contracts.Incident;
@@ -17,7 +19,7 @@ namespace ServiceLayer.Extensions
 {
     public static class ApplicationServiceExtensions
     {
-        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
 
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(LogIngestedEvent).Assembly));
@@ -41,6 +43,14 @@ namespace ServiceLayer.Extensions
 
             // Caching
             services.AddScoped<IRediesCachingService, RediesCachingService>();
+            //Emails
+            services.AddOptions();
+            services.AddHttpClient<ResendClient>();
+            services.Configure<ResendClientOptions>(o =>
+            {
+                o.ApiToken = configuration.GetSection("API Keys")["Resend API Key"]!;
+            });
+            services.AddTransient<IResend, ResendClient>();
 
             return services;
         }
