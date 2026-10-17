@@ -45,11 +45,23 @@ namespace Presentation.Controllers.Auth
             return Ok(ApiResponse<object>.SuccessResponse(tokenData, message: "Login Successful"));
         }
 
-        [HttpPut("ForgetPassword")]
+        [HttpPut("ResetPassword")]
         [AllowAnonymous]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
         {
             var result = await _authService.ResetPasswordAsync(request);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(ApiResponse<object>.FailureResponse(result.Message, result.Errors, 400));
+            }
+
+            return Ok(ApiResponse<string>.SuccessResponse(message: result.Message));
+        }
+        [HttpPut("ForgetPassword")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordRequest request)
+        {
+            var result = await _authService.RequestPasswordReset(request);
             if (!result.IsSuccess)
             {
                 return BadRequest(ApiResponse<object>.FailureResponse(result.Message, result.Errors, 400));

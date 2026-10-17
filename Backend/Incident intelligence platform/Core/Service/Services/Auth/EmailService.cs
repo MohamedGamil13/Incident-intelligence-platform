@@ -1,6 +1,5 @@
 ﻿using Resend;
 using ServiceAbstraction.Contracts.Auth;
-using System.Net.Mail;
 
 
 namespace ServiceLayer.Services.Auth
@@ -8,7 +7,7 @@ namespace ServiceLayer.Services.Auth
     public class EmailService(IResend resend) : IEmailService
     {
         public async Task SendEmailAsync(EmailMessage emailMassage)
-        { 
+        {
             var resp = await resend.EmailSendAsync(emailMassage);
         }
 
