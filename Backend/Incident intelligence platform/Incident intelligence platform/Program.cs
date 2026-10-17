@@ -14,7 +14,16 @@ builder.Services
     .AddRedisCaching(builder.Configuration)
     .AddHangfireServices(builder.Configuration)
     .AddInfrastructure(builder.Configuration)
-    .AddApplicationServices();
+    .AddApplicationServices()
+    .AddCors(options =>
+{
+    options.AddPolicy("AllowAngular",
+        builder => builder
+            .WithOrigins("http://localhost:4200")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials());
+});
 
 var app = builder.Build();
 
@@ -23,6 +32,7 @@ app.UseCustomMiddlewares();
 app.UseSwaggerDocs();
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseCors("AllowAngular");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseHangfire();
