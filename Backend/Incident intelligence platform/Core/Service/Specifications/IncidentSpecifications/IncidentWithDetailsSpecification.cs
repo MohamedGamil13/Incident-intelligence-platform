@@ -1,7 +1,8 @@
 ﻿using Domain.Entities.Incidents;
+using ServiceLayer.Services.Specifications;
 using Shared;
 
-namespace ServiceLayer.Services.Specifications
+namespace ServiceLayer.Specifications.IncidentSpecifications
 {
     public class IncidentWithDetailsSpecification : BaseSpecification<Incident, int>
     {

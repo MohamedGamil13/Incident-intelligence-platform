@@ -1,6 +1,7 @@
 ﻿using Domain.Entities.Services;
+using ServiceLayer.Services.Specifications;
 
-namespace ServiceLayer.Services.Specifications
+namespace ServiceLayer.Specifications.ServiceSpecifications
 {
     public class ServiceSpecification : BaseSpecification<Service, int>
     {

@@ -1,7 +1,8 @@
 ﻿using Domain.Entities.Incidents;
 using Domain.Enums.Incident;
+using ServiceLayer.Services.Specifications;
 
-namespace ServiceLayer.Services.Specifications
+namespace ServiceLayer.Specifications.IncidentSpecifications
 {
     public class ActiveIncidentsPerServiceSpecification : BaseSpecification<Incident, int>
     {

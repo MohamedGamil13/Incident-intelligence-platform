@@ -1,6 +1,7 @@
 ﻿using Domain.Entities.Incidents;
+using ServiceLayer.Services.Specifications;
 
-namespace ServiceLayer.Services.Specifications
+namespace ServiceLayer.Specifications.IncidentSpecifications
 {
     public class IncidentEventsByIncidentSpecification : BaseSpecification<IncidentEvent, int>
     {

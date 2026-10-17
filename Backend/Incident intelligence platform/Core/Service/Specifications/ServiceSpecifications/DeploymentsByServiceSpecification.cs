@@ -1,6 +1,7 @@
 ﻿using Domain.Entities.ServiceDeployments;
+using ServiceLayer.Services.Specifications;
 
-namespace ServiceLayer.Services.Specifications
+namespace ServiceLayer.Specifications.ServiceSpecifications
 {
     public class DeploymentsByServiceSpecification : BaseSpecification<ServiceDeployment, int>
     {
