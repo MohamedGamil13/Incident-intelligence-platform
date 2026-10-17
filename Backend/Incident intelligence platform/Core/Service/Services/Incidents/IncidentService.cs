@@ -5,7 +5,7 @@ using Domain.Enums.Incident;
 using Incident_intelligence_platform.DTOs.IncidentDTOs;
 using Mapster;
 using ServiceAbstraction.Contracts.Incident;
-using ServiceLayer.Services.Specifications;
+using ServiceLayer.Specifications.IncidentSpecifications;
 using Shared;
 
 namespace ServiceLayer.Services.Incidents

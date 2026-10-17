@@ -6,6 +6,7 @@ using Domain.Enums.Incident;
 using Incident_intelligence_platform.DTOs.IncidentDTOs;
 using ServiceAbstraction.Contracts.ServiceMangment;
 using ServiceLayer.Services.Specifications;
+using ServiceLayer.Specifications.IncidentSpecifications;
 using Shared.Dtos.ServiceDTOs;
 
 namespace ServiceLayer.Services.ServiceMangment

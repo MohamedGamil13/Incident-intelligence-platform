@@ -2,7 +2,7 @@
 using Domain.Entities.Incidents;
 using Domain.Enums.Incident;
 using ServiceAbstraction.Contracts.Incident;
-using ServiceLayer.Services.Specifications;
+using ServiceLayer.Specifications.IncidentSpecifications;
 using Shared.Dtos.IcidentEventDTOs;
 
 namespace ServiceLayer.Services.Incidents

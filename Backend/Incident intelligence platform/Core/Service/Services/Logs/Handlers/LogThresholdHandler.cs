@@ -6,6 +6,7 @@ using Domain.Enums.Incident;
 using MediatR;
 using ServiceLayer.Services.Logs.Commands;
 using ServiceLayer.Services.Specifications;
+using ServiceLayer.Specifications.ServiceSpecifications;
 
 namespace ServiceLayer.Services.Logs
 {
