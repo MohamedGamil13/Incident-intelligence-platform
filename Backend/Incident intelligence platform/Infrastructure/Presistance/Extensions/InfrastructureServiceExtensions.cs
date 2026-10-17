@@ -24,7 +24,12 @@ namespace Presistance.Extensions
                     b => b.MigrationsAssembly(typeof(AppDbcontext).Assembly.FullName)));
 
             services
-                .AddIdentity<ApplicationUser, IdentityRole>()
+                .AddIdentity<ApplicationUser, IdentityRole>(options =>
+                {
+                    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ ";
+                    options.Password.RequireDigit = true;
+
+                })
                 .AddEntityFrameworkStores<AppDbcontext>()
                 .AddDefaultTokenProviders();
 

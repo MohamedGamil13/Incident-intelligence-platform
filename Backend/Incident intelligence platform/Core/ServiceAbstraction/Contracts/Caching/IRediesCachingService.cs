@@ -6,5 +6,6 @@
         public Task SetData<T>(string key, T Data, TimeSpan timeSpan, CancellationToken cancellationToken);
         public Task<T?> GetData<T>(string key);
         public Task SetData<T>(string key, T data);
+        public Task DeleteData(string key);
     }
 }
