@@ -14,7 +14,7 @@ builder.Services
     .AddRedisCaching(builder.Configuration)
     .AddHangfireServices(builder.Configuration)
     .AddInfrastructure(builder.Configuration)
-    .AddApplicationServices()
+    .AddApplicationServices(builder.Configuration)
     .AddCors(options =>
 {
     options.AddPolicy("AllowAngular",
@@ -39,3 +39,31 @@ app.UseHangfire();
 app.MapControllers();
 
 app.Run();
+
+
+//Resend API Key : re_XHLioiwe_JqKq99PM25nzGUkRXqVH4oSV
+// Code 
+/*
+ using Resend;
+
+IResend resend = ResendClient.Create( "re_XHLioiwe_JqKq99PM25nzGUkRXqVH4oSV" );
+
+var resp = await resend.EmailSendAsync( new EmailMessage()
+{
+    From = "onboarding@resend.dev",
+    To = "mohamed.gamil.khalaf1@gmail.com",
+    Subject = "Hello World",
+    HtmlBody = "<p>Congrats on sending your <strong>first email</strong>!</p>",
+} );
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ */

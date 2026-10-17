@@ -7,5 +7,8 @@ namespace ServiceAbstraction.Contracts.Auth
         public Task<AuthResultDto> LoginAsync(LoginRequest loginDto);
         public Task<AuthResultDto> ResetPasswordAsync(ResetPasswordRequest resetDto);
 
+
+        public Task<AuthResultDto> RequestPasswordReset(ForgetPasswordRequest resetDto);
+
     }
 }

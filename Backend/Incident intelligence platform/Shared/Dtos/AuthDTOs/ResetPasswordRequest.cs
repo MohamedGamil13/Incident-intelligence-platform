@@ -17,5 +17,8 @@ namespace Shared.Dtos.AuthDTOs
         [Required(ErrorMessage = "Confirm password is required.")]
         [Compare(nameof(NewPassword), ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; } = string.Empty;
+        [Required(ErrorMessage = "OTP is required.")]
+        [MaxLength(6)]
+        public string OTP { get; set; } = string.Empty;
     }
 }
