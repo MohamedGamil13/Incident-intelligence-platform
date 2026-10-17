@@ -1,0 +1,204 @@
+<!-- Header -->
+<div class="flex flex-col justify-between gap-space-sm pb-space-sm sm:flex-row sm:items-center">
+  <div class="flex items-center gap-space-xs">
+    <h1 class="font-headline-lg text-headline-lg text-on-surface">Incidents</h1>
+    <span class="inline-flex items-center rounded-full bg-surface-container px-2 py-0.5 font-code-sm text-code-sm text-on-surface-variant">
+      {{ incidents().length }} loaded
+    </span>
+  </div>
+  <div class="flex items-center gap-space-xs">
+    <button
+      type="button"
+      class="inline-flex items-center gap-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-1.5 font-label-md text-label-md text-on-surface-variant shadow-sm transition-colors hover:bg-surface-container"
+      (click)="exportCsv()"
+    >
+      <span class="material-symbols-outlined text-[18px]">file_download</span>
+      Export
+    </button>
+    <a
+      routerLink="/incidents/new"
+      class="inline-flex items-center gap-1.5 rounded-xl bg-primary-container px-4 py-2 font-label-md text-label-md text-white shadow-sm transition-all hover:bg-primary"
+    >
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      New Incident
+    </a>
+  </div>
+</div>
+
+<!-- Filters -->
+<form class="flex flex-col justify-between gap-4 border-b border-border-subtle py-4 md:flex-row md:items-center" [formGroup]="filters">
+  <div class="flex flex-wrap items-center gap-3">
+    <div class="relative flex items-center">
+      <select
+        formControlName="status"
+        class="cursor-pointer appearance-none rounded-lg border border-border-subtle bg-white py-2 pl-3.5 pr-9 font-body-md text-body-md text-on-surface shadow-sm transition-colors hover:border-outline focus:border-primary-container focus:outline-none focus:ring-1 focus:ring-primary-container"
+      >
+        <option value="">Status: All Statuses</option>
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ status }}</option>
+        }
+      </select>
+      <span class="pointer-events-none absolute right-2.5 text-[18px] text-secondary">expand_more</span>
+    </div>
+
+    <div class="relative flex items-center">
+      <select
+        formControlName="severity"
+        class="cursor-pointer appearance-none rounded-lg border border-border-subtle bg-white py-2 pl-3.5 pr-9 font-body-md text-body-md text-on-surface shadow-sm transition-colors hover:border-outline focus:border-primary-container focus:outline-none focus:ring-1 focus:ring-primary-container"
+      >
+        <option value="">Severity: All Severities</option>
+        @for (severity of severities; track severity) {
+          <option [value]="severity">{{ severity }}</option>
+        }
+      </select>
+      <span class="pointer-events-none absolute right-2.5 text-[18px] text-secondary">expand_more</span>
+    </div>
+
+    <div class="hidden items-center gap-1.5 pl-2 font-label-sm text-label-sm text-secondary xl:flex">
+      <span>Quick view:</span>
+      <button
+        type="button"
+        class="rounded border border-sev-critical/40 bg-sev-critical-bg px-2 py-0.5 font-code-sm text-code-sm text-sev-critical transition-colors hover:bg-sev-critical-bg/80"
+        (click)="filters.controls.severity.setValue('Critical')"
+      >
+        P0 Critical ({{ unmitigatedP0P1() }})
+      </button>
+      <button
+        type="button"
+        class="rounded border border-border-subtle bg-sev-low-bg px-2 py-0.5 font-code-sm text-code-sm text-sev-low transition-colors hover:bg-border-subtle"
+        (click)="filters.controls.status.setValue('Open')"
+      >
+        Open status
+      </button>
+    </div>
+  </div>
+
+  <div class="relative w-full md:w-72">
+    <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-secondary">search</span>
+    <input
+      type="text"
+      formControlName="search"
+      placeholder="Search incidents..."
+      class="w-full rounded-lg border border-border-subtle bg-white py-2 pl-9 pr-3 font-body-md text-body-md text-on-surface shadow-sm transition-colors placeholder:text-outline focus:border-primary-container focus:outline-none focus:ring-1 focus:ring-primary-container"
+    />
+  </div>
+</form>
+
+<!-- Telemetry strip -->
+<div class="grid grid-cols-2 gap-3 py-4 text-left sm:grid-cols-4">
+  <div class="rounded-lg border border-border-subtle bg-white p-3">
+    <div class="font-label-sm text-label-sm uppercase tracking-wider text-secondary">Active Incidents</div>
+    <div class="mt-1 flex items-baseline gap-2">
+      <span class="font-headline-sm text-headline-sm font-semibold text-on-surface">{{ activeCount() }}</span>
+      <span class="font-code-sm text-code-sm text-secondary">on page</span>
+    </div>
+  </div>
+  <div class="rounded-lg border border-border-subtle bg-white p-3">
+    <div class="font-label-sm text-label-sm uppercase tracking-wider text-secondary">Unmitigated P0/P1</div>
+    <div class="mt-1 flex items-baseline gap-2">
+      <span class="font-headline-sm text-headline-sm font-semibold" [class]="unmitigatedP0P1() > 0 ? 'text-sev-critical' : 'text-on-surface'">{{ unmitigatedP0P1() }}</span>
+      <span class="font-code-sm text-code-sm" [class]="unmitigatedP0P1() > 0 ? 'text-sev-critical' : 'text-secondary'">
+        {{ unmitigatedP0P1() > 0 ? 'Immediate action' : 'Within SLA' }}
+      </span>
+    </div>
+  </div>
+  <div class="rounded-lg border border-border-subtle bg-white p-3">
+    <div class="font-label-sm text-label-sm uppercase tracking-wider text-secondary">Affected Services</div>
+    <div class="mt-1 flex items-baseline gap-2">
+      <span class="font-headline-sm text-headline-sm font-semibold text-on-surface">{{ distinctServices() }}</span>
+      <span class="font-code-sm text-code-sm text-secondary">distinct</span>
+    </div>
+  </div>
+  <div class="rounded-lg border border-border-subtle bg-white p-3">
+    <div class="font-label-sm text-label-sm uppercase tracking-wider text-secondary">Page Size</div>
+    <div class="mt-1 flex items-baseline gap-2">
+      <span class="font-headline-sm text-headline-sm font-semibold text-tertiary">{{ pageSize() }}</span>
+      <span class="font-code-sm text-code-sm text-secondary">records</span>
+    </div>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="w-full overflow-x-auto rounded-lg border border-border-subtle bg-white shadow-sm">
+  <table class="w-full min-w-[900px] border-collapse text-left">
+    <thead>
+      <tr class="h-10 select-none border-b border-border-subtle bg-canvas">
+        <th class="w-28 px-4 py-2.5 font-label-sm text-label-sm font-semibold uppercase tracking-wider text-secondary" scope="col">Severity</th>
+        <th class="min-w-[280px] px-4 py-2.5 font-label-sm text-label-sm font-semibold uppercase tracking-wider text-secondary" scope="col">Title</th>
+        <th class="w-40 px-4 py-2.5 font-label-sm text-label-sm font-semibold uppercase tracking-wider text-secondary" scope="col">Service</th>
+        <th class="w-36 px-4 py-2.5 font-label-sm text-label-sm font-semibold uppercase tracking-wider text-secondary" scope="col">Status</th>
+        <th class="w-32 px-4 py-2.5 font-label-sm text-label-sm font-semibold uppercase tracking-wider text-secondary" scope="col">Created</th>
+        <th class="w-48 px-4 py-2.5 font-label-sm text-label-sm font-semibold uppercase tracking-wider text-secondary" scope="col">Service ID</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (loading()) {
+        <tr>
+          <td colspan="6" class="px-4 py-16 text-center font-body-md text-body-md text-secondary">Loading incidents...</td>
+        </tr>
+      } @else if (visibleIncidents().length === 0) {
+        <tr>
+          <td colspan="6" class="px-4 py-16 text-center font-body-md text-body-md text-secondary">
+            No incidents match the current filters.
+          </td>
+        </tr>
+      } @else {
+        @for (incident of visibleIncidents(); track incident.id) {
+          <tr
+            class="group h-14 cursor-pointer border-b border-border-subtle transition-colors hover:bg-canvas"
+            [routerLink]="['/incidents', incident.id]"
+          >
+            <td class="whitespace-nowrap px-4 py-3">
+              <app-status-badge [value]="incident.severity" kind="severity" />
+            </td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2">
+                <span class="font-body-md text-body-md font-semibold text-on-surface transition-colors group-hover:text-primary">
+                  {{ incident.title }}
+                </span>
+                <span class="hidden font-code-sm text-code-sm text-secondary xl:inline">#INC-{{ incident.id }}</span>
+              </div>
+            </td>
+            <td class="whitespace-nowrap px-4 py-3 font-body-md text-body-md text-on-surface">{{ incident.serviceName }}</td>
+            <td class="whitespace-nowrap px-4 py-3">
+              <app-status-badge [value]="incident.status" />
+            </td>
+            <td class="whitespace-nowrap px-4 py-3 font-code-sm text-code-sm text-secondary">{{ relative(incident.createdAt) }}</td>
+            <td class="whitespace-nowrap px-4 py-3 font-code-sm text-code-sm text-secondary">SVC-{{ incident.serviceId }}</td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+<div class="mt-6 flex select-none flex-col items-center justify-between gap-4 pb-8 sm:flex-row">
+  <div class="font-body-md text-body-md text-secondary">
+    Showing <span class="font-semibold text-on-surface">{{ visibleIncidents().length }}</span> records &middot; Page
+    <span class="font-semibold text-on-surface">{{ pageIndex() }}</span>
+  </div>
+  <nav aria-label="Pagination" class="flex items-center space-x-1">
+    <button
+      type="button"
+      class="inline-flex items-center justify-center rounded-md border border-border-subtle bg-white px-3 py-1.5 font-body-md text-body-md text-secondary transition-colors hover:bg-canvas hover:text-on-surface disabled:pointer-events-none disabled:opacity-50"
+      [disabled]="pageIndex() <= 1"
+      (click)="changePage(pageIndex() - 1)"
+    >
+      <span class="material-symbols-outlined mr-1 text-[16px]">chevron_left</span>
+      Previous
+    </button>
+    <span class="flex h-[34px] min-w-[34px] items-center justify-center rounded-md border border-primary-container/30 bg-sev-info-bg font-label-md text-label-md text-primary-container">
+      {{ pageIndex() }}
+    </span>
+    <button
+      type="button"
+      class="inline-flex items-center justify-center rounded-md border border-border-subtle bg-white px-3 py-1.5 font-body-md text-body-md text-secondary transition-colors hover:bg-canvas hover:text-on-surface disabled:pointer-events-none disabled:opacity-50"
+      [disabled]="!hasNext()"
+      (click)="changePage(pageIndex() + 1)"
+    >
+      Next
+      <span class="material-symbols-outlined ml-1 text-[16px]">chevron_right</span>
+    </button>
+  </nav>
+</div>

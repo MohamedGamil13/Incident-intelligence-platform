@@ -1,0 +1,141 @@
+<div class="mx-auto flex w-full max-w-[1280px] flex-col gap-space-md p-space-md">
+  <!-- Top bar -->
+  <div class="flex items-center justify-between">
+    <div class="flex items-baseline gap-space-xs">
+      <h1 class="font-headline-lg text-headline-lg text-on-surface">Logs</h1>
+      <span class="font-code-sm text-code-sm text-secondary">ingestion: {{ liveTail() ? 'live tail active' : 'on demand' }}</span>
+    </div>
+    <button
+      type="button"
+      class="flex items-center gap-2 rounded bg-surface-container px-2.5 py-1"
+      [title]="liveTail() ? 'Stop live tail' : 'Start live tail'"
+      (click)="toggleLiveTail()"
+    >
+      <span class="relative flex h-2 w-2">
+        @if (liveTail()) {
+          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-tertiary-container opacity-75"></span>
+        }
+        <span class="relative inline-flex h-2 w-2 rounded-full" [class]="liveTail() ? 'bg-tertiary' : 'bg-secondary'"></span>
+      </span>
+      <span class="font-code-sm text-code-sm uppercase tracking-wider text-on-surface-variant">{{ liveTail() ? 'Live Tail Connected' : 'Live Tail Off' }}</span>
+    </button>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="flex flex-wrap items-center gap-3">
+    <div class="relative inline-block w-48">
+      <select
+        class="h-9 w-full cursor-pointer appearance-none rounded border border-outline-variant bg-surface-container-lowest pl-3 pr-8 font-body-md text-body-md text-on-surface shadow-sm focus:border-primary focus:outline-none"
+        [value]="filters.controls.serviceId.value"
+        (change)="filters.controls.serviceId.setValue($any($event.target).value)"
+      >
+        <option value="">All Services</option>
+        @for (svc of services(); track svc.id) {
+          <option [value]="svc.id">{{ svc.name }}</option>
+        }
+      </select>
+      <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[18px] text-secondary material-symbols-outlined">arrow_drop_down</span>
+    </div>
+
+    <div class="relative inline-block w-40">
+      <select
+        class="h-9 w-full cursor-pointer appearance-none rounded border border-outline-variant bg-surface-container-lowest pl-3 pr-8 font-body-md text-body-md text-on-surface shadow-sm focus:border-primary focus:outline-none"
+        [value]="filters.controls.level.value"
+        (change)="filters.controls.level.setValue($any($event.target).value)"
+      >
+        <option value="">All Levels</option>
+        @for (lvl of levels; track lvl) {
+          <option [value]="lvl">{{ lvl }}</option>
+        }
+      </select>
+      <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[18px] text-secondary material-symbols-outlined">arrow_drop_down</span>
+    </div>
+
+    <div class="relative min-w-[280px] flex-1">
+      <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-secondary material-symbols-outlined">search</span>
+      <input
+        type="text"
+        placeholder="Search by message or trace ID..."
+        class="h-9 w-full rounded border border-outline-variant bg-surface-container-lowest pl-9 pr-3 font-body-md text-body-md text-on-surface shadow-sm placeholder:text-outline focus:border-primary focus:outline-none"
+        [value]="filters.controls.search.value"
+        (input)="filters.controls.search.setValue($any($event.target).value)"
+      />
+    </div>
+
+    <button
+      type="button"
+      class="flex h-9 items-center gap-1.5 rounded border border-outline-variant bg-surface-container-lowest px-3 text-secondary shadow-sm transition-colors hover:text-on-surface"
+      (click)="toggleLiveTail()"
+      title="Toggle Auto-Refresh"
+    >
+      <span class="material-symbols-outlined text-[18px]">vertical_align_bottom</span>
+      <span class="font-label-sm text-label-sm">{{ liveTail() ? 'Unpin' : 'Pin to bottom' }}</span>
+    </button>
+  </div>
+
+  <!-- Summary strip -->
+  <div class="flex flex-wrap items-center gap-space-sm">
+    <span class="inline-flex items-center gap-1.5 rounded border border-border-subtle bg-surface-container-lowest px-2.5 py-1 font-code-sm text-code-sm text-on-surface-variant">
+      <span class="material-symbols-outlined text-[16px] text-sev-critical">error</span>
+      {{ errorCount() }} errors
+    </span>
+    <span class="inline-flex items-center gap-1.5 rounded border border-border-subtle bg-surface-container-lowest px-2.5 py-1 font-code-sm text-code-sm text-on-surface-variant">
+      <span class="material-symbols-outlined text-[16px] text-sev-high">warning</span>
+      {{ warnCount() }} warnings
+    </span>
+    <span class="inline-flex items-center gap-1.5 rounded border border-border-subtle bg-surface-container-lowest px-2.5 py-1 font-code-sm text-code-sm text-on-surface-variant">
+      <span class="material-symbols-outlined text-[16px] text-secondary">list</span>
+      {{ visibleLogs().length }} matching entries
+    </span>
+  </div>
+
+  <!-- Table -->
+  <div class="overflow-hidden rounded border border-outline-variant bg-surface-container-lowest shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="w-full table-fixed border-collapse text-left">
+        <thead>
+          <tr class="h-9 border-b border-outline-variant bg-surface-container-low font-label-sm text-label-sm uppercase tracking-wider text-secondary">
+            <th class="w-44 px-3 font-semibold">Timestamp</th>
+            <th class="w-36 px-3 font-semibold">Service</th>
+            <th class="w-24 px-3 font-semibold">Level</th>
+            <th class="px-3 font-semibold">Message</th>
+            <th class="w-36 px-3 text-right font-semibold">Trace ID</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant font-body-sm text-body-sm text-on-surface">
+          @if (loading()) {
+            <tr><td colspan="5" class="px-3 py-12 text-center text-secondary">Loading log stream...</td></tr>
+          } @else if (visibleLogs().length === 0) {
+            <tr><td colspan="5" class="px-3 py-12 text-center text-secondary">No log entries match the current filters.</td></tr>
+          } @else {
+            @for (log of visibleLogs(); track log.id) {
+              <tr class="h-10 transition-colors hover:bg-surface-container-low">
+                <td class="truncate px-3 font-code-sm text-code-sm text-secondary" [title]="fullDate(log.timestamp)">{{ shortTime(log.timestamp) }}</td>
+                <td class="truncate px-3 font-body-md text-body-md text-on-surface">{{ log.serviceName }}</td>
+                <td class="px-3">
+                  <app-status-badge [value]="log.logLevel" kind="loglevel" />
+                </td>
+                <td class="truncate px-3 font-code-sm text-code-sm text-on-surface" [title]="log.message">{{ log.message }}</td>
+                <td class="px-3 text-right">
+                  <button
+                    type="button"
+                    class="rounded border border-outline-variant/60 px-1.5 py-0.5 font-code-sm text-code-sm text-secondary transition-colors hover:bg-surface-container hover:text-primary"
+                    (click)="copyTrace(log.traceId)"
+                  >{{ log.traceId || '--' }}</button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-pagination
+      class="block"
+      [page]="pageIndex()"
+      [pageSize]="pageSize()"
+      [hasNext]="hasNext()"
+      totalLabel="log entries"
+      (pageChange)="changePage($event)"
+    />
+  </div>
+</div>

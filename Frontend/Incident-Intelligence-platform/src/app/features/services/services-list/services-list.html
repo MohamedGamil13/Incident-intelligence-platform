@@ -1,0 +1,226 @@
+<div class="flex w-full max-w-[1280px] flex-col gap-space-md">
+  <!-- Header -->
+  <div class="flex flex-col justify-between gap-space-sm sm:flex-row sm:items-center">
+    <div class="flex flex-col">
+      <div class="flex items-center gap-space-xs">
+        <h1 class="font-headline-lg text-headline-lg tracking-tight text-on-surface">Services</h1>
+        <span class="rounded bg-surface-container px-2 py-0.5 font-code-sm text-code-sm text-on-surface-variant">{{ services().length }} active</span>
+      </div>
+      <p class="font-body-md text-body-md text-on-surface-variant">
+        Real-time health, active incident linkage, and topology status across production tiers.
+      </p>
+    </div>
+    <div class="flex items-center gap-space-xs">
+      <span class="inline-flex items-center gap-1.5 rounded border border-outline-variant bg-surface-container-lowest px-3 py-1.5 font-label-md text-label-md text-on-surface-variant">
+        <span class="material-symbols-outlined text-[18px] text-secondary">tune</span>
+        Filter
+      </span>
+      @if (canManage()) {
+        <button
+          type="button"
+          class="inline-flex items-center gap-1.5 rounded bg-primary px-3.5 py-1.5 font-label-md text-label-md text-on-primary transition-colors hover:bg-on-primary-fixed-variant"
+          (click)="openCreate()"
+        >
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          New Service
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Telemetry strip -->
+  <div class="grid grid-cols-1 gap-space-sm md:grid-cols-4">
+    <div class="flex items-center justify-between rounded-lg bg-surface-container-lowest p-space-sm shadow-sm">
+      <div class="flex flex-col">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Overall Health</span>
+        <span class="mt-0.5 font-headline-md text-headline-md text-on-surface">{{ healthPct() }}</span>
+      </div>
+      <div class="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-low text-tertiary">
+        <span class="material-symbols-outlined text-[20px]">check_circle</span>
+      </div>
+    </div>
+    <div class="flex items-center justify-between rounded-lg bg-surface-container-lowest p-space-sm shadow-sm">
+      <div class="flex flex-col">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Active Outages</span>
+        <span class="mt-0.5 font-headline-md text-headline-md text-on-surface">{{ downCount() }} <span class="font-body-sm font-normal text-on-surface-variant">nodes</span></span>
+      </div>
+      <div class="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-low text-on-surface-variant">
+        <span class="material-symbols-outlined text-[20px]">cloud_off</span>
+      </div>
+    </div>
+    <div class="flex items-center justify-between rounded-lg bg-surface-container-lowest p-space-sm shadow-sm">
+      <div class="flex flex-col">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Degraded</span>
+        <span class="mt-0.5 font-headline-md text-headline-md text-secondary">{{ degradedCount() }} <span class="font-body-sm font-normal text-secondary">services</span></span>
+      </div>
+      <div class="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-container text-secondary">
+        <span class="material-symbols-outlined text-[20px]">warning</span>
+      </div>
+    </div>
+    <div class="flex items-center justify-between rounded-lg bg-surface-container-lowest p-space-sm shadow-sm">
+      <div class="flex flex-col">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Linked Incidents</span>
+        <span class="mt-0.5 font-headline-md text-headline-md text-error">{{ linkedIncidents() }} <span class="font-body-sm font-normal text-error">active</span></span>
+      </div>
+      <div class="flex h-10 w-10 items-center justify-center rounded-full bg-error-container text-error">
+        <span class="material-symbols-outlined text-[20px]">report</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="flex flex-col overflow-hidden rounded-xl bg-surface-container-lowest shadow-sm">
+    <div class="flex items-center justify-between gap-space-sm bg-surface-container-lowest px-space-md py-space-xs">
+      <div class="flex w-full max-w-sm items-center gap-space-xs">
+        <span class="material-symbols-outlined text-[18px] text-on-surface-variant">search</span>
+        <input
+          type="text"
+          placeholder="Search service name or description..."
+          class="w-full bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none"
+          [value]="search()"
+          (input)="search.set($any($event.target).value)"
+        />
+      </div>
+      <div class="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant">
+        <span>Sort:</span>
+        <span class="cursor-pointer font-label-md text-on-surface hover:underline">Incidents (High to Low)</span>
+      </div>
+    </div>
+
+    <div class="w-full overflow-x-auto">
+      <table class="w-full min-w-[700px] border-collapse text-left">
+        <thead>
+          <tr class="h-9 select-none bg-surface-container-low font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
+            <th class="w-[300px] py-2 pl-space-md pr-space-sm" scope="col">Service Name</th>
+            <th class="w-[160px] px-space-sm py-2" scope="col">Open Incidents</th>
+            <th class="py-2 pl-space-sm pr-space-md" scope="col">Description</th>
+            <th class="w-[130px] py-2 pr-space-md text-right" scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading()) {
+            <tr><td colspan="4" class="px-space-md py-12 text-center font-body-sm text-body-sm text-secondary">Loading services...</td></tr>
+          } @else if (rows().length === 0) {
+            <tr><td colspan="4" class="px-space-md py-12 text-center font-body-sm text-body-sm text-secondary">No services found.</td></tr>
+          } @else {
+            @for (row of rows(); track row.service.id) {
+              <tr class="group h-12 cursor-pointer bg-surface-container-lowest transition-colors hover:bg-surface-container-low" [routerLink]="['/services', row.service.id]">
+                <td class="whitespace-nowrap py-3 pl-space-md pr-space-sm">
+                  <div class="flex items-center gap-2.5">
+                    <span class="h-2.5 w-2.5 flex-shrink-0 rounded-full ring-4" [class]="stateDot(row.state)" [title]="row.state"></span>
+                    <span class="font-headline-sm text-headline-sm text-on-surface transition-colors group-hover:text-primary">{{ row.service.name }}</span>
+                  </div>
+                </td>
+                <td class="whitespace-nowrap px-space-sm py-3">
+                  @if (row.openCount > 0) {
+                    <span class="inline-flex items-center rounded bg-error-container px-2 py-0.5 font-code-sm text-code-sm font-semibold text-on-error-container">{{ row.openCount }} open</span>
+                  } @else {
+                    <span class="font-code-sm text-code-sm text-secondary">0</span>
+                  }
+                </td>
+                <td class="max-w-md truncate py-3 pl-space-sm pr-space-md font-body-md text-body-md text-on-surface-variant">
+                  {{ row.service.description }}
+                </td>
+                <td class="whitespace-nowrap py-3 pr-space-md text-right">
+                  <div class="flex items-center justify-end gap-1">
+                    @if (canManage()) {
+                      <button type="button" class="rounded p-1.5 text-secondary hover:bg-surface-container hover:text-on-surface" title="Edit" (click)="openEdit(row.service, $event)">
+                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                      </button>
+                    }
+                    @if (isAdmin()) {
+                      <button type="button" class="rounded p-1.5 text-secondary hover:bg-error-container hover:text-error" title="Delete" (click)="deleteService(row.service.id, $event)">
+                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex items-center justify-between bg-surface-container-low px-space-md py-space-xs font-body-sm text-body-sm text-on-surface-variant">
+      <span>Showing {{ rows().length }} of {{ services().length }} production services</span>
+      <div class="flex items-center gap-space-xs font-code-sm text-code-sm">
+        <span>Telemetry sync:</span>
+        <span class="text-on-surface">live</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dependency mesh insight -->
+  <div class="flex flex-col items-start justify-between gap-space-md rounded-xl bg-surface-container-lowest p-space-md shadow-sm md:flex-row md:items-center">
+    <div class="flex items-start gap-space-sm">
+      <div class="mt-0.5 rounded-lg bg-surface-container p-2 text-primary">
+        <span class="material-symbols-outlined text-[20px]">hub</span>
+      </div>
+      <div class="flex flex-col">
+        <span class="font-headline-sm text-headline-sm text-on-surface">Dependency Mesh &amp; Cascade Risk</span>
+        <p class="mt-0.5 font-body-md text-body-md text-on-surface-variant">
+          {{ degradedCount() + downCount() }} services are currently degraded or down. Mitigation circuit breakers are primed.
+        </p>
+      </div>
+    </div>
+    <button type="button" class="flex-shrink-0 rounded bg-surface-container-high px-3 py-1.5 font-label-md text-label-md text-on-surface transition-colors hover:bg-surface-container">
+      View Service Graph
+    </button>
+  </div>
+</div>
+
+<!-- Create/Edit modal -->
+@if (modalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/40 p-gutter">
+    <div class="w-full max-w-md rounded-xl border border-border-subtle bg-surface-container-lowest p-6 shadow-float">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="font-headline-sm text-headline-sm text-on-surface">{{ editingId() ? 'Edit Service' : 'New Service' }}</h2>
+        <button type="button" class="text-secondary hover:text-on-surface" (click)="closeModal()">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+      <form class="flex flex-col gap-3" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="flex flex-col gap-1">
+          <label class="font-label-md text-label-md text-on-surface" for="svc-name">Name</label>
+          <input id="svc-name" type="text" formControlName="name" maxlength="100" placeholder="e.g. Payment Service"
+            class="h-9 rounded-xl bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container" />
+          @if (form.controls.name.invalid && form.controls.name.touched) {
+            <span class="font-body-sm text-body-sm text-error">Name is required (max 100 chars).</span>
+          }
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="font-label-md text-label-md text-on-surface" for="svc-desc">Description</label>
+          <textarea id="svc-desc" rows="3" formControlName="description" maxlength="500" placeholder="Describe the service responsibility..."
+            class="rounded-xl bg-surface-container-lowest px-3 py-2 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container"></textarea>
+          @if (form.controls.description.invalid && form.controls.description.touched) {
+            <span class="font-body-sm text-body-sm text-error">Description is required (max 500 chars).</span>
+          }
+        </div>
+        <div class="mt-2 flex justify-end gap-3">
+          <button type="button" class="rounded-xl bg-surface-container px-4 py-2 font-label-md text-label-md text-on-surface hover:bg-surface-container-high" (click)="closeModal()">Cancel</button>
+          <button type="submit" [disabled]="submitting()" class="rounded-xl bg-primary-container px-4 py-2 font-label-md text-label-md text-on-primary hover:bg-primary disabled:opacity-60">
+            {{ submitting() ? 'Saving...' : (editingId() ? 'Save Changes' : 'Create Service') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Delete confirm -->
+@if (confirmDeleteId()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/40 p-gutter">
+    <div class="w-full max-w-sm rounded-xl border border-border-subtle bg-surface-container-lowest p-6 shadow-float">
+      <div class="mb-3 flex items-center gap-2 text-error">
+        <span class="material-symbols-outlined">warning</span>
+        <h3 class="font-headline-sm text-headline-sm">Delete service</h3>
+      </div>
+      <p class="mb-5 font-body-md text-body-md text-secondary">Permanently remove this service from the catalog? This cannot be undone.</p>
+      <div class="flex justify-end gap-3">
+        <button type="button" class="rounded-xl bg-surface-container px-4 py-2 font-label-md text-label-md text-on-surface hover:bg-surface-container-high" (click)="confirmDeleteId.set(null)">Cancel</button>
+        <button type="button" class="rounded-xl bg-sev-critical px-4 py-2 font-label-md text-label-md text-white hover:opacity-90" (click)="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+}

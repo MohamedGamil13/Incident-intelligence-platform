@@ -1,0 +1,385 @@
+@if (loading()) {
+  <div class="flex items-center justify-center py-24 font-body-md text-body-md text-secondary">
+    Loading incident #{{ incidentId() }}...
+  </div>
+} @else if (incident(); as inc) {
+  <!-- Breadcrumb & controls -->
+  <div class="mb-space-md flex items-center justify-between border-b border-outline-variant py-space-xs pb-space-xs">
+    <div class="flex min-w-0 items-center gap-space-xs">
+      <a routerLink="/incidents" class="font-label-md text-label-md text-secondary transition-colors hover:text-on-surface">Incidents</a>
+      <span class="font-code-sm text-code-sm text-outline-variant">/</span>
+      <span class="truncate font-code-md text-code-md font-semibold text-on-surface">#INC-{{ inc.id }} {{ inc.title }}</span>
+    </div>
+    <div class="flex shrink-0 items-center gap-space-xs">
+      <div class="relative inline-flex items-center">
+        <select
+          [value]="inc.status"
+          class="h-9 cursor-pointer appearance-none rounded-lg border border-outline-variant bg-surface-container-lowest pl-3 pr-8 font-label-md text-label-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          (change)="statusForm.controls.status.setValue($any($event.target).value); transitionStatus()"
+        >
+          @for (status of statuses; track status) {
+            <option [value]="status">Status: {{ status }}</option>
+          }
+        </select>
+        <span class="pointer-events-none absolute right-2 text-[18px] text-secondary">expand_more</span>
+      </div>
+
+      <div class="relative inline-block text-left">
+        <button
+          type="button"
+          aria-label="More actions"
+          class="flex h-9 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-lowest px-2.5 text-on-surface transition-colors hover:bg-surface-container"
+          (click)="toggleMore()"
+        >
+          <span class="material-symbols-outlined text-[18px]">more_horiz</span>
+        </button>
+        @if (moreOpen()) {
+          <div class="absolute right-0 z-30 mt-1.5 w-36 rounded-lg border border-outline-variant bg-surface-container-lowest py-1 font-label-md text-label-md shadow-float">
+            <button type="button" class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-on-surface hover:bg-surface-container" (click)="startEdit()">
+              <span class="material-symbols-outlined text-[16px]">edit</span>Edit
+            </button>
+            <button type="button" class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-error hover:bg-error-container" (click)="moreOpen.set(false); confirmDelete.set(true)">
+              <span class="material-symbols-outlined text-[16px]">delete</span>Delete
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Header block -->
+  <div class="mb-6 rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+    <div class="flex items-center gap-2">
+      <app-status-badge [value]="inc.severity" kind="severity" />
+      <app-status-badge [value]="inc.status" />
+      @if (isActive()) {
+        <span class="ml-auto flex items-center gap-1 font-code-sm text-code-sm text-secondary">
+          <span class="h-1.5 w-1.5 rounded-full bg-error animate-ping"></span>
+          Active Incident Duration: {{ duration() }}
+        </span>
+      } @else {
+        <span class="ml-auto flex items-center gap-1 font-code-sm text-code-sm text-sev-resolved">
+          <span class="h-1.5 w-1.5 rounded-full bg-sev-resolved"></span>
+          Resolved in {{ duration() }}
+        </span>
+      }
+    </div>
+
+    <h1 class="mt-3 text-[28px] font-semibold leading-[36px] tracking-tight text-on-surface">{{ inc.title }}</h1>
+
+    <div class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[14px] text-secondary">
+      <span class="flex items-center gap-1">
+        <span class="material-symbols-outlined text-[16px] text-secondary">dns</span>
+        Service: <strong class="font-medium text-on-surface">{{ inc.serviceName }}</strong>
+      </span>
+      <span>&middot;</span>
+      <span>Created {{ fullDate(inc.createdAt) }}</span>
+      @if (inc.resolvedAt) {
+        <span>&middot;</span>
+        <span>Resolved {{ fullDate(inc.resolvedAt) }}</span>
+      }
+      <span>&middot;</span>
+      <span class="flex items-center gap-1">
+        Ref:
+        <span class="rounded border border-outline-variant bg-surface-container px-1.5 py-0.5 font-code-sm text-[12px] text-on-surface">INC-{{ inc.id }}</span>
+      </span>
+    </div>
+
+    <p class="mt-4 max-w-4xl text-[14px] leading-relaxed text-on-surface">{{ inc.description }}</p>
+  </div>
+
+  <!-- Edit panel -->
+  @if (editing()) {
+    <div class="mb-6 rounded-xl border border-primary-container/40 bg-surface-container-lowest p-6">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="font-headline-sm text-headline-sm text-on-surface">Edit Incident</h2>
+        <button type="button" class="text-secondary hover:text-on-surface" (click)="cancelEdit()">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+      <form class="grid grid-cols-1 gap-4 md:grid-cols-2" [formGroup]="editForm" (ngSubmit)="saveEdit()">
+        <div class="flex flex-col gap-1.5 md:col-span-2">
+          <label class="font-label-md text-label-md text-on-surface" for="edit-title">Title</label>
+          <input id="edit-title" type="text" formControlName="title" maxlength="100"
+            class="h-10 w-full rounded-xl bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container" />
+        </div>
+        <div class="flex flex-col gap-1.5 md:col-span-2">
+          <label class="font-label-md text-label-md text-on-surface" for="edit-description">Description</label>
+          <textarea id="edit-description" rows="3" formControlName="description" maxlength="500"
+            class="w-full rounded-xl bg-surface-container-lowest px-3 py-2 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container"></textarea>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="font-label-md text-label-md text-on-surface" for="edit-severity">Severity</label>
+          <select id="edit-severity" formControlName="severity"
+            class="h-10 cursor-pointer rounded-xl bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container">
+            @for (severity of severities; track severity) {
+              <option [value]="severity">{{ severity }}</option>
+            }
+          </select>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="font-label-md text-label-md text-on-surface" for="edit-status">Status</label>
+          <select id="edit-status" formControlName="status"
+            class="h-10 cursor-pointer rounded-xl bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container">
+            @for (status of statuses; track status) {
+              <option [value]="status">{{ status }}</option>
+            }
+          </select>
+        </div>
+        <div class="flex items-center justify-end gap-3 md:col-span-2">
+          <button type="button" class="rounded-xl bg-surface-container px-4 py-2 font-label-md text-label-md text-on-surface hover:bg-surface-container-high" (click)="cancelEdit()">Cancel</button>
+          <button type="submit" [disabled]="submitting()"
+            class="rounded-xl bg-primary-container px-4 py-2 font-label-md text-label-md text-on-primary hover:bg-primary disabled:opacity-60">
+            {{ submitting() ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Tabs -->
+  <div class="mb-6 flex items-center gap-8 border-b border-outline-variant font-label-md text-label-md">
+    <button type="button" class="pb-3 transition-colors" [class]="activeTab() === 'overview' ? 'border-b-2 border-primary font-semibold text-primary' : 'border-b-2 border-transparent text-secondary hover:text-on-surface'" (click)="selectTab('overview')">Overview</button>
+    <button type="button" class="pb-3 transition-colors" [class]="activeTab() === 'timeline' ? 'border-b-2 border-primary font-semibold text-primary' : 'border-b-2 border-transparent text-secondary hover:text-on-surface'" (click)="selectTab('timeline')">Timeline</button>
+    <button type="button" class="pb-3 transition-colors" [class]="activeTab() === 'logs' ? 'border-b-2 border-primary font-semibold text-primary' : 'border-b-2 border-transparent text-secondary hover:text-on-surface'" (click)="selectTab('logs')">Logs</button>
+    <button type="button" class="flex items-center gap-1.5 pb-3 transition-colors" [class]="activeTab() === 'rca' ? 'border-b-2 border-primary font-semibold text-primary' : 'border-b-2 border-transparent text-secondary hover:text-on-surface'" (click)="selectTab('rca')">
+      <span class="material-symbols-outlined text-[18px]">psychology</span>
+      Root Cause Analysis
+      <span class="rounded bg-surface-container px-1.5 py-0.5 font-code-sm text-[11px] font-normal text-primary">AI v2</span>
+    </button>
+  </div>
+
+  <!-- Tab content -->
+  <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+    <!-- Main column -->
+    <div class="flex flex-col gap-6 lg:col-span-8">
+      @switch (activeTab()) {
+        @case ('overview') {
+          <div class="rounded-[12px] border border-outline-variant bg-surface-container-lowest p-6">
+            <h2 class="mb-4 flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface">
+              <span class="material-symbols-outlined text-primary">description</span>
+              Incident Overview
+            </h2>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div class="rounded-lg border border-outline-variant p-3.5">
+                <span class="mb-1 block font-label-sm text-label-sm uppercase text-secondary">Severity</span>
+                <app-status-badge [value]="inc.severity" kind="severity" />
+              </div>
+              <div class="rounded-lg border border-outline-variant p-3.5">
+                <span class="mb-1 block font-label-sm text-label-sm uppercase text-secondary">Status</span>
+                <app-status-badge [value]="inc.status" />
+              </div>
+              <div class="rounded-lg border border-outline-variant p-3.5">
+                <span class="mb-1 block font-label-sm text-label-sm uppercase text-secondary">Affected Service</span>
+                <span class="font-headline-sm text-headline-sm text-on-surface">{{ inc.serviceName }}</span>
+              </div>
+              <div class="rounded-lg border border-outline-variant p-3.5">
+                <span class="mb-1 block font-label-sm text-label-sm uppercase text-secondary">Duration</span>
+                <span class="font-code-md text-[18px] font-bold text-on-surface">{{ duration() }}</span>
+              </div>
+            </div>
+            <div class="mt-5">
+              <h3 class="mb-2 font-label-sm text-label-sm uppercase tracking-wider text-secondary">Description</h3>
+              <p class="text-[14px] leading-relaxed text-on-surface">{{ inc.description }}</p>
+            </div>
+          </div>
+        }
+        @case ('timeline') {
+          <div class="rounded-[12px] border border-outline-variant bg-surface-container-lowest p-6">
+            <div class="mb-4 flex items-center justify-between border-b border-outline-variant pb-3">
+              <h2 class="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface">
+                <span class="material-symbols-outlined text-secondary text-[20px]">history</span>
+                Incident Timeline
+              </h2>
+              <span class="font-code-sm text-code-sm text-secondary">{{ timelineCount() }} events</span>
+            </div>
+
+            <div class="relative space-y-6 pl-6 before:absolute before:bottom-2.5 before:left-2 before:top-2.5 before:w-px before:bg-outline-variant">
+              @if (events().length === 0) {
+                <p class="font-body-sm text-body-sm text-secondary">No timeline events recorded.</p>
+              } @else {
+                @for (event of events(); track event.id) {
+                  <div class="relative">
+                    <span class="absolute -left-6 top-1 h-2.5 w-2.5 rounded-full ring-4 ring-surface-container-lowest" [class]="eventDot(event.timeStamp)"></span>
+                    <div class="flex flex-col">
+                      <span class="font-code-sm text-code-sm font-semibold text-secondary">{{ timeOnly(event.date) }} · {{ event.timeStamp }}</span>
+                      <p class="mt-0.5 text-[13px] font-medium leading-snug text-on-surface">{{ event.title }}</p>
+                      <p class="mt-0.5 font-body-sm text-body-sm text-secondary">{{ event.description }}</p>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+
+            <!-- Add event -->
+            <div class="mt-5 border-t border-outline-variant pt-5">
+              <h3 class="mb-3 font-label-md text-label-md text-on-surface">Add Timeline Event</h3>
+              <form class="flex flex-col gap-3" [formGroup]="eventForm" (ngSubmit)="addEvent()">
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  <select formControlName="timeStamp" class="h-10 rounded-xl bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container">
+                    @for (ts of eventTimestamps; track ts) {
+                      <option [value]="ts">{{ ts }}</option>
+                    }
+                  </select>
+                  <input type="text" formControlName="title" placeholder="Event title" maxlength="100"
+                    class="h-10 rounded-xl bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container sm:col-span-2" />
+                </div>
+                <textarea formControlName="description" rows="2" maxlength="500" placeholder="Describe what changed..."
+                  class="w-full rounded-xl bg-surface-container-lowest px-3 py-2 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container"></textarea>
+                <div class="flex justify-end">
+                  <button type="submit" [disabled]="addingEvent()"
+                    class="flex items-center gap-1.5 rounded-xl bg-primary-container px-4 py-2 font-label-md text-label-md text-on-primary hover:bg-primary disabled:opacity-60">
+                    <span class="material-symbols-outlined text-[16px]">add</span>
+                    {{ addingEvent() ? 'Adding...' : 'Add Event' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        }
+        @case ('logs') {
+          <div class="overflow-hidden rounded-[12px] border border-outline-variant bg-surface-container-lowest">
+            <div class="flex items-center justify-between border-b border-outline-variant px-6 py-4">
+              <h2 class="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface">
+                <span class="material-symbols-outlined text-secondary text-[20px]">receipt_long</span>
+                Service Logs
+              </h2>
+              <span class="font-code-sm text-code-sm text-secondary">{{ logs().length }} entries</span>
+            </div>
+            <div class="divide-y divide-outline-variant">
+              @if (logs().length === 0) {
+                <p class="px-6 py-10 text-center font-body-sm text-body-sm text-secondary">No logs for this service.</p>
+              } @else {
+                @for (log of logs(); track log.id) {
+                  <div class="flex items-start gap-3 px-6 py-3">
+                    <app-status-badge [value]="log.logLevel" kind="loglevel" />
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center gap-2">
+                        <span class="font-body-md text-body-md font-semibold text-on-surface">{{ log.message }}</span>
+                        <span class="font-code-sm text-code-sm text-secondary">{{ timeOnly(log.timestamp) }}</span>
+                      </div>
+                      <p class="font-body-sm text-body-sm text-secondary">{{ log.description }}</p>
+                      <span class="font-code-sm text-code-sm text-outline">{{ log.traceId }}</span>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+        @case ('rca') {
+          <div class="rounded-[12px] border border-outline-variant bg-surface-container-lowest p-6">
+            <div class="flex items-center justify-between border-b border-outline-variant pb-4">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[22px] text-primary">auto_awesome</span>
+                <h2 class="font-headline-sm text-headline-sm text-on-surface">Root Cause Analysis Report</h2>
+              </div>
+              <span class="inline-flex items-center gap-1.5 rounded border border-sev-resolved bg-sev-resolved-bg px-2 py-0.5 font-code-sm text-[11px] font-semibold text-sev-resolved">
+                <span class="h-1.5 w-1.5 rounded-full bg-sev-resolved"></span> Automated Diagnostic Ready
+              </span>
+            </div>
+            <div class="mt-5 flex flex-col gap-6">
+              <div>
+                <h3 class="mb-1 text-[12px] font-semibold uppercase tracking-wider text-secondary">Root Cause</h3>
+                <p class="text-[16px] font-semibold leading-6 text-on-surface">
+                  Correlation analysis across incident "{{ inc.title }}" on {{ inc.serviceName }} indicates a degradation cascade. Detailed model diagnostics are generated by the backend analysis job.
+                </p>
+              </div>
+              <div class="rounded-lg border border-outline-variant bg-surface-container-low p-3.5">
+                <div class="mb-1.5 flex items-center justify-between">
+                  <span class="flex items-center gap-1.5 text-[13px] font-semibold text-on-surface">
+                    <span class="material-symbols-outlined text-[16px] text-tertiary">verified</span>
+                    Diagnostic Confidence
+                  </span>
+                  <span class="font-code-md text-code-md font-bold text-on-surface">--</span>
+                </div>
+                <div class="h-2.5 w-full overflow-hidden rounded-full bg-border-subtle">
+                  <div class="h-full rounded-full bg-tertiary" style="width: 0%"></div>
+                </div>
+                <p class="mt-2 text-[11px] text-secondary">The AI RCA engine has not yet produced a diagnostic payload for this incident.</p>
+              </div>
+            </div>
+            <div class="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant pt-4">
+              <div class="flex items-center gap-2 font-body-sm text-body-sm text-secondary">
+                <span class="material-symbols-outlined text-[16px]">schedule</span>
+                <span>Awaiting analysis job completion</span>
+              </div>
+              <button type="button" class="inline-flex h-8 items-center gap-1.5 rounded border border-outline-variant bg-surface-container-lowest px-3 font-label-md text-label-md text-on-surface transition-colors hover:bg-surface-container">
+                <span class="material-symbols-outlined text-[16px]">refresh</span>
+                Regenerate Analysis
+              </button>
+            </div>
+          </div>
+        }
+      }
+
+      <!-- Quick metrics -->
+      <div class="grid grid-cols-3 gap-4">
+        <div class="rounded-lg border border-outline-variant bg-surface-container-lowest p-3.5">
+          <span class="mb-1 block font-label-sm text-label-sm uppercase text-secondary">Timeline Events</span>
+          <span class="font-code-md text-[18px] font-bold text-on-surface">{{ timelineCount() }}</span>
+          <span class="mt-0.5 block text-body-sm text-secondary">recorded</span>
+        </div>
+        <div class="rounded-lg border border-outline-variant bg-surface-container-lowest p-3.5">
+          <span class="mb-1 block font-label-sm text-label-sm uppercase text-secondary">Severity</span>
+          <span class="font-code-md text-[18px] font-bold" [class]="inc.severity === 'Critical' ? 'text-error' : 'text-on-surface'">{{ inc.severity }}</span>
+          <span class="mt-0.5 block text-body-sm text-secondary">current</span>
+        </div>
+        <div class="rounded-lg border border-outline-variant bg-surface-container-lowest p-3.5">
+          <span class="mb-1 block font-label-sm text-label-sm uppercase text-secondary">Age</span>
+          <span class="font-code-md text-[18px] font-bold text-on-surface">{{ relative(inc.createdAt) }}</span>
+          <span class="mt-0.5 block text-body-sm text-secondary">since creation</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar timeline summary -->
+    <div class="flex flex-col rounded-[12px] border border-outline-variant bg-surface-container-lowest p-6 lg:col-span-4">
+      <div class="mb-4 flex items-center justify-between border-b border-outline-variant pb-3">
+        <h3 class="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface">
+          <span class="material-symbols-outlined text-secondary text-[20px]">history</span>
+          Latest Activity
+        </h3>
+        <span class="font-code-sm text-code-sm text-secondary">{{ timelineCount() }}</span>
+      </div>
+      <div class="relative space-y-6 pl-6 before:absolute before:bottom-2.5 before:left-2 before:top-2.5 before:w-px before:bg-outline-variant">
+        @if (events().length === 0) {
+          <p class="font-body-sm text-body-sm text-secondary">No activity yet.</p>
+        } @else {
+          @for (event of events().slice(0, 5); track event.id) {
+            <div class="relative">
+              <span class="absolute -left-6 top-1 h-2.5 w-2.5 rounded-full ring-4 ring-surface-container-lowest" [class]="eventDot(event.timeStamp)"></span>
+              <div class="flex flex-col">
+                <span class="font-code-sm text-code-sm font-semibold text-secondary">{{ timeOnly(event.date) }}</span>
+                <p class="mt-0.5 text-[13px] font-medium leading-snug text-on-surface">{{ event.title }}</p>
+              </div>
+            </div>
+          }
+        }
+      </div>
+      <button type="button" class="mt-5 flex h-9 w-full items-center justify-center gap-1.5 rounded border border-outline-variant bg-surface-container-lowest font-label-md text-label-md text-on-surface transition-colors hover:bg-surface-container" (click)="selectTab('timeline')">
+        <span class="material-symbols-outlined text-[16px]">add</span>
+        Add Event
+      </button>
+    </div>
+  </div>
+
+  <!-- Delete confirm modal -->
+  @if (confirmDelete()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/40 p-gutter">
+      <div class="w-full max-w-sm rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-float">
+        <div class="mb-3 flex items-center gap-2 text-error">
+          <span class="material-symbols-outlined">warning</span>
+          <h3 class="font-headline-sm text-headline-sm">Delete incident</h3>
+        </div>
+        <p class="mb-5 font-body-md text-body-md text-secondary">
+          Permanently remove <strong class="text-on-surface">#INC-{{ inc.id }}</strong>? This action cannot be undone.
+        </p>
+        <div class="flex justify-end gap-3">
+          <button type="button" class="rounded-xl bg-surface-container px-4 py-2 font-label-md text-label-md text-on-surface hover:bg-surface-container-high" (click)="confirmDelete.set(false)">Cancel</button>
+          <button type="button" class="rounded-xl bg-sev-critical px-4 py-2 font-label-md text-label-md text-white hover:opacity-90" (click)="deleteIncident()">Delete</button>
+        </div>
+      </div>
+    </div>
+  }
+}

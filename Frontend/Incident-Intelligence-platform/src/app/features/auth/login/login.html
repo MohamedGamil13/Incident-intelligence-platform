@@ -1,0 +1,119 @@
+<div class="relative flex min-h-screen items-center justify-center overflow-hidden bg-surface px-gutter py-space-lg">
+  <!-- Ambient status aura -->
+  <div class="pointer-events-none absolute inset-0">
+    <div class="absolute left-1/2 top-1/2 h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-fixed/40 blur-3xl"></div>
+  </div>
+
+  <div class="relative z-10 flex w-full max-w-[420px] flex-col items-center">
+    <!-- Telemetry indicator -->
+    <div class="mb-space-md flex items-center gap-space-xs font-code-sm text-code-sm uppercase tracking-wider text-secondary">
+      <span class="inline-block h-2 w-2 rounded-full bg-tertiary-container animate-pulse"></span>
+      <span>Cluster Auth Node // 04-US-EAST</span>
+    </div>
+
+    <!-- Auth panel -->
+    <div class="flex w-full flex-col overflow-hidden rounded-xl bg-surface-container-lowest p-space-lg shadow-float">
+      <!-- Brand -->
+      <div class="flex flex-col items-center pt-space-xs text-center">
+        <div class="mb-space-xs flex h-12 w-12 items-center justify-center rounded-lg bg-primary-container">
+          <span class="material-symbols-outlined text-[26px] text-on-primary">shield_alert</span>
+        </div>
+        <span class="font-headline-sm text-headline-sm tracking-tight text-on-surface">Incident Intel</span>
+      </div>
+
+      <div class="mt-space-md text-center">
+        <h2 class="font-headline-md text-headline-md font-semibold tracking-tight text-on-surface">Sign in to your account</h2>
+        <p class="mt-1 font-body-md text-body-md text-secondary">Track and resolve incidents across your services.</p>
+      </div>
+
+      <!-- Error banner -->
+      @if (errorMessage()) {
+        <div class="mt-space-md flex items-start gap-space-xs rounded-xl bg-error-container/40 p-3 text-on-error-container">
+          <span class="material-symbols-outlined mt-0.5 select-none text-[18px] leading-tight text-error">error</span>
+          <div class="flex flex-1 items-center justify-between">
+            <p class="font-body-sm text-body-sm font-semibold text-error">{{ errorMessage() }}</p>
+            <button type="button" class="flex items-center p-0.5 text-error opacity-70 hover:opacity-100" (click)="dismissError()">
+              <span class="material-symbols-outlined text-[16px]">close</span>
+            </button>
+          </div>
+        </div>
+      }
+
+      <form class="mt-space-md flex flex-col gap-space-md" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="flex flex-col gap-1.5 text-left">
+          <label class="font-label-md text-label-md text-on-surface" for="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            placeholder="you@company.com"
+            class="h-9 w-full rounded-xl bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface shadow-sm transition-colors placeholder:text-outline focus:bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary-container"
+            [class.ring-2]="showError('email')"
+            [class.ring-error]="showError('email')"
+          />
+          @if (showError('email')) {
+            <span class="font-body-sm text-body-sm text-error">Enter a valid email address.</span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1.5 text-left">
+          <label class="font-label-md text-label-md text-on-surface" for="password">Password</label>
+          <div class="relative flex items-center">
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="current-password"
+              placeholder="Enter your password"
+              class="h-9 w-full rounded-xl bg-surface-container-lowest pl-3 pr-10 font-code-md text-code-md text-on-surface shadow-sm transition-colors placeholder:text-outline focus:bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary-container"
+            />
+            <button
+              type="button"
+              aria-label="Toggle password visibility"
+              class="absolute right-2.5 flex items-center justify-center p-1 text-secondary transition-colors hover:text-on-surface"
+              (click)="togglePassword()"
+            >
+              <span class="material-symbols-outlined text-[18px]">{{ showPassword() ? 'visibility_off' : 'visibility' }}</span>
+            </button>
+          </div>
+          <div class="mt-1 flex justify-end">
+            <a routerLink="/auth/forgot-password" class="font-body-sm text-body-sm text-secondary transition-colors hover:text-on-surface">
+              Forgot password?
+            </a>
+          </div>
+        </div>
+
+        <div class="mt-1">
+          <button
+            type="submit"
+            [disabled]="submitting()"
+            class="flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-primary-container font-label-md text-label-md text-on-primary shadow-sm transition-all duration-150 hover:bg-primary active:scale-[0.99] disabled:opacity-60"
+          >
+            @if (submitting()) {
+              <span class="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+            }
+            <span>{{ submitting() ? 'Signing in...' : 'Sign In' }}</span>
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </button>
+        </div>
+      </form>
+
+      <div class="mt-space-lg border-t border-border-subtle pt-space-sm text-center">
+        <p class="font-body-md text-body-md text-secondary">
+          Don't have an account?
+          <a routerLink="/auth/register" class="ml-1 font-label-md text-label-md text-primary-container transition-colors hover:text-primary">Sign up</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer badge -->
+    <div class="mt-space-md flex w-full items-center justify-between px-2 font-code-sm text-code-sm text-secondary">
+      <div class="flex items-center gap-1.5">
+        <span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span>
+        <span>Zero Incidents Active</span>
+      </div>
+      <div>v2.4.19-audit</div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,156 @@
+<div class="mx-auto flex w-full max-w-[720px] flex-col gap-space-lg px-space-md py-space-xl">
+  <!-- Header -->
+  <header class="flex flex-col gap-space-xs">
+    <nav aria-label="Breadcrumb" class="flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface-variant">
+      <span class="cursor-pointer transition-colors hover:text-on-surface">Platform</span>
+      <span class="text-outline-variant">/</span>
+      <span class="font-semibold text-primary">Settings</span>
+    </nav>
+    <div class="flex flex-col gap-1">
+      <h1 class="font-headline-xl text-headline-xl tracking-tight text-on-surface">Settings</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant">Manage your personal account credentials, profile details, and console preferences.</p>
+    </div>
+  </header>
+
+  <div class="flex flex-col gap-space-md">
+    <!-- Profile -->
+    <section class="flex flex-col gap-space-md rounded-xl border border-outline-variant bg-surface-container-lowest p-space-md shadow-sm">
+      <div class="flex flex-col gap-0.5 border-b border-outline-variant pb-space-sm">
+        <div class="flex items-center justify-between">
+          <h3 class="font-headline-sm text-headline-sm text-on-surface">Profile</h3>
+          <div class="flex items-center gap-1.5 rounded border border-outline-variant bg-surface-container px-2 py-0.5">
+            <span class="material-symbols-outlined text-[14px] text-primary">verified_user</span>
+            <span class="font-code-sm text-code-sm font-medium tracking-tight text-primary">{{ roles().length ? roles().join(' • ') : 'No roles' }}</span>
+          </div>
+        </div>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">Your personal account information.</p>
+      </div>
+      <div class="flex flex-col gap-space-sm">
+        <div class="flex items-center gap-space-sm py-1">
+          <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface-container-high font-headline-md text-headline-md text-on-surface-variant">
+            {{ initials(email()) }}
+          </div>
+          <div class="flex flex-col gap-0.5">
+            <span class="font-label-md text-label-md text-on-surface">{{ email() ?? 'Unknown account' }}</span>
+            <span class="font-code-sm text-code-sm text-on-surface-variant">{{ isAdmin() ? 'Administrator' : 'Platform member' }}</span>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md text-on-surface" for="email">Email Address</label>
+            <span class="font-code-sm text-code-sm uppercase tracking-wider text-on-surface-variant">Identity Managed</span>
+          </div>
+          <div class="relative flex items-center">
+            <input id="email" type="email" [value]="email() ?? ''" disabled readonly
+              class="h-9 w-full cursor-not-allowed select-none rounded border border-outline-variant bg-surface-container-low px-3 pl-8 font-body-md text-body-md text-on-surface-variant opacity-80" />
+            <span class="material-symbols-outlined pointer-events-none absolute left-2 text-[16px] text-on-surface-variant">lock</span>
+          </div>
+          <p class="mt-0.5 flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
+            <span class="material-symbols-outlined text-[14px] text-on-surface-variant">info</span>
+            Email address cannot be changed. Contact an administrator to update your identity provider record.
+          </p>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="font-label-md text-label-md text-on-surface">Assigned Roles</label>
+          <div class="flex flex-wrap gap-1.5">
+            @if (roles().length === 0) {
+              <span class="font-code-sm text-code-sm text-on-surface-variant">No roles assigned.</span>
+            } @else {
+              @for (role of roles(); track role) {
+                <span class="rounded border border-outline-variant bg-surface-container px-2 py-0.5 font-label-sm text-label-sm text-on-surface">{{ role }}</span>
+              }
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Password -->
+    <section class="flex flex-col gap-space-md rounded-xl border border-outline-variant bg-surface-container-lowest p-space-md shadow-sm">
+      <div class="flex flex-col gap-0.5 border-b border-outline-variant pb-space-sm">
+        <h3 class="font-headline-sm text-headline-sm text-on-surface">Password</h3>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">Update your password used for credential authentication.</p>
+      </div>
+      <form class="flex flex-col gap-space-sm" [formGroup]="passwordForm" (ngSubmit)="submitPassword()">
+        <div class="flex flex-col gap-1.5">
+          <label class="font-label-md text-label-md text-on-surface" for="new-password">New Password</label>
+          <div class="relative flex items-center">
+            <input id="new-password" [type]="showNew ? 'text' : 'password'" formControlName="newPassword"
+              class="h-9 w-full rounded border border-outline-variant bg-surface-container-lowest px-3 pr-9 font-body-md text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none" />
+            <button type="button" class="absolute right-2 inline-flex items-center justify-center rounded p-1 text-on-surface-variant transition-colors hover:text-on-surface" (click)="showNew = !showNew">
+              <span class="material-symbols-outlined text-[18px]">{{ showNew ? 'visibility_off' : 'visibility' }}</span>
+            </button>
+          </div>
+          <p class="mt-0.5 flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
+            <span class="material-symbols-outlined text-[14px]" [class]="passwordForm.controls.newPassword.valid ? 'text-tertiary' : 'text-on-surface-variant'">check_circle</span>
+            Minimum 12 characters, including uppercase, number, and symbol.
+          </p>
+          @if (passwordForm.controls.newPassword.invalid && passwordForm.controls.newPassword.touched) {
+            <span class="font-body-sm text-body-sm text-error">Password does not meet the complexity requirements.</span>
+          }
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="font-label-md text-label-md text-on-surface" for="confirm-password">Confirm New Password</label>
+          <div class="relative flex items-center">
+            <input id="confirm-password" [type]="showConfirm ? 'text' : 'password'" formControlName="confirmPassword"
+              class="h-9 w-full rounded border border-outline-variant bg-surface-container-lowest px-3 pr-9 font-body-md text-body-md text-on-surface transition-colors focus:border-primary focus:outline-none" />
+            <button type="button" class="absolute right-2 inline-flex items-center justify-center rounded p-1 text-on-surface-variant transition-colors hover:text-on-surface" (click)="showConfirm = !showConfirm">
+              <span class="material-symbols-outlined text-[18px]">{{ showConfirm ? 'visibility_off' : 'visibility' }}</span>
+            </button>
+          </div>
+        </div>
+        <div class="flex justify-start pt-space-xs">
+          <button type="submit" [disabled]="submitting()" class="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-primary-container px-space-md font-label-md text-label-md text-on-primary shadow-sm transition-colors hover:bg-primary disabled:opacity-60">
+            <span>{{ submitting() ? 'Updating...' : 'Update Password' }}</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Console preferences -->
+    <section class="flex flex-col gap-space-md rounded-xl border border-outline-variant bg-surface-container-lowest p-space-md shadow-sm">
+      <div class="flex flex-col gap-0.5 border-b border-outline-variant pb-space-sm">
+        <h3 class="font-headline-sm text-headline-sm text-on-surface">Console Preferences</h3>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">Local display preferences stored in this browser.</p>
+      </div>
+      <form class="flex flex-col gap-space-sm" [formGroup]="prefsForm" (ngSubmit)="savePreferences()">
+        <div class="flex flex-col gap-1.5">
+          <label class="font-label-md text-label-md text-on-surface" for="pref-landing">Default Landing Page</label>
+          <select id="pref-landing" formControlName="landingPage" class="h-9 w-full rounded border border-outline-variant bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface focus:border-primary focus:outline-none">
+            @for (opt of landingOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="grid grid-cols-1 gap-space-sm sm:grid-cols-2">
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface" for="pref-interval">Auto-Refresh Interval</label>
+            <select id="pref-interval" formControlName="refreshInterval" class="h-9 w-full rounded border border-outline-variant bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface focus:border-primary focus:outline-none">
+              @for (ms of intervalOptions; track ms) {
+                <option [value]="ms">{{ ms / 1000 }} seconds</option>
+              }
+            </select>
+          </div>
+          <div class="flex flex-col gap-space-xs pt-6">
+            <label class="flex cursor-pointer items-center gap-2 font-body-md text-body-md text-on-surface">
+              <input type="checkbox" formControlName="autoRefresh" class="h-4 w-4 rounded border-outline-variant" />
+              Enable auto-refresh by default
+            </label>
+            <label class="flex cursor-pointer items-center gap-2 font-body-md text-body-md text-on-surface">
+              <input type="checkbox" formControlName="compactTables" class="h-4 w-4 rounded border-outline-variant" />
+              Compact table density
+            </label>
+          </div>
+        </div>
+        <div class="flex justify-start gap-space-xs pt-space-xs">
+          <button type="submit" class="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-primary-container px-space-md font-label-md text-label-md text-on-primary shadow-sm transition-colors hover:bg-primary">
+            <span>Save Preferences</span>
+          </button>
+          <button type="button" class="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-space-md font-label-md text-label-md text-on-surface transition-colors hover:bg-surface-container-low" (click)="resetPreferences()">
+            <span>Reset</span>
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>

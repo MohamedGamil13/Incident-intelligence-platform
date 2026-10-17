@@ -1,0 +1,255 @@
+<div class="mx-auto flex w-full max-w-[1280px] flex-col gap-space-md p-space-md lg:p-space-lg">
+  <!-- Header -->
+  <div class="flex flex-col justify-between gap-space-sm border-b border-outline-variant pb-space-xs sm:flex-row sm:items-end">
+    <div class="flex flex-col gap-1">
+      <div class="flex items-center gap-space-xs">
+        <span class="rounded bg-surface-container px-1.5 py-0.5 font-code-sm text-code-sm font-semibold uppercase tracking-wider text-primary">SecOps / IAM</span>
+        <span class="inline-flex items-center gap-1 font-label-sm text-label-sm font-semibold text-tertiary">
+          <span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span>
+          Policy Sync Active
+        </span>
+      </div>
+      <h1 class="font-headline-lg text-headline-lg tracking-tight text-on-surface">Users &amp; Roles</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant">Manage organization members, platform permissions, and access roles.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center gap-1.5 rounded border border-outline-variant bg-surface-container-lowest px-3 py-1.5 font-label-md text-label-md text-on-surface">
+        <span class="material-symbols-outlined text-[18px]">verified_user</span>
+        Role-based access control
+      </span>
+    </div>
+  </div>
+
+  <!-- Session callout -->
+  <div class="flex flex-col items-start justify-between gap-space-sm rounded border border-outline-variant bg-surface-container-low px-4 py-3 sm:flex-row sm:items-center">
+    <div class="flex items-center gap-space-xs">
+      <span class="material-symbols-outlined flex-shrink-0 text-[20px] text-primary">shield_person</span>
+      <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+        <span class="font-label-md text-label-md font-semibold text-on-surface">Session Propagation:</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Role changes take effect immediately across all active cluster sessions and API credentials.</span>
+      </div>
+    </div>
+    <div class="hidden items-center gap-2 font-code-sm text-code-sm text-on-surface-variant md:flex">
+      <span class="inline-block h-2 w-2 rounded-full bg-tertiary"></span>
+      <span>Directory: Identity Core</span>
+    </div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="grid grid-cols-2 gap-space-xs sm:grid-cols-4">
+    <div class="flex flex-col rounded border border-outline-variant bg-surface-container-lowest p-3">
+      <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Total Members</span>
+      <span class="mt-1 font-headline-md text-headline-md text-on-surface">{{ stats().total }}</span>
+    </div>
+    <div class="flex flex-col rounded border border-outline-variant bg-surface-container-lowest p-3">
+      <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Admins</span>
+      <span class="mt-1 font-headline-md text-headline-md text-on-surface">{{ stats().admins }}</span>
+    </div>
+    <div class="flex flex-col rounded border border-outline-variant bg-surface-container-lowest p-3">
+      <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Active Responders</span>
+      <span class="mt-1 font-headline-md text-headline-md text-on-surface">{{ stats().responders }}</span>
+    </div>
+    <div class="flex flex-col rounded border border-outline-variant bg-surface-container-lowest p-3">
+      <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Verified Emails</span>
+      <span class="mt-1 font-headline-md text-headline-md text-tertiary">{{ stats().confirmed }}</span>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="flex flex-col items-stretch justify-between gap-space-xs rounded border border-outline-variant bg-surface-container-lowest p-2 sm:flex-row sm:items-center">
+    <div class="flex max-w-lg flex-1 items-center gap-space-xs">
+      <div class="relative w-full">
+        <span class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant material-symbols-outlined">search</span>
+        <input
+          type="text"
+          placeholder="Search by name or email address..."
+          class="h-9 w-full rounded border border-outline-variant bg-surface pl-9 pr-3 font-body-sm text-body-sm text-on-surface transition-colors placeholder:text-on-surface-variant focus:border-primary focus:bg-surface-container-lowest focus:outline-none"
+          [value]="filters.controls.search.value"
+          (input)="filters.controls.search.setValue($any($event.target).value)"
+        />
+      </div>
+    </div>
+    <div class="flex items-center gap-space-xs">
+      <div class="flex items-center gap-1.5">
+        <label class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant" for="roleFilter">Role:</label>
+        <div class="relative inline-block">
+          <select
+            id="roleFilter"
+            class="h-9 cursor-pointer appearance-none rounded border border-outline-variant bg-surface pl-2.5 pr-8 font-label-md text-label-md text-on-surface transition-colors focus:border-primary focus:outline-none"
+            [value]="filters.controls.role.value"
+            (change)="filters.controls.role.setValue($any($event.target).value)"
+          >
+            <option value="">All Roles</option>
+            @for (role of allRoles; track role) {
+              <option [value]="role">{{ role }}</option>
+            }
+          </select>
+          <span class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant material-symbols-outlined">expand_more</span>
+        </div>
+      </div>
+      <button type="button" class="inline-flex h-9 items-center justify-center rounded border border-outline-variant px-2.5 text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface" title="Reset Filters" (click)="resetFilters()">
+        <span class="material-symbols-outlined text-[18px]">filter_alt_off</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="overflow-hidden rounded border border-outline-variant bg-surface-container-lowest">
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-left">
+        <thead>
+          <tr class="h-9 border-b border-outline-variant bg-surface-container-low">
+            <th class="w-1/3 px-4 py-2 font-label-sm text-label-sm font-semibold uppercase tracking-wider text-on-surface-variant" scope="col">Member</th>
+            <th class="px-4 py-2 font-label-sm text-label-sm font-semibold uppercase tracking-wider text-on-surface-variant" scope="col">Email</th>
+            <th class="w-64 px-4 py-2 font-label-sm text-label-sm font-semibold uppercase tracking-wider text-on-surface-variant" scope="col">Roles</th>
+            <th class="w-32 px-4 py-2 font-label-sm text-label-sm font-semibold uppercase tracking-wider text-on-surface-variant" scope="col">Status</th>
+            <th class="w-24 px-4 py-2 text-right font-label-sm text-label-sm font-semibold uppercase tracking-wider text-on-surface-variant" scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant font-body-md text-body-md">
+          @if (loading()) {
+            <tr><td colspan="5" class="px-4 py-12 text-center text-secondary">Loading members...</td></tr>
+          } @else if (visible().length === 0) {
+            <tr><td colspan="5" class="px-4 py-12 text-center text-secondary">No users matched the current filters.</td></tr>
+          } @else {
+            @for (row of visible(); track row.user.id) {
+              @let st = statusLabel(row.user);
+              <tr class="group h-[52px] transition-colors hover:bg-surface-container-low">
+                <td class="px-4 py-2">
+                  <div class="flex items-center gap-3">
+                    <div class="relative flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-secondary-container font-code-sm text-[11px] font-bold text-on-secondary-container">
+                      {{ initials(row.user) }}
+                      <span class="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full ring-2 ring-surface-container-lowest" [class]="row.user.emailConfirmed ? 'bg-tertiary' : 'bg-outline'"></span>
+                    </div>
+                    <div class="flex min-w-0 flex-col">
+                      <div class="flex items-center gap-1.5">
+                        <span class="truncate font-label-md text-label-md font-semibold text-on-surface">{{ displayName(row.user) }}</span>
+                        @if (row.user.email === currentEmail()) {
+                          <span class="rounded bg-surface-container-high px-1 py-0.5 font-code-sm text-code-sm text-on-surface-variant">You</span>
+                        }
+                      </div>
+                      <span class="truncate font-code-sm text-code-sm text-on-surface-variant">{{ row.user.id }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-4 py-2">
+                  <span class="select-all font-code-md text-code-md text-on-surface">{{ row.user.email ?? '--' }}</span>
+                </td>
+                <td class="px-4 py-2">
+                  <div class="flex flex-wrap gap-1">
+                    @if (row.roles.length === 0) {
+                      <span class="font-code-sm text-code-sm text-on-surface-variant">No roles</span>
+                    } @else {
+                      @for (role of row.roles; track role) {
+                        <span class="rounded border border-outline-variant bg-surface-container px-1.5 py-0.5 font-label-sm text-label-sm text-on-surface">{{ role }}</span>
+                      }
+                    }
+                  </div>
+                </td>
+                <td class="px-4 py-2">
+                  <span class="inline-flex items-center gap-1 rounded border px-2 py-0.5 font-label-sm text-label-sm font-medium" [class]="st.classes">
+                    <span class="h-1.5 w-1.5 rounded-full" [class]="row.user.emailConfirmed ? 'bg-current' : 'bg-outline'"></span>
+                    {{ st.label }}
+                  </span>
+                </td>
+                <td class="px-4 py-2 text-right">
+                  <div class="flex items-center justify-end gap-1">
+                    @if (isAdmin()) {
+                      <button type="button" class="rounded p-1 text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface" title="Assign role" (click)="openAssign(row)">
+                        <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+                      </button>
+                      <button type="button" class="rounded p-1 text-on-surface-variant transition-colors hover:bg-error-container hover:text-error" title="Delete user" (click)="askDelete(row)">
+                        <span class="material-symbols-outlined text-[18px]">person_off</span>
+                      </button>
+                    } @else {
+                      <span class="font-code-sm text-code-sm text-on-surface-variant">--</span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-pagination
+      class="block"
+      [page]="pageIndex()"
+      [pageSize]="pageSize()"
+      [hasNext]="hasNext()"
+      totalLabel="members"
+      (pageChange)="changePage($event)"
+    />
+  </div>
+
+  <!-- Role reference -->
+  <div class="grid grid-cols-1 gap-space-xs pt-space-xs md:grid-cols-4">
+    <div class="flex flex-col gap-1 rounded border border-outline-variant bg-surface-container-low p-3">
+      <div class="flex items-center justify-between">
+        <span class="font-label-md text-label-md font-semibold text-on-surface">Admin</span>
+        <span class="rounded bg-surface-container-highest px-1.5 py-0.5 font-code-sm text-code-sm text-on-surface">Full IAM</span>
+      </div>
+      <p class="font-body-sm text-body-sm text-on-surface-variant">Full write access to IAM, billing, integrations, runbooks, and critical war-room declaration.</p>
+    </div>
+    <div class="flex flex-col gap-1 rounded border border-outline-variant bg-surface-container-low p-3">
+      <div class="flex items-center justify-between">
+        <span class="font-label-md text-label-md font-semibold text-on-surface">IncidentManager</span>
+        <span class="rounded bg-surface-container-highest px-1.5 py-0.5 font-code-sm text-code-sm text-on-surface">P0 Lead</span>
+      </div>
+      <p class="font-body-sm text-body-sm text-on-surface-variant">Manage on-call rotations, declare &amp; escalate P0/P1 incidents, publish public status pages.</p>
+    </div>
+    <div class="flex flex-col gap-1 rounded border border-outline-variant bg-surface-container-low p-3">
+      <div class="flex items-center justify-between">
+        <span class="font-label-md text-label-md font-semibold text-on-surface">Developer</span>
+        <span class="rounded bg-surface-container-highest px-1.5 py-0.5 font-code-sm text-code-sm text-on-surface">Ops Eng</span>
+      </div>
+      <p class="font-body-sm text-body-sm text-on-surface-variant">Acknowledge telemetry alerts, investigate service traces, attach runbooks and mitigation logs.</p>
+    </div>
+    <div class="flex flex-col gap-1 rounded border border-outline-variant bg-surface-container-low p-3">
+      <div class="flex items-center justify-between">
+        <span class="font-label-md text-label-md font-semibold text-on-surface">Viewer</span>
+        <span class="rounded bg-surface-container-highest px-1.5 py-0.5 font-code-sm text-code-sm text-on-surface">Read Only</span>
+      </div>
+      <p class="font-body-sm text-body-sm text-on-surface-variant">Read-only oversight across telemetry boards, post-incident reviews, and service health states.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Assign role modal -->
+@if (assignTarget(); as target) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/40 p-gutter">
+    <div class="w-full max-w-sm rounded-xl border border-border-subtle bg-surface-container-lowest p-6 shadow-float">
+      <h2 class="mb-1 font-headline-sm text-headline-sm text-on-surface">Assign Role</h2>
+      <p class="mb-4 font-body-sm text-body-sm text-on-surface-variant">Grant an additional role to <span class="font-semibold text-on-surface">{{ displayName(target.user) }}</span>.</p>
+      <form [formGroup]="assignForm" (ngSubmit)="confirmAssign()">
+        <label class="mb-1 block font-label-md text-label-md text-on-surface" for="assign-role">Role</label>
+        <select id="assign-role" formControlName="role" class="mb-4 h-9 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface focus:ring-2 focus:ring-primary-container">
+          @for (role of allRoles; track role) {
+            <option [value]="role">{{ role }}</option>
+          }
+        </select>
+        <div class="flex justify-end gap-3">
+          <button type="button" class="rounded-xl bg-surface-container px-4 py-2 font-label-md text-label-md text-on-surface hover:bg-surface-container-high" (click)="assignTarget.set(null)">Cancel</button>
+          <button type="submit" [disabled]="submitting()" class="rounded-xl bg-primary-container px-4 py-2 font-label-md text-label-md text-on-primary hover:bg-primary disabled:opacity-60">{{ submitting() ? 'Assigning...' : 'Assign' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Delete confirm -->
+@if (pendingDelete(); as target) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/40 p-gutter">
+    <div class="w-full max-w-sm rounded-xl border border-border-subtle bg-surface-container-lowest p-6 shadow-float">
+      <div class="mb-3 flex items-center gap-2 text-error">
+        <span class="material-symbols-outlined">person_off</span>
+        <h3 class="font-headline-sm text-headline-sm">Delete member</h3>
+      </div>
+      <p class="mb-5 font-body-md text-body-md text-secondary">Permanently remove <span class="font-semibold text-on-surface">{{ displayName(target.user) }}</span>? Access is revoked immediately.</p>
+      <div class="flex justify-end gap-3">
+        <button type="button" class="rounded-xl bg-surface-container px-4 py-2 font-label-md text-label-md text-on-surface hover:bg-surface-container-high" (click)="pendingDelete.set(null)">Cancel</button>
+        <button type="button" [disabled]="submitting()" class="rounded-xl bg-sev-critical px-4 py-2 font-label-md text-label-md text-white hover:opacity-90 disabled:opacity-60" (click)="confirmDelete()">{{ submitting() ? 'Deleting...' : 'Delete' }}</button>
+      </div>
+    </div>
+  </div>
+}

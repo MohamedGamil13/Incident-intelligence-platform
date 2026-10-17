@@ -1,0 +1,267 @@
+@if (loading()) {
+  <div class="flex w-full max-w-[1280px] flex-col gap-space-md">
+    <div class="h-40 animate-pulse rounded-xl bg-surface-container-low"></div>
+    <div class="h-64 animate-pulse rounded-xl bg-surface-container-low"></div>
+  </div>
+} @else if (service(); as svc) {
+  <div class="mx-auto flex w-full max-w-[1280px] flex-col gap-space-md">
+    <!-- Top bar -->
+    <div class="flex flex-col justify-between gap-space-xs border-b border-outline-variant pb-space-xs sm:flex-row sm:items-center">
+      <div class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant">
+        <a class="transition-colors hover:text-on-surface" routerLink="/services">Services</a>
+        <span class="text-outline-variant">/</span>
+        <span class="font-headline-sm text-headline-sm text-on-surface">{{ svc.name }}</span>
+      </div>
+      <div class="flex items-center gap-space-xs">
+        @if (canManage()) {
+          <button type="button" class="inline-flex items-center gap-1.5 rounded border border-outline-variant bg-surface-container-lowest px-3 py-1.5 font-label-md text-label-md text-on-surface transition-colors hover:bg-surface-container-low" (click)="openEdit()">
+            <span class="material-symbols-outlined text-[16px]">edit</span>
+            <span>Edit Service</span>
+          </button>
+          <button type="button" class="inline-flex items-center gap-1.5 rounded border border-outline-variant bg-surface-container-lowest px-3 py-1.5 font-label-md text-label-md text-on-surface transition-colors hover:bg-surface-container-low" (click)="recordDeployment()">
+            <span class="material-symbols-outlined text-[16px]">rocket_launch</span>
+            <span>Record Deployment</span>
+          </button>
+        }
+        <button type="button" class="inline-flex items-center gap-1.5 rounded bg-primary-container px-3 py-1.5 font-label-md text-label-md text-on-primary shadow-sm transition-colors hover:bg-primary" (click)="declareIncident()">
+          <span class="material-symbols-outlined text-[16px]">add_alert</span>
+          <span>Declare Incident</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Header block -->
+    <div class="flex flex-col gap-space-md rounded-xl border border-outline-variant bg-surface-container-lowest p-space-md shadow-sm">
+      <div class="flex flex-col justify-between gap-space-md lg:flex-row lg:items-start">
+        <div class="flex max-w-3xl flex-col gap-2">
+          <div class="flex flex-wrap items-center gap-3">
+            <h1 class="font-headline-xl text-headline-xl tracking-tight text-on-surface">{{ svc.name }}</h1>
+            <span class="inline-flex items-center gap-1.5 rounded border px-2.5 py-0.5 font-label-sm text-label-sm uppercase tracking-wide" [class]="healthBadge()">
+              <span class="h-2 w-2 animate-pulse rounded-full" [class]="healthDot()"></span>
+              {{ healthState() }}
+            </span>
+            @if (activeCount() > 0) {
+              <span class="inline-flex items-center gap-1 rounded border border-sev-critical bg-sev-critical-bg px-2 py-0.5 font-code-sm text-code-sm font-semibold text-sev-critical">
+                <span class="material-symbols-outlined text-[14px]">warning</span>
+                {{ activeCount() }} active incident{{ activeCount() === 1 ? '' : 's' }}
+              </span>
+            }
+          </div>
+          <p class="font-body-md leading-relaxed text-body-md text-on-surface-variant">{{ svc.description }}</p>
+        </div>
+        <div class="flex items-center gap-4 rounded border border-outline-variant bg-surface-container-low px-space-md py-space-xs">
+          <div class="flex flex-col">
+            <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Health Index</span>
+            <span class="mt-0.5 font-code-md text-headline-md text-on-surface">{{ healthIndex() }}%</span>
+          </div>
+          <div class="h-8 w-px bg-outline-variant"></div>
+          <div class="flex flex-col">
+            <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Total Incidents</span>
+            <span class="mt-0.5 font-code-md text-headline-md text-on-surface">{{ incidents().length }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4 border-t border-outline-variant pt-space-xs sm:grid-cols-4">
+        <div class="flex flex-col">
+          <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Service ID</span>
+          <span class="mt-0.5 font-code-md text-code-md font-semibold text-on-surface">SVC-{{ svc.id }}</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Active Incidents</span>
+          <span class="mt-0.5 font-code-md text-code-md font-semibold text-on-surface">{{ activeCount() }}</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Resolved</span>
+          <span class="mt-0.5 font-code-md text-code-md font-semibold text-on-surface">{{ incidents().length - activeCount() }}</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Recent Logs</span>
+          <span class="mt-0.5 font-code-md text-code-md font-semibold text-on-surface">{{ logs().length }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Incidents for this service -->
+    <div class="flex flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+      <div class="flex items-center justify-between border-b border-outline-variant bg-surface-container-low px-space-md py-space-xs">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[18px] text-on-surface">crisis_alert</span>
+          <h2 class="font-headline-sm text-headline-sm text-on-surface">Incidents for this Service</h2>
+          <span class="rounded border border-sev-critical bg-sev-critical-bg px-1.5 py-0.5 font-code-sm text-code-sm font-semibold text-sev-critical">{{ incidents().length }}</span>
+        </div>
+        <a class="group flex items-center gap-1 font-label-md text-label-md font-semibold text-primary transition-colors hover:text-on-primary-fixed-variant" [routerLink]="['/incidents']" [queryParams]="{ serviceId: svc.id }">
+          <span>View all incidents</span>
+          <span class="material-symbols-outlined text-[16px] transition-transform group-hover:translate-x-0.5">arrow_forward</span>
+        </a>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse text-left">
+          <thead>
+            <tr class="border-b border-outline-variant bg-surface-container-low font-label-sm text-label-sm uppercase text-on-surface-variant">
+              <th class="w-28 px-space-md py-2.5 font-semibold">Severity</th>
+              <th class="px-space-md py-2.5 font-semibold">Title</th>
+              <th class="w-36 px-space-md py-2.5 font-semibold">Status</th>
+              <th class="w-32 px-space-md py-2.5 font-semibold">Created</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant font-body-md text-body-md text-on-surface">
+            @if (incidents().length === 0) {
+              <tr><td colspan="4" class="px-space-md py-10 text-center font-body-sm text-body-sm text-secondary">No incidents recorded for this service.</td></tr>
+            } @else {
+              @for (inc of incidents(); track inc.id) {
+                <tr class="transition-colors hover:bg-surface-container-low">
+                  <td class="px-space-md py-3 align-middle">
+                    <app-status-badge [value]="inc.severity" kind="severity" />
+                  </td>
+                  <td class="px-space-md py-3 align-middle">
+                    <div class="flex flex-col">
+                      <a class="flex items-center gap-1.5 font-headline-sm text-headline-sm text-on-surface transition-colors hover:text-primary" [routerLink]="['/incidents', inc.id]">{{ inc.title }}</a>
+                      <span class="font-code-sm text-code-sm text-on-surface-variant">INC-{{ inc.id }}</span>
+                    </div>
+                  </td>
+                  <td class="px-space-md py-3 align-middle">
+                    <app-status-badge [value]="inc.status" kind="status" />
+                  </td>
+                  <td class="px-space-md py-3 align-middle">
+                    <span class="font-code-sm text-code-sm text-on-surface-variant">{{ relative(inc.createdAt) }}</span>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Recent logs -->
+    <div class="flex flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-space-xs border-b border-outline-variant bg-surface-container-low px-space-md py-space-xs">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[18px] text-on-surface">terminal</span>
+          <h2 class="font-headline-sm text-headline-sm text-on-surface">Recent Logs</h2>
+          <span class="rounded border border-outline-variant bg-surface-container px-2 py-0.5 font-code-sm text-code-sm text-on-surface-variant">service/{{ svc.id }}</span>
+        </div>
+        <a class="group flex items-center gap-1 font-label-md text-label-md font-semibold text-primary transition-colors hover:text-on-primary-fixed-variant" [routerLink]="['/logs']" [queryParams]="{ serviceId: svc.id }">
+          <span>Open in Logs Explorer</span>
+          <span class="material-symbols-outlined text-[16px] transition-transform group-hover:translate-x-0.5">arrow_forward</span>
+        </a>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse text-left font-code-sm text-code-sm">
+          <thead>
+            <tr class="border-b border-outline-variant bg-surface-container-low font-label-sm text-label-sm uppercase text-on-surface-variant">
+              <th class="w-44 px-space-md py-2 font-semibold">Timestamp</th>
+              <th class="w-28 px-space-md py-2 font-semibold">Level</th>
+              <th class="px-space-md py-2 font-semibold">Message</th>
+              <th class="w-40 px-space-md py-2 font-semibold">Trace ID</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant bg-surface-container-lowest">
+            @if (logs().length === 0) {
+              <tr><td colspan="4" class="px-space-md py-10 text-center font-body-sm text-body-sm text-secondary">No log entries for this service.</td></tr>
+            } @else {
+              @for (log of logs(); track log.id) {
+                <tr class="font-code-sm transition-colors hover:bg-surface-container-low">
+                  <td class="whitespace-nowrap px-space-md py-2.5 align-top text-on-surface-variant">{{ fullDate(log.timestamp) }}</td>
+                  <td class="px-space-md py-2.5 align-top">
+                    <app-status-badge [value]="log.logLevel" kind="loglevel" />
+                  </td>
+                  <td class="px-space-md py-2.5 align-top font-code-sm leading-tight break-all text-on-surface">{{ log.message }}</td>
+                  <td class="whitespace-nowrap px-space-md py-2.5 align-top">
+                    <button type="button" class="text-left font-code-sm font-medium text-primary hover:underline" [title]="'Copy trace id'" (click)="copyTrace(log.traceId)">{{ log.traceId || '--' }}</button>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="flex items-center justify-between border-t border-outline-variant bg-surface-container-low px-space-md py-space-xs">
+        <span class="font-code-sm text-code-sm text-on-surface-variant">Showing {{ logs().length }} recent entr{{ logs().length === 1 ? 'y' : 'ies' }}</span>
+        <a class="inline-flex items-center gap-1.5 rounded border border-outline-variant bg-surface-container-lowest px-3 py-1.5 font-label-md text-label-md text-on-surface transition-colors hover:bg-surface" routerLink="/logs">Full log explorer</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit modal -->
+  @if (editOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/40 p-gutter">
+      <div class="w-full max-w-md rounded-xl border border-border-subtle bg-surface-container-lowest p-6 shadow-float">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="font-headline-sm text-headline-sm text-on-surface">Edit Service</h2>
+          <button type="button" class="text-secondary hover:text-on-surface" (click)="editOpen.set(false)">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+        <form class="flex flex-col gap-3" [formGroup]="editForm" (ngSubmit)="saveEdit()">
+          <div class="flex flex-col gap-1">
+            <label class="font-label-md text-label-md text-on-surface" for="edit-name">Name</label>
+            <input id="edit-name" type="text" formControlName="name" maxlength="100"
+              class="h-9 rounded-xl bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container" />
+            @if (editForm.controls.name.invalid && editForm.controls.name.touched) {
+              <span class="font-body-sm text-body-sm text-error">Name is required.</span>
+            }
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="font-label-md text-label-md text-on-surface" for="edit-desc">Description</label>
+            <textarea id="edit-desc" rows="3" formControlName="description" maxlength="500"
+              class="rounded-xl bg-surface-container-lowest px-3 py-2 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container"></textarea>
+            @if (editForm.controls.description.invalid && editForm.controls.description.touched) {
+              <span class="font-body-sm text-body-sm text-error">Description is required.</span>
+            }
+          </div>
+          <div class="mt-2 flex justify-end gap-3">
+            <button type="button" class="rounded-xl bg-surface-container px-4 py-2 font-label-md text-label-md text-on-surface hover:bg-surface-container-high" (click)="editOpen.set(false)">Cancel</button>
+            <button type="submit" [disabled]="submitting()" class="rounded-xl bg-primary-container px-4 py-2 font-label-md text-label-md text-on-primary hover:bg-primary disabled:opacity-60">{{ submitting() ? 'Saving...' : 'Save Changes' }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Deployment modal -->
+  @if (deployOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/40 p-gutter">
+      <div class="w-full max-w-md rounded-xl border border-border-subtle bg-surface-container-lowest p-6 shadow-float">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="font-headline-sm text-headline-sm text-on-surface">Record Deployment</h2>
+          <button type="button" class="text-secondary hover:text-on-surface" (click)="deployOpen.set(false)">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+        <form class="flex flex-col gap-3" [formGroup]="deployForm" (ngSubmit)="submitDeployment()">
+          <div class="flex flex-col gap-1">
+            <label class="font-label-md text-label-md text-on-surface" for="dep-title">Title</label>
+            <input id="dep-title" type="text" formControlName="title" maxlength="100" placeholder="e.g. Hotfix for settlement retries"
+              class="h-9 rounded-xl bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container" />
+            @if (deployForm.controls.title.invalid && deployForm.controls.title.touched) {
+              <span class="font-body-sm text-body-sm text-error">Title is required.</span>
+            }
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="font-label-md text-label-md text-on-surface" for="dep-version">Version</label>
+              <input id="dep-version" type="text" formControlName="version" maxlength="20" placeholder="1.4.2"
+                class="h-9 rounded-xl bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container" />
+              @if (deployForm.controls.version.invalid && deployForm.controls.version.touched) {
+                <span class="font-body-sm text-body-sm text-error">Required.</span>
+              }
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="font-label-md text-label-md text-on-surface" for="dep-by">Deployed By</label>
+              <input id="dep-by" type="text" formControlName="deployedBy" maxlength="50" placeholder="username"
+                class="h-9 rounded-xl bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container" />
+              @if (deployForm.controls.deployedBy.invalid && deployForm.controls.deployedBy.touched) {
+                <span class="font-body-sm text-body-sm text-error">Required.</span>
+              }
+            </div>
+          </div>
+          <div class="mt-2 flex justify-end gap-3">
+            <button type="button" class="rounded-xl bg-surface-container px-4 py-2 font-label-md text-label-md text-on-surface hover:bg-surface-container-high" (click)="deployOpen.set(false)">Cancel</button>
+            <button type="submit" [disabled]="submitting()" class="rounded-xl bg-primary-container px-4 py-2 font-label-md text-label-md text-on-primary hover:bg-primary disabled:opacity-60">{{ submitting() ? 'Recording...' : 'Record Deployment' }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+}

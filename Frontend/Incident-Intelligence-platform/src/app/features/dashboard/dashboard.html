@@ -1,0 +1,170 @@
+<!-- Page header -->
+<div class="flex flex-col justify-between gap-space-xs pb-space-lg md:flex-row md:items-center">
+  <div>
+    <h1 class="font-headline-xl text-headline-xl tracking-tight text-on-surface">Dashboard</h1>
+    <p class="mt-0.5 font-body-sm text-body-sm text-secondary">
+      Real-time incident intelligence and operational service state
+    </p>
+  </div>
+  <div class="flex items-center gap-space-xs self-start md:self-auto">
+    <div class="inline-flex items-center gap-1.5 rounded border border-outline-variant bg-surface-container px-2.5 py-1 font-code-sm text-code-sm text-secondary">
+      <span class="inline-block h-2 w-2 rounded-full bg-error animate-pulse"></span>
+      <span>EVAL INTERVAL: {{ evalInterval / 1000 }}s</span>
+    </div>
+    <button
+      type="button"
+      class="inline-flex items-center gap-1 rounded border border-outline-variant bg-surface-container-lowest px-3 py-1.5 font-label-md text-label-md text-on-surface transition-colors hover:bg-surface-container"
+      (click)="load()"
+    >
+      <span class="material-symbols-outlined text-[16px]" [class.animate-spin]="loading()">refresh</span>
+      <span>Refresh</span>
+    </button>
+  </div>
+</div>
+
+<!-- Stat cards -->
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="flex flex-col justify-between rounded-[12px] border border-outline-variant bg-surface-container-lowest p-6">
+    <span class="font-label-sm text-body-sm uppercase tracking-wider text-secondary">Open Incidents</span>
+    <div class="mt-4 flex items-baseline justify-between">
+      <span class="font-headline-xl text-[32px] font-semibold leading-8 text-on-surface">{{ openCount() }}</span>
+      <span class="material-symbols-outlined text-[22px] text-outline-variant">warning</span>
+    </div>
+  </div>
+
+  <div class="flex flex-col justify-between rounded-[12px] border border-outline-variant bg-surface-container-lowest p-6">
+    <span class="font-label-sm text-body-sm uppercase tracking-wider text-secondary">Critical Incidents</span>
+    <div class="mt-4 flex items-baseline justify-between">
+      <span class="font-headline-xl text-[32px] font-semibold leading-8 text-error">{{ criticalCount() }}</span>
+      <span class="material-symbols-outlined text-[22px] text-error">report</span>
+    </div>
+  </div>
+
+  <div class="flex flex-col justify-between rounded-[12px] border border-outline-variant bg-surface-container-lowest p-6">
+    <span class="font-label-sm text-body-sm uppercase tracking-wider text-secondary">Resolved Today</span>
+    <div class="mt-4 flex items-baseline justify-between">
+      <span class="font-headline-xl text-[32px] font-semibold leading-8 text-tertiary">{{ resolvedTodayCount() }}</span>
+      <span class="material-symbols-outlined text-[22px] text-tertiary">check_circle</span>
+    </div>
+  </div>
+
+  <div class="flex flex-col justify-between rounded-[12px] border border-outline-variant bg-surface-container-lowest p-6">
+    <span class="font-label-sm text-body-sm uppercase tracking-wider text-secondary">Most Affected Service</span>
+    <div class="mt-4 flex min-w-0 items-baseline justify-between">
+      <span class="truncate font-headline-lg text-headline-lg font-semibold text-on-surface" [title]="mostAffectedService()">
+        {{ mostAffectedService() }}
+      </span>
+      <span class="ml-2 flex-shrink-0 material-symbols-outlined text-[22px] text-outline-variant">dns</span>
+    </div>
+  </div>
+</div>
+
+<!-- Row 2 -->
+<div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
+  <!-- Recent incidents -->
+  <section class="flex flex-col overflow-hidden rounded-[12px] border border-outline-variant bg-surface-container-lowest lg:col-span-7">
+    <div class="flex items-center justify-between border-b border-outline-variant bg-surface-container-lowest px-6 py-4">
+      <div class="flex items-center gap-2">
+        <h2 class="font-headline-sm text-headline-sm text-on-surface">Recent Incidents</h2>
+        <span class="rounded bg-surface-container-high px-2 py-0.5 font-code-sm text-[11px] text-secondary">{{ openCount() }} Active</span>
+      </div>
+      <a routerLink="/incidents" class="group flex items-center gap-1 font-label-md text-label-md text-primary transition-colors hover:text-on-primary-fixed-variant">
+        <span>View all</span>
+        <span class="transition-transform group-hover:translate-x-0.5">&rarr;</span>
+      </a>
+    </div>
+
+    <div class="w-full overflow-x-auto">
+      <table class="w-full border-collapse text-left">
+        <thead>
+          <tr class="border-b border-outline-variant bg-surface-container-low">
+            <th class="w-[100px] px-4 py-2.5 font-label-sm text-label-sm uppercase tracking-wider text-secondary" scope="col">Severity</th>
+            <th class="px-4 py-2.5 font-label-sm text-label-sm uppercase tracking-wider text-secondary" scope="col">Title</th>
+            <th class="hidden px-4 py-2.5 font-label-sm text-label-sm uppercase tracking-wider text-secondary sm:table-cell" scope="col">Service</th>
+            <th class="px-4 py-2.5 font-label-sm text-label-sm uppercase tracking-wider text-secondary" scope="col">Status</th>
+            <th class="px-4 py-2.5 text-right font-label-sm text-label-sm uppercase tracking-wider text-secondary" scope="col">Created</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant font-body-md text-body-md">
+          @if (loading()) {
+            <tr>
+              <td colspan="5" class="px-4 py-10 text-center font-body-sm text-body-sm text-secondary">Loading incidents...</td>
+            </tr>
+          } @else if (recentIncidents().length === 0) {
+            <tr>
+              <td colspan="5" class="px-4 py-10 text-center font-body-sm text-body-sm text-secondary">No active incidents. All clear.</td>
+            </tr>
+          } @else {
+            @for (incident of recentIncidents(); track incident.id) {
+              <tr class="group cursor-pointer transition-colors hover:bg-surface-container-low" [routerLink]="['/incidents', incident.id]">
+                <td class="whitespace-nowrap px-4 py-3">
+                  <app-status-badge [value]="incident.severity" kind="severity" />
+                </td>
+                <td class="min-w-[200px] px-4 py-3">
+                  <div class="truncate font-headline-sm text-headline-sm text-on-surface transition-colors group-hover:text-primary">
+                    {{ incident.title }}
+                  </div>
+                  <div class="mt-0.5 font-code-sm text-code-sm text-secondary sm:hidden">{{ incident.serviceName }}</div>
+                </td>
+                <td class="hidden whitespace-nowrap px-4 py-3 text-on-surface sm:table-cell">{{ incident.serviceName }}</td>
+                <td class="whitespace-nowrap px-4 py-3">
+                  <app-status-badge [value]="incident.status" />
+                </td>
+                <td class="whitespace-nowrap px-4 py-3 text-right font-code-sm text-code-sm text-secondary">
+                  {{ relative(incident.createdAt) }}
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex items-center justify-between border-t border-outline-variant bg-surface-container-lowest px-6 py-2.5 text-body-sm text-secondary">
+      <span class="font-code-sm text-code-sm">Showing {{ recentIncidents().length }} of {{ incidents().length }} tracked events</span>
+      <span class="font-label-sm text-label-sm uppercase tracking-wide">Sync: Realtime</span>
+    </div>
+  </section>
+
+  <!-- Service health -->
+  <section class="flex flex-col overflow-hidden rounded-[12px] border border-outline-variant bg-surface-container-lowest lg:col-span-5">
+    <div class="flex items-center justify-between border-b border-outline-variant bg-surface-container-lowest px-6 py-4">
+      <div class="flex items-center gap-2">
+        <h2 class="font-headline-sm text-headline-sm text-on-surface">Service Health</h2>
+        <span class="rounded bg-surface-container-high px-2 py-0.5 font-code-sm text-[11px] text-secondary">{{ services().length }} Cataloged</span>
+      </div>
+      <div class="flex items-center gap-1.5 text-body-sm text-secondary">
+        <span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span>
+        <span class="font-label-sm text-label-sm">{{ healthyServices() }} Online</span>
+      </div>
+    </div>
+
+    <div class="max-h-[360px] divide-y divide-outline-variant overflow-y-auto px-6">
+      @if (loading()) {
+        <div class="py-10 text-center font-body-sm text-body-sm text-secondary">Loading services...</div>
+      } @else if (serviceHealth().length === 0) {
+        <div class="py-10 text-center font-body-sm text-body-sm text-secondary">No services registered.</div>
+      } @else {
+        @for (service of serviceHealth(); track service.id) {
+          <a
+            class="-mx-6 flex items-center justify-between px-6 py-3 transition-colors hover:bg-surface-container-low"
+            [routerLink]="['/services', service.id]"
+          >
+            <div class="flex min-w-0 items-center gap-3">
+              <span class="h-2 w-2 flex-shrink-0 rounded-full" [class]="stateDot(service.state)" [title]="'State: ' + service.state"></span>
+              <span class="truncate font-body-md font-semibold text-on-surface">{{ service.name }}</span>
+            </div>
+            <span class="inline-flex flex-shrink-0 items-center rounded border px-2 py-0.5 font-code-sm text-xs font-semibold" [class]="stateBadge(service.state)">
+              {{ service.openCount }} open
+            </span>
+          </a>
+        }
+      }
+    </div>
+
+    <div class="mt-auto flex items-center justify-between border-t border-outline-variant bg-surface-container-lowest px-6 py-2.5 text-body-sm text-secondary">
+      <span class="font-code-sm text-code-sm">SLA Target: 99.95%</span>
+      <a routerLink="/services" class="font-label-sm text-label-sm text-primary hover:underline">Manage Services</a>
+    </div>
+  </section>
+</div>
