@@ -1,0 +1,95 @@
+<div class="relative flex min-h-screen items-center justify-center overflow-hidden bg-surface px-gutter py-space-lg">
+  <div class="pointer-events-none absolute inset-0">
+    <div class="absolute left-1/2 top-1/2 h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-fixed/40 blur-3xl"></div>
+  </div>
+
+  <div class="relative z-10 flex w-full max-w-[440px] flex-col">
+    <div class="relative flex flex-col rounded-xl bg-surface-container-lowest p-space-lg shadow-float">
+      <div class="pointer-events-none absolute -top-12 left-1/2 h-12 w-48 -translate-x-1/2 rounded-full bg-primary-container/10 blur-2xl"></div>
+
+      <div class="flex flex-col items-center text-center">
+        <div class="mb-3 flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-surface-container-low shadow-sm">
+          <span class="material-symbols-outlined text-[22px] text-primary">shield</span>
+        </div>
+        <span class="mb-2 font-headline-sm text-headline-sm tracking-tight text-on-surface">Incident Intel</span>
+        <h1 class="mb-2 font-headline-lg text-headline-lg tracking-tight text-on-surface">Verify your identity</h1>
+        <p class="max-w-[360px] font-body-md text-body-md leading-relaxed text-secondary">
+          We sent a 6-digit verification code to your registered email
+          <span class="font-headline-sm text-on-surface">{{ maskedEmail() }}</span>
+        </p>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="mt-space-sm flex items-start gap-space-xs rounded-lg bg-error-container/40 p-3">
+          <span class="material-symbols-outlined mt-0.5 text-[18px] leading-tight text-error">error</span>
+          <p class="flex-1 font-body-sm text-body-sm font-semibold text-error">{{ errorMessage() }}</p>
+        </div>
+      }
+
+      <form class="mt-space-md flex flex-col gap-space-md" [formGroup]="form" (ngSubmit)="submit()">
+        <app-otp-input formControlName="otp" [length]="6" />
+
+        <div class="flex items-center justify-between pt-1 font-body-sm text-secondary">
+          <span class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-secondary">info</span>
+            Didn't receive it? Check spam or junk.
+          </span>
+          <button
+            type="button"
+            class="font-headline-sm text-primary-container transition-colors hover:text-primary hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+            [disabled]="secondsLeft() > 0 || resending()"
+            (click)="resend()"
+          >
+            {{ resending() ? 'Resending...' : 'Resend code' }}
+          </button>
+        </div>
+
+        <div class="mt-1 flex items-center justify-between rounded-lg bg-surface-container-low p-space-sm">
+          <div class="flex items-center gap-2 font-body-sm text-secondary">
+            <span class="material-symbols-outlined text-[18px]">schedule</span>
+            @if (secondsLeft() > 0) {
+              <span>Resend code in <span class="font-code-sm font-semibold text-on-surface">{{ countdown() }}</span></span>
+            } @else {
+              <span>Didn't get the code? You can resend now.</span>
+            }
+          </div>
+          <a routerLink="/auth/forgot-password" class="font-label-md text-primary-container transition-colors hover:text-primary">Change email</a>
+        </div>
+
+        <div class="mt-2 flex flex-col gap-space-sm">
+          <button
+            type="submit"
+            [disabled]="submitting()"
+            class="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary-container font-headline-sm text-on-primary shadow-md transition-all hover:bg-primary active:scale-[0.99] disabled:opacity-60"
+          >
+            @if (submitting()) {
+              <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+            } @else {
+              <span class="material-symbols-outlined text-[18px]">verified_user</span>
+            }
+            <span>{{ submitting() ? 'Verifying...' : 'Verify Code' }}</span>
+          </button>
+          <a
+            routerLink="/auth/login"
+            class="flex w-full items-center justify-center gap-1.5 py-2 text-center font-headline-sm text-secondary transition-colors hover:text-on-surface"
+          >
+            <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+            <span>Back to sign in</span>
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <div class="mt-space-lg flex flex-col items-center gap-1.5 text-center">
+      <div class="flex items-center gap-2 font-code-sm text-[11px] uppercase tracking-wider text-secondary">
+        <span class="material-symbols-outlined text-[14px] text-tertiary">lock</span>
+        <span>TLS 1.3 FIPS-140-2 Encrypted</span>
+        <span class="text-secondary">•</span>
+        <span>OTP Verification</span>
+      </div>
+      <div class="font-code-sm text-[10px] text-secondary/70">
+        SOC2 TYPE II · ISO/IEC 27001 CONFORMS · US-EAST-1 GATEWAY
+      </div>
+    </div>
+  </div>
+</div>
