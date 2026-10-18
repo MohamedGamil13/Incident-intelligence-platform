@@ -22,7 +22,14 @@ namespace Incident_intelligence_platform.Extensions
                     var errors = context.ModelState
                         .Where(e => e.Value?.Errors.Count > 0)
                         .SelectMany(e => e.Value!.Errors)
-                        .Select(e => e.ErrorMessage)
+                     .Select(error =>
+                     {
+                         if (error.ErrorMessage.Contains("could not be converted"))
+                         {
+                             return "Invalid value provided for one or more fields .";
+                         }
+                         return error.ErrorMessage;
+                     })
                         .ToList();
 
                     var response = ApiResponse<object>.FailureResponse(

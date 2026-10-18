@@ -48,6 +48,7 @@ namespace Incident_intelligence_platform.DTOs.IncidentDTOs
         public string Description { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Severity level is required.")]
+        [EnumDataType(typeof(IncidentSeverity), ErrorMessage = "Invalid severity level value.")]
         public IncidentSeverity? Severity { get; set; }
 
         [Range(1, int.MaxValue, ErrorMessage = "ServiceId must be greater than 0.")]

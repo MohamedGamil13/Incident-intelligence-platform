@@ -64,26 +64,6 @@ namespace Presentation.Controllers.Incidents
             return CreatedAtAction(nameof(GetIncident), new { incidentId = result.Data!.Id }, apiResponse);
         }
 
-        //[HttpPost]
-        //[Authorize(Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager}")]
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager},{AppUsersRoles.Developer}")]
-        //public async Task<ActionResult> CreateIncident([FromBody] CreateIncidentRequestDTO requestDto)
-        //{
-        //    var result = await _incidentService.CreateIncidentAsync(requestDto);
-
-        //    if (!result.IsSuccess)
-        //    {
-        //        return BadRequest(ApiResponse<GetIncidentResponseDTO>.FailureResponse(
-        //            result.ErrorMessage ?? "Failed to create incident.", statusCode: 400));
-        //    }
-
-        //    var apiResponse = ApiResponse<GetIncidentResponseDTO>.SuccessResponse(
-        //        result.Data, "Incident created successfully", statusCode: 201);
-
-        //    // بدلاً من CreatedAtAction استخدم Created الصريحة أو StatusCode
-        //    return Created($"/api/incidents/{result.Data!.Id}", apiResponse);
-        //}
-
 
 
         [HttpPut("{incidentId:int}")]
