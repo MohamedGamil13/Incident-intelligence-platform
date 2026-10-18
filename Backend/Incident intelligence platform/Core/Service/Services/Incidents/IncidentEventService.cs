@@ -18,20 +18,29 @@ namespace ServiceLayer.Services.Incidents
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<IEnumerable<IncidentEvent>>> GetIncidentTimeLineAsync(int incidentId, int pageSize, int pageNumber)
+        public async Task<Result<IEnumerable<GetIncidentEventResponse>>> GetIncidentTimeLineAsync(int incidentId, int pageSize, int pageNumber)
         {
-
             var incidentExists = await _unitOfWork.GetRepository<Incident, int>().GetByIdAsync(incidentId);
             if (incidentExists is null)
             {
-                return Result<IEnumerable<IncidentEvent>>.Failure($"Incident with ID {incidentId} was not found.");
+                return Result<IEnumerable<GetIncidentEventResponse>>.Failure($"Incident with ID {incidentId} was not found.");
             }
-
 
             var spec = new IncidentEventsByIncidentSpecification(incidentId, pageSize, pageNumber);
             var events = await _unitOfWork.GetRepository<IncidentEvent, int>().GetAllAsync(spec);
 
-            return Result<IEnumerable<IncidentEvent>>.Success(events);
+
+            var eventDtos = events.Select(e => new GetIncidentEventResponse
+            {
+                Id = e.Id,
+                Title = e.Title,
+                Description = e.Description,
+                TimeStamp = e.TimeStamp.ToString(),
+                Date = e.Date,
+                IncidentId = e.IncidentId
+            });
+
+            return Result<IEnumerable<GetIncidentEventResponse>>.Success(eventDtos);
         }
 
         public async Task<Result<AddIncidentEventResponse>> AddEventAsync(int incidentId, AddIncidentEventDto dto)

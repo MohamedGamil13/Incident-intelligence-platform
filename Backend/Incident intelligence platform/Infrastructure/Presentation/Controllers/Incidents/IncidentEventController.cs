@@ -25,7 +25,7 @@ namespace Presentation.Controllers.Incidents
                     result.ErrorMessage ?? $"Incident with ID {id} was not found.", statusCode: 404));
             }
 
-            return Ok(ApiResponse<IEnumerable<IncidentEvent>>.SuccessResponse(
+            return Ok(ApiResponse<IEnumerable<GetIncidentEventResponse>>.SuccessResponse(
                 result.Data, "Incident timeline retrieved successfully."));
         }
 
