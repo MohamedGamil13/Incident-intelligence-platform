@@ -1,4 +1,7 @@
-﻿namespace Shared
+﻿using Domain.Enums.Incident;
+using Shared.Enums;
+
+namespace Shared
 {
     public class IncidentSpecParams
     {
@@ -13,8 +16,9 @@
         }
 
         public int? ServiceId { get; set; }
-        public string? Status { get; set; }
-        public string? Sort { get; set; }
+        public IncidentStatus? Status { get; set; }
+        public IncidentSort? Sort { get; set; }
         public string? Search { get; set; }
     }
 }
+

@@ -1,13 +1,13 @@
 [
   {
-    "IncidentId": 1,
+    "IncidentId": 2,
     "TimeStamp": 0,
     "Title": "Incident Created",
     "Description": "Automated alert triggered by high API response time (>2000ms).",
     "Date": "2026-10-18T01:15:00Z"
   },
   {
-    "IncidentId": 1,
+    "IncidentId": 2,
     "TimeStamp": 1,
     "Title": "Investigating Redis Cluster",
     "Description": "On-call engineer reviewing Redis memory snapshot errors and connection pools.",

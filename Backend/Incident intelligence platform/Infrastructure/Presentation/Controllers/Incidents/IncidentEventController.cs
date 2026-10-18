@@ -1,68 +1,52 @@
 ﻿using Domain.Entities.Incidents;
+using Domain.Enums.UserMangement;
 using Incident_intelligence_platform.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServiceAbstraction.Contracts.Incident;
 using Shared.Dtos.IcidentEventDTOs;
 
 namespace Presentation.Controllers.Incidents
 {
-
-    public class IncidentEventController : ApiController
+    [ApiController]
+    [Route("api/incidents")]
+    public class IncidentEventController(IIncidentEventService _incidentEventService) : ApiController
     {
-        private readonly IIncidentEventService incidentEventService;
 
-        public IncidentEventController(
-            IIncidentEventService incidentEventService)
+        [HttpGet("{id:int}/timeline")]
+        [Authorize]
+        public async Task<ActionResult> GetTimeLine(int id, [FromQuery] GetTimeLineRequest request)
         {
-            this.incidentEventService = incidentEventService;
-        }
+            var result = await _incidentEventService.GetIncidentTimeLineAsync(id, request.PageSize, request.PageNumber);
 
-
-
-        [HttpGet("/api/incidents/{id:int}/timeline")]
-        public async Task<ActionResult> TimeLine(
-            [FromRoute] int id,
-            [FromQuery] GetTimeLineRequest request)
-        {
-            var result =
-                await incidentEventService.GetIncidentTimeLine(
-                    id,
-                    request.PageSize,
-                    request.PageNumber
-                );
-
-            return Ok(
-                ApiResponse<IEnumerable<IncidentEvent>>
-                    .SuccessResponse(data: result)
-            );
-        }
-
-
-
-        [HttpPost("/api/incidents/{id:int}/events")]
-        public async Task<ActionResult> AddEvent(
-            [FromRoute] int id,
-            [FromBody] AddIncidentEventDto dto)
-        {
-            var result =
-                await incidentEventService.AddEvent(id, dto);
-
-            if (!result.Success)
+            if (!result.IsSuccess)
             {
-                return BadRequest(
-                    ApiResponse<AddIncidentEventResponse>
-                        .FailureResponse(
-                            message: result.ErrorMessage
-                        )
-                );
+                return NotFound(ApiResponse<IEnumerable<IncidentEvent>>.FailureResponse(
+                    result.ErrorMessage ?? $"Incident with ID {id} was not found.", statusCode: 404));
             }
 
-            return Ok(
-                ApiResponse<AddIncidentEventResponse>
-                    .SuccessResponse(
-                        data: result.Data
-                    )
-            );
+            return Ok(ApiResponse<IEnumerable<GetIncidentEventResponse>>.SuccessResponse(
+                result.Data, "Incident timeline retrieved successfully."));
+        }
+
+
+
+        [HttpPost("{id:int}/events")]
+        [Authorize(Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager},{AppUsersRoles.Developer}")]
+        public async Task<ActionResult> AddEvent(int id, [FromBody] AddIncidentEventDto dto)
+        {
+            var result = await _incidentEventService.AddEventAsync(id, dto);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(ApiResponse<AddIncidentEventResponse>.FailureResponse(
+                    result.ErrorMessage ?? "Failed to add incident event.", statusCode: 400));
+            }
+
+            var apiResponse = ApiResponse<AddIncidentEventResponse>.SuccessResponse(
+                result.Data, "Incident event added successfully.", statusCode: 201);
+
+            return Created($"/api/incidents/{id}/timeline", apiResponse);
         }
     }
 }
