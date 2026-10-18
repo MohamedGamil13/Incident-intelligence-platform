@@ -8,71 +8,96 @@ using Shared;
 
 namespace Presentation.Controllers.Incidents
 {
-    public class IncidentsController : ApiController
+    public class IncidentsController(IIncidentService _incidentService) : ApiController
     {
-        private readonly IIncidentService _incidentService;
 
-        public IncidentsController(IIncidentService incidentService)
-        {
-            _incidentService = incidentService;
-        }
 
         [HttpGet]
         [Authorize]
         public async Task<ActionResult> GetAllIncidents([FromQuery] IncidentSpecParams specParams)
         {
-            var incidents = await _incidentService.GetAllIncidentsAsync(specParams);
-            return Ok(ApiResponse<IEnumerable<GetIncidentResponseDTO>>.SuccessResponse(incidents, "Incidents retrieved successfully"));
+            var result = await _incidentService.GetAllIncidentsAsync(specParams);
+
+            if (!result.IsSuccess)
+            {
+                return NotFound(ApiResponse<IEnumerable<GetIncidentResponseDTO>>.FailureResponse(
+                    result.ErrorMessage ?? "No incidents found.", statusCode: 404));
+            }
+
+            return Ok(ApiResponse<IEnumerable<GetIncidentResponseDTO>>.SuccessResponse(
+                result.Data, "Incidents retrieved successfully"));
         }
+
+
 
         [HttpGet("{incidentId:int}")]
         [Authorize]
         public async Task<ActionResult> GetIncident(int incidentId)
         {
-            var incidentDto = await _incidentService.GetIncidentByIdAsync(incidentId);
-            if (incidentDto == null)
+            var result = await _incidentService.GetIncidentByIdAsync(incidentId);
+
+            if (!result.IsSuccess)
             {
-                return NotFound(ApiResponse<GetIncidentResponseDTO>.FailureResponse($"Incident with ID {incidentId} was not found.", statusCode: 404));
+                return NotFound(ApiResponse<GetIncidentResponseDTO>.FailureResponse(
+                    result.ErrorMessage ?? $"Incident with ID {incidentId} was not found.", statusCode: 404));
             }
 
-            return Ok(ApiResponse<GetIncidentResponseDTO>.SuccessResponse(incidentDto));
+            return Ok(ApiResponse<GetIncidentResponseDTO>.SuccessResponse(result.Data));
         }
+
+
+
 
         [HttpPost]
         [Authorize(Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager}")]
         public async Task<ActionResult> CreateIncident([FromBody] CreateIncidentRequestDTO requestDto)
         {
             var result = await _incidentService.CreateIncidentAsync(requestDto);
-            if (!result.Success)
+
+            if (!result.IsSuccess)
             {
-                return BadRequest(ApiResponse<GetIncidentResponseDTO>.FailureResponse(result.ErrorMessage));
+                return BadRequest(ApiResponse<GetIncidentResponseDTO>.FailureResponse(
+                    result.ErrorMessage ?? "Failed to create incident.", statusCode: 400));
             }
 
-            var apiResponse = ApiResponse<GetIncidentResponseDTO>.SuccessResponse(result.Data, "Incident created successfully", 201);
+            var apiResponse = ApiResponse<GetIncidentResponseDTO>.SuccessResponse(
+                result.Data, "Incident created successfully", statusCode: 201);
+
             return CreatedAtAction(nameof(GetIncident), new { incidentId = result.Data!.Id }, apiResponse);
         }
+
+
+
 
         [HttpPut("{incidentId:int}")]
         [Authorize(Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager},{AppUsersRoles.Developer}")]
         public async Task<ActionResult> UpdateIncident(int incidentId, [FromBody] UpdateIncidentRequestDTO requestDto)
         {
-            var updatedIncident = await _incidentService.UpdateIncidentAsync(incidentId, requestDto);
-            if (updatedIncident == null)
+            var result = await _incidentService.UpdateIncidentAsync(incidentId, requestDto);
+
+            if (!result.IsSuccess)
             {
-                return NotFound(ApiResponse<GetIncidentResponseDTO>.FailureResponse($"Incident with ID {incidentId} was not found.", statusCode: 404));
+                return NotFound(ApiResponse<GetIncidentResponseDTO>.FailureResponse(
+                    result.ErrorMessage ?? $"Incident with ID {incidentId} was not found.", statusCode: 404));
             }
 
-            return Ok(ApiResponse<GetIncidentResponseDTO>.SuccessResponse(updatedIncident, "Incident updated successfully"));
+            return Ok(ApiResponse<GetIncidentResponseDTO>.SuccessResponse(
+                result.Data, "Incident updated successfully"));
         }
+
+
+
 
         [HttpDelete("{incidentId:int}")]
         [Authorize(Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager}")]
         public async Task<ActionResult> DeleteIncident(int incidentId)
         {
-            var isDeleted = await _incidentService.DeleteIncidentAsync(incidentId);
-            if (!isDeleted)
+            var result = await _incidentService.DeleteIncidentAsync(incidentId);
+
+            if (!result.IsSuccess)
             {
-                return NotFound(ApiResponse<bool>.FailureResponse($"Incident with ID {incidentId} was not found.", statusCode: 404));
+                return NotFound(ApiResponse<bool>.FailureResponse(
+                    result.ErrorMessage ?? $"Incident with ID {incidentId} was not found.", statusCode: 404));
             }
 
             return Ok(ApiResponse<bool>.SuccessResponse(true, "Incident deleted successfully"));

@@ -1,6 +1,7 @@
 ﻿using Incident_intelligence_platform.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Controllers.Incidents;
+using System.Text.Json.Serialization;
 
 namespace Incident_intelligence_platform.Extensions
 {
@@ -8,7 +9,11 @@ namespace Incident_intelligence_platform.Extensions
     {
         public static IServiceCollection AddWebApi(this IServiceCollection services)
         {
-            services.AddControllers().AddApplicationPart(typeof(IncidentsController).Assembly).AddControllersAsServices(); ;
+            services.AddControllers().AddApplicationPart(typeof(IncidentsController).Assembly).AddControllersAsServices().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+            });
 
             services.Configure<ApiBehaviorOptions>(options =>
             {

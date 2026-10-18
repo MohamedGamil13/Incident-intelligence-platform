@@ -2,10 +2,10 @@
 {
     public enum IncidentStatus
     {
-        Open,
-        Investigating,
-        Mitigated,
-        Resolved
+        Open = 0,
+        Investigating = 1,
+        Mitigated = 2,
+        Resolved = 3
     }
 
 }

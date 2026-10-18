@@ -7,6 +7,7 @@ using Mapster;
 using ServiceAbstraction.Contracts.Incident;
 using ServiceLayer.Specifications.IncidentSpecifications;
 using Shared;
+using Shared.Dtos;
 
 namespace ServiceLayer.Services.Incidents
 {
@@ -19,25 +20,41 @@ namespace ServiceLayer.Services.Incidents
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<GetIncidentResponseDTO>> GetAllIncidentsAsync(IncidentSpecParams specParams)
+        public async Task<Result<IEnumerable<GetIncidentResponseDTO>>> GetAllIncidentsAsync(IncidentSpecParams specParams)
         {
             var spec = new IncidentWithDetailsSpecification(specParams);
             var incidents = await _unitOfWork.GetRepository<Incident, int>().GetAllAsync(spec);
-            return incidents.Adapt<IEnumerable<GetIncidentResponseDTO>>();
+
+            if (incidents == null || !incidents.Any())
+            {
+                return Result<IEnumerable<GetIncidentResponseDTO>>.Failure("No incidents found matching the specified criteria.");
+            }
+
+            var mappedIncidents = incidents.Adapt<IEnumerable<GetIncidentResponseDTO>>();
+            return Result<IEnumerable<GetIncidentResponseDTO>>.Success(mappedIncidents);
         }
 
-        public async Task<GetIncidentResponseDTO?> GetIncidentByIdAsync(int id)
+        public async Task<Result<GetIncidentResponseDTO?>> GetIncidentByIdAsync(int id)
         {
             var spec = new IncidentWithDetailsSpecification(id);
             var incident = await _unitOfWork.GetRepository<Incident, int>().GetByIdAsync(spec);
-            return incident?.Adapt<GetIncidentResponseDTO>();
+
+            if (incident is null)
+            {
+                return Result<GetIncidentResponseDTO?>.Failure($"Incident with ID {id} was not found.");
+            }
+
+            var mappedIncident = incident.Adapt<GetIncidentResponseDTO>();
+            return Result<GetIncidentResponseDTO?>.Success(mappedIncident);
         }
 
-        public async Task<(bool Success, GetIncidentResponseDTO? Data, string ErrorMessage)> CreateIncidentAsync(CreateIncidentRequestDTO dto)
+        public async Task<Result<GetIncidentResponseDTO?>> CreateIncidentAsync(CreateIncidentRequestDTO dto)
         {
             var service = await _unitOfWork.GetRepository<Service, int>().GetByIdAsync(dto.ServiceId);
             if (service is null)
-                return (false, null, $"ServiceId {dto.ServiceId} does not exist.");
+            {
+                return Result<GetIncidentResponseDTO?>.Failure($"Service with ID {dto.ServiceId} does not exist.");
+            }
 
             var incident = dto.Adapt<Incident>();
             incident.Status = IncidentStatus.Open;
@@ -46,35 +63,49 @@ namespace ServiceLayer.Services.Incidents
             await _unitOfWork.GetRepository<Incident, int>().AddAsync(incident);
             await _unitOfWork.SaveChangesAsync();
 
-            return (true, incident.Adapt<GetIncidentResponseDTO>(), string.Empty);
+            var responseDto = incident.Adapt<GetIncidentResponseDTO>();
+            return Result<GetIncidentResponseDTO?>.Success(responseDto);
         }
 
-        public async Task<GetIncidentResponseDTO?> UpdateIncidentAsync(int id, UpdateIncidentRequestDTO dto)
+        public async Task<Result<GetIncidentResponseDTO?>> UpdateIncidentAsync(int id, UpdateIncidentRequestDTO dto)
         {
             var incident = await _unitOfWork.GetRepository<Incident, int>().GetByIdAsync(id);
-            if (incident is null) return null;
+            if (incident is null)
+            {
+                return Result<GetIncidentResponseDTO?>.Failure($"Incident with ID {id} was not found.");
+            }
 
             if (!CanTransition(incident.Status, dto.Status))
-                throw new InvalidOperationException($"Invalid status transition from {incident.Status} to {dto.Status}.");
+            {
+                return Result<GetIncidentResponseDTO?>.Failure($"Invalid status transition from {incident.Status} to {dto.Status}.");
+            }
 
             dto.Adapt(incident);
 
             if (incident.Status == IncidentStatus.Resolved && !incident.ResolvedAt.HasValue)
+            {
                 incident.ResolvedAt = DateTime.UtcNow;
+            }
 
             await _unitOfWork.SaveChangesAsync();
-            return incident.Adapt<GetIncidentResponseDTO>();
+
+            var updatedDto = incident.Adapt<GetIncidentResponseDTO>();
+            return Result<GetIncidentResponseDTO?>.Success(updatedDto);
         }
 
-        public async Task<bool> DeleteIncidentAsync(int id)
+        public async Task<Result<bool>> DeleteIncidentAsync(int id)
         {
             var repo = _unitOfWork.GetRepository<Incident, int>();
             var incident = await repo.GetByIdAsync(id);
-            if (incident is null) return false;
+            if (incident is null)
+            {
+                return Result<bool>.Failure($"Incident with ID {id} was not found.");
+            }
 
             repo.Delete(incident);
             await _unitOfWork.SaveChangesAsync();
-            return true;
+
+            return Result<bool>.Success(true);
         }
 
         private static bool CanTransition(IncidentStatus current, IncidentStatus? next)
