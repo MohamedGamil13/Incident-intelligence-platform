@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Persistence.Repositories.Auth;
+using Presistance.Data;
 using Presistance.Repositories;
 using Presistance.Repositories.Auth;
 
@@ -36,6 +37,7 @@ namespace Presistance.Extensions
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IAuthRepo, AuthRepo>();
             services.AddScoped<IUserMangementRepo, UserMangementRepo>();
+            services.AddScoped<IDataSeed, DataSeeding>();
 
             return services;
         }

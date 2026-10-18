@@ -1,0 +1,16 @@
+[
+  {
+    "ServiceId": 1,
+    "Title": "Deployment v2.4.1 - Identity & OTP Refactor",
+    "Version": "v2.4.1",
+    "DeployedBy": "Mohamed Gamil",
+    "DeployedAt": "2026-10-15T18:00:00Z"
+  },
+  {
+    "ServiceId": 2,
+    "Title": "Deployment v1.8.0 - Stripe SDK Upgrade",
+    "Version": "v1.8.0",
+    "DeployedBy": "CI/CD Pipeline",
+    "DeployedAt": "2026-10-16T09:30:00Z"
+  }
+]

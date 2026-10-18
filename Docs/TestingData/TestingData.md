@@ -1,7 +1,6 @@
 # 🧑‍💻 Testing Accounts
 
 > **App User Types**:
-
 - Viewer (Default)
 - Admin
 - IncidentManager
@@ -11,30 +10,30 @@
 
 ## 👀 Viewer Account (Default)
 
-- **Name**: Gamil
-- **Email**: gamil@gmail.com
-- **Password**: MohamedGamil200@
+- **UserName**: Viewer
+- **Email**: `Viewer@platform.com`
+- **Password**: `Password123@`
 
 ---
 
 ## 🛡️ Admin Account
 
-- **Name**: Admin
-- **Email**: Admin@gmail.com
-- **Password**: Admin123@
+- **UserName**: admin
+- **Email**: `admin@platform.com`
+- **Password**: `Password123@`
 
 ---
 
 ## 💻 Developer Account
 
-- **Name**: Dev
-- **Email**: dev@gmail.com
-- **Password**: Dev123@
+- **UserName**: Developer
+- **Email**: `Developer@platform.com`
+- **Password**: `Password123@`
 
 ---
 
 ## 🚨 Incident Manager Account
 
-- **Name**: IManger
-- **Email**: Incidentmanger@gmail.com
-- **Password**: IncidentManger123@
+- **UserName**: incidentmanager
+- **Email**: `manager@platform.com`
+- **Password**: `Password123@`

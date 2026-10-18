@@ -1,0 +1,23 @@
+[
+  {
+    "IncidentId": 1,
+    "TimeStamp": 0,
+    "Title": "Incident Created",
+    "Description": "Automated alert triggered by high API response time (>2000ms).",
+    "Date": "2026-10-18T01:15:00Z"
+  },
+  {
+    "IncidentId": 1,
+    "TimeStamp": 1,
+    "Title": "Investigating Redis Cluster",
+    "Description": "On-call engineer reviewing Redis memory snapshot errors and connection pools.",
+    "Date": "2026-10-18T01:25:00Z"
+  },
+  {
+    "IncidentId": 2,
+    "TimeStamp": 2,
+    "Title": "Resolved Gateway Connection",
+    "Description": "Rotated webhook API key and failed over to secondary payment connection pool.",
+    "Date": "2026-10-17T15:45:00Z"
+  }
+]

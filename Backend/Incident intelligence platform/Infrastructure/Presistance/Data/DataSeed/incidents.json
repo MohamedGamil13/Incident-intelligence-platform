@@ -1,0 +1,20 @@
+[
+  {
+    "Title": "High Latency in Auth Token Validation",
+    "Description": "Redis cache node connection timeouts causing elevated latency during token verification.",
+    "ServiceId": 1,
+    "Severity": 2,
+    "Status": 1,
+    "CreatedAt": "2026-10-18T01:15:00Z",
+    "ResolvedAt": null
+  },
+  {
+    "Title": "Payment Gateway 502 Bad Gateway",
+    "Description": "Third-party payment provider webhook listener dropped connections during peak traffic.",
+    "ServiceId": 2,
+    "Severity": 3,
+    "Status": 3,
+    "CreatedAt": "2026-10-17T14:30:00Z",
+    "ResolvedAt": "2026-10-17T15:45:00Z"
+  }
+]

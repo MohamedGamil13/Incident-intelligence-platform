@@ -1,3 +1,4 @@
+using Domain.Contracts;
 using Incident_intelligence_platform.Config;
 using Incident_intelligence_platform.Extensions;
 using Presistance.Extensions;
@@ -29,6 +30,10 @@ var app = builder.Build();
 
 
 app.UseCustomMiddlewares();
+using var scope = app.Services.CreateScope();
+var objOfDataSeeding = scope.ServiceProvider.GetRequiredService<IDataSeed>();
+await objOfDataSeeding.SeedDataAsync();
+await objOfDataSeeding.SeedIdentityDataAsync();
 app.UseSwaggerDocs();
 app.UseHttpsRedirection();
 app.UseRouting();

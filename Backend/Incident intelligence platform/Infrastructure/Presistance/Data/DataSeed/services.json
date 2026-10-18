@@ -1,0 +1,22 @@
+[
+  {
+    "Name": "Auth Service",
+    "Description": "Handles OAuth2, JWT token generation, and user identity management.",
+    "CreatedAt": "2026-01-15T08:00:00Z"
+  },
+  {
+    "Name": "Payment Service",
+    "Description": "Processes Stripe credit card charges and payment gateway webhooks.",
+    "CreatedAt": "2026-01-15T08:30:00Z"
+  },
+  {
+    "Name": "Notification Service",
+    "Description": "Manages push notifications, email alerts via Resend, and SMS routing.",
+    "CreatedAt": "2026-01-20T10:15:00Z"
+  },
+  {
+    "Name": "Order Service",
+    "Description": "Handles order placement, inventory reservations, and checkout workflows.",
+    "CreatedAt": "2026-02-01T12:00:00Z"
+  }
+]
