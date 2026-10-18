@@ -7,9 +7,8 @@ using System.Security.Claims;
 
 namespace Presentation.Controllers.Auth
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AccountController : ControllerBase
+
+    public class AccountController : ApiController
     {
         private readonly IAuthService _authService;
 

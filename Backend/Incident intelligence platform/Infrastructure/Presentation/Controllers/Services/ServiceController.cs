@@ -7,9 +7,8 @@ using ServiceAbstraction.Contracts.ServiceMangment;
 
 namespace Presentation.Controllers.Services
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ServicesController : ControllerBase
+
+    public class ServicesController : ApiController
     {
         private readonly IServiceMangementService _serviceService;
 

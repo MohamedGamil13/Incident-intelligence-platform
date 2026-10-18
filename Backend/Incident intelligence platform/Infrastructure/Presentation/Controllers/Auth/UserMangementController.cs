@@ -7,10 +7,8 @@ using ServiceAbstraction.Contracts.Auth;
 
 namespace Presentation.Controllers.Auth
 {
-    [Route("api/[controller]")]
-    [ApiController]
     [Authorize(Roles = $"{AppUsersRoles.Admin}")]
-    public class UserMangementController : ControllerBase
+    public class UserMangementController : ApiController
     {
         private readonly IUserMangementService _userManagementService;
 

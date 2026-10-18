@@ -6,9 +6,8 @@ using Shared.Dtos.IcidentEventDTOs;
 
 namespace Presentation.Controllers.Incidents
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class IncidentEventController : ControllerBase
+
+    public class IncidentEventController : ApiController
     {
         private readonly IIncidentEventService incidentEventService;
 

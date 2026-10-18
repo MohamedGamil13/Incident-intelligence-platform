@@ -8,10 +8,7 @@ using Shared;
 
 namespace Presentation.Controllers.Incidents
 {
-    [ApiController]
-    [Route("api/[controller]")]
-
-    public class IncidentsController : ControllerBase
+    public class IncidentsController : ApiController
     {
         private readonly IIncidentService _incidentService;
 
@@ -69,7 +66,7 @@ namespace Presentation.Controllers.Incidents
         }
 
         [HttpDelete("{incidentId:int}")]
-        [Authorize(Roles = AppUsersRoles.Admin)]
+        [Authorize(Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager}")]
         public async Task<ActionResult> DeleteIncident(int incidentId)
         {
             var isDeleted = await _incidentService.DeleteIncidentAsync(incidentId);

@@ -7,9 +7,7 @@ using Shared.Dtos.Logs;
 
 namespace Presentation.Controllers.Logs
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class LogsController : ControllerBase
+    public class LogsController : ApiController
     {
         private readonly ILogsService _logsService;
 
