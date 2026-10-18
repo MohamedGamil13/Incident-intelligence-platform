@@ -48,7 +48,7 @@ namespace ServiceLayer.Extensions
             services.AddHttpClient<ResendClient>();
             services.Configure<ResendClientOptions>(o =>
             {
-                o.ApiToken = configuration.GetSection("API Keys")["Resend API Key"]!;
+                o.ApiToken = configuration["Resend:ApiKey"]!;
             });
             services.AddTransient<IResend, ResendClient>();
             services.AddScoped<IEmailService, EmailService>();
