@@ -104,7 +104,7 @@ namespace ServiceLayer.Services.Auth
                         Errors = result.Errors.Select(e => e.Description)
                     };
                 }
-
+                await _rediesCaching.DeleteData(cacheKey);
                 return new AuthResultDto { IsSuccess = true, Message = "Password Changed Successfully" };
             }
             return new AuthResultDto { IsSuccess = false, Message = "Invalid OTP or user not found" };

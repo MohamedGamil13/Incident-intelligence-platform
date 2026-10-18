@@ -51,5 +51,10 @@ namespace ServiceLayer.Services.Caching
         {
             return SetData(key, data, TimeSpan.FromMinutes(5), CancellationToken.None);
         }
+
+        public async Task DeleteData(string key)
+        {
+            await _cache.RemoveAsync(key);
+        }
     }
 }

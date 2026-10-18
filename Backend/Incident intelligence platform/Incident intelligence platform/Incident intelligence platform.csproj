@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Incident_intelligence_platform</RootNamespace>
+    <UserSecretsId>46170386-f8fc-4c8c-894e-e4cbad9b7f40</UserSecretsId>
   </PropertyGroup>
 	
   <PropertyGroup>
