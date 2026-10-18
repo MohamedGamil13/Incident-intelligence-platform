@@ -27,6 +27,12 @@ export const routes: Routes = [
           ),
         title: 'Reset Password · Incident Intelligence',
       },
+      {
+        path: 'verify-otp',
+        loadComponent: () =>
+          import('./features/auth/verify-otp/verify-otp').then((m) => m.VerifyOtpComponent),
+        title: 'Verify Code · Incident Intelligence',
+      },
       { path: '', pathMatch: 'full', redirectTo: 'login' },
     ],
   },

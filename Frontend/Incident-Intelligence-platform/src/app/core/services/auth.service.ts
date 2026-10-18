@@ -1,11 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { Observable, catchError, map, of, switchMap, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
-  AuthResult,
   AuthSession,
+  ForgetPasswordRequest,
   LoginRequest,
   LoginResult,
   RegisterRequest,
@@ -41,19 +41,38 @@ export class AuthService {
   login(request: LoginRequest): Observable<ApiResponse<LoginResult>> {
     return this.http
       .post<ApiResponse<LoginResult>>(`${this.baseUrl}/Login`, request)
-      .pipe(tap((res) => this.persist(res.data, request.email)));
+      .pipe(
+        tap((res) => this.persist(res.data, request.email)),
+        switchMap((res) =>
+          this.refreshRoles().pipe(
+            map(() => res),
+            catchError(() => of(res))
+          )
+        )
+      );
   }
 
   register(request: RegisterRequest): Observable<ApiResponse<string>> {
     return this.http.post<ApiResponse<string>>(`${this.baseUrl}/Register`, request);
   }
 
-  resetPassword(request: ResetPasswordRequest): Observable<ApiResponse<string>> {
+  requestPasswordReset(request: ForgetPasswordRequest): Observable<ApiResponse<string>> {
     return this.http.put<ApiResponse<string>>(`${this.baseUrl}/ForgetPassword`, request);
+  }
+
+  resetPassword(request: ResetPasswordRequest): Observable<ApiResponse<string>> {
+    return this.http.put<ApiResponse<string>>(`${this.baseUrl}/ResetPassword`, request);
   }
 
   myRoles(): Observable<ApiResponse<string[]>> {
     return this.http.get<ApiResponse<string[]>>(`${this.baseUrl}/my-roles`);
+  }
+
+  refreshRoles(): Observable<string[]> {
+    return this.myRoles().pipe(
+      map((res) => res.data ?? []),
+      tap((roles) => this.updateRoles(roles))
+    );
   }
 
   hasRole(...roles: AppUserRole[]): boolean {
@@ -82,6 +101,14 @@ export class AuthService {
       email: (payload?.email as string) ?? email,
       roles,
     };
+    this._session.set(session);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+  }
+
+  private updateRoles(roles: string[]): void {
+    const current = this._session();
+    if (!current) return;
+    const session: AuthSession = { ...current, roles };
     this._session.set(session);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
   }

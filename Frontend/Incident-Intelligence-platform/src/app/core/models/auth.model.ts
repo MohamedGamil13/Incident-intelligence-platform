@@ -13,6 +13,11 @@ export interface ResetPasswordRequest {
   email: string;
   newPassword: string;
   confirmPassword: string;
+  OTP: string;
+}
+
+export interface ForgetPasswordRequest {
+  email: string;
 }
 
 export interface LoginResult {

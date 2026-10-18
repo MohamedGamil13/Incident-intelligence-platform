@@ -5,9 +5,10 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
+import { PasswordResetStateService } from '../../../core/services/password-reset-state.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ApiResponse } from '../../../core/models/api-response.model';
 
@@ -19,12 +20,13 @@ import { ApiResponse } from '../../../core/models/api-response.model';
 export class ForgotPasswordComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
+  private readonly resetState = inject(PasswordResetStateService);
+  private readonly router = inject(Router);
   private readonly notifications = inject(NotificationService);
 
   readonly submitting = signal(false);
   readonly showPassword = signal(false);
   readonly errorMessage = signal<string | null>(null);
-  readonly successMessage = signal<string | null>(null);
 
   private static passwordsMatch(control: AbstractControl): { mismatch: boolean } | null {
     const password = control.get('newPassword')?.value;
@@ -43,25 +45,28 @@ export class ForgotPasswordComponent {
 
   submit(): void {
     this.errorMessage.set(null);
-    this.successMessage.set(null);
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
+    const { email, newPassword, confirmPassword } = this.form.getRawValue();
     this.submitting.set(true);
-    this.auth.resetPassword(this.form.getRawValue()).subscribe({
+    this.auth.requestPasswordReset({ email }).subscribe({
       next: (res) => {
         this.submitting.set(false);
-        this.successMessage.set(res.message || 'Password updated successfully.');
-        this.notifications.success('Password reset', 'Your credentials have been updated.');
-        this.form.reset();
+        this.resetState.set({ email, newPassword, confirmPassword });
+        this.notifications.success(
+          'Verification code sent',
+          res.message || 'Check your inbox for the 6-digit code.'
+        );
+        this.router.navigate(['/auth/verify-otp'], { queryParams: { email } });
       },
       error: (error: HttpErrorResponse) => {
         this.submitting.set(false);
         const body = error.error as ApiResponse<unknown> | null;
         const message = body?.errors?.length ? body.errors.join(' ') : body?.message;
-        this.errorMessage.set(message ?? 'Unable to reset password.');
+        this.errorMessage.set(message ?? 'Unable to send the verification code.');
       },
     });
   }
