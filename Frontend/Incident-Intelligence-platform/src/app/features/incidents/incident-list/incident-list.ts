@@ -10,6 +10,7 @@ import { INCIDENT_SEVERITIES, INCIDENT_STATUSES, IncidentSeverity } from '../../
 import { StatusBadgeComponent } from '../../../shared/components/status-badge';
 import { relativeTime } from '../../../core/utils/date.util';
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-incident-list',
@@ -20,6 +21,7 @@ export class IncidentListComponent {
   private readonly fb = inject(FormBuilder);
   private readonly incidentService = inject(IncidentService);
   private readonly notifications = inject(NotificationService);
+  private readonly auth = inject(AuthService);
 
   readonly severities = INCIDENT_SEVERITIES;
   readonly statuses = INCIDENT_STATUSES;
@@ -29,6 +31,7 @@ export class IncidentListComponent {
   readonly pageIndex = signal(1);
   readonly pageSize = signal(environment.defaultPageSize);
   readonly hasNext = signal(false);
+  readonly canCreate = this.auth.canCreateIncident();
 
   readonly filters = this.fb.nonNullable.group({
     status: [''],
@@ -36,8 +39,10 @@ export class IncidentListComponent {
     search: [''],
   });
 
+  readonly selectedSeverity = signal<IncidentSeverity | ''>('');
+
   readonly visibleIncidents = computed(() => {
-    const severity = this.filters.controls.severity.value as IncidentSeverity | '';
+    const severity = this.selectedSeverity();
     if (!severity) return this.incidents();
     return this.incidents().filter((i) => i.severity === severity);
   });
@@ -69,6 +74,10 @@ export class IncidentListComponent {
     this.filters.controls.status.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
       this.pageIndex.set(1);
       this.load();
+    });
+
+    this.filters.controls.severity.valueChanges.pipe(takeUntilDestroyed()).subscribe((value) => {
+      this.selectedSeverity.set(value as IncidentSeverity | '');
     });
 
     this.load();

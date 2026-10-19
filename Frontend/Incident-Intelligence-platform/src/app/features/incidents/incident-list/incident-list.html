@@ -15,13 +15,15 @@
       <span class="material-symbols-outlined text-[18px]">file_download</span>
       Export
     </button>
-    <a
-      routerLink="/incidents/new"
-      class="inline-flex items-center gap-1.5 rounded-xl bg-primary-container px-4 py-2 font-label-md text-label-md text-white shadow-sm transition-all hover:bg-primary"
-    >
-      <span class="material-symbols-outlined text-[18px]">add</span>
-      New Incident
-    </a>
+    @if (canCreate) {
+      <a
+        routerLink="/incidents/new"
+        class="inline-flex items-center gap-1.5 rounded-xl bg-primary-container px-4 py-2 font-label-md text-label-md text-white shadow-sm transition-all hover:bg-primary"
+      >
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        New Incident
+      </a>
+    }
   </div>
 </div>
 
@@ -69,9 +71,9 @@
         (click)="filters.controls.status.setValue('Open')"
       >
         Open status
-      </button>
+        </button>
+      </div>
     </div>
-  </div>
 
   <div class="relative w-full md:w-72">
     <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-secondary">search</span>

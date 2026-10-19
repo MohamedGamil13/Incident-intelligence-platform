@@ -1,6 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
 import { IncidentService } from '../../core/services/incident.service';
 import { ServiceCatalogService } from '../../core/services/service-catalog.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -96,19 +95,36 @@ export class DashboardComponent {
 
   load(): void {
     this.loading.set(true);
-    forkJoin({
-      incidents: this.incidentService.getAll({ pageIndex: 1, pageSize: environment.maxPageSize }),
-      services: this.serviceCatalog.getAll(1, environment.maxPageSize),
-    }).subscribe({
-      next: ({ incidents, services }) => {
-        this.incidents.set(incidents.data ?? []);
-        this.services.set(services.data ?? []);
+    let completed = 0;
+    const done = () => {
+      completed += 1;
+      if (completed >= 2) {
         this.refreshAt.set(new Date());
         this.loading.set(false);
+      }
+    };
+
+    this.incidentService
+      .getAll({ pageIndex: 1, pageSize: environment.maxPageSize })
+      .subscribe({
+        next: (res) => {
+          this.incidents.set(res.data ?? []);
+          done();
+        },
+        error: () => {
+          this.notifications.error('Dashboard unavailable', 'Failed to load incidents.');
+          done();
+        },
+      });
+
+    this.serviceCatalog.getAll(1, environment.maxPageSize).subscribe({
+      next: (res) => {
+        this.services.set(res.data ?? []);
+        done();
       },
       error: () => {
-        this.loading.set(false);
-        this.notifications.error('Dashboard unavailable', 'Failed to load operational telemetry.');
+        this.notifications.error('Services unavailable', 'Failed to load service catalog.');
+        done();
       },
     });
   }
