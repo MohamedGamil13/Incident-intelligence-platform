@@ -47,7 +47,7 @@ namespace Presentation.Controllers.Incidents
 
 
         [HttpPost]
-        [Authorize(Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager}")]
+        [Authorize(Roles = $"{AppUsersRoles.Admin},{AppUsersRoles.IncidentManager},{AppUsersRoles.Developer}")]
         public async Task<ActionResult> CreateIncident([FromBody] CreateIncidentRequestDTO requestDto)
         {
             var result = await _incidentService.CreateIncidentAsync(requestDto);

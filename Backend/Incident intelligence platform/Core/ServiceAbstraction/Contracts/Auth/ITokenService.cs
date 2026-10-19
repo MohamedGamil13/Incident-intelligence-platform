@@ -5,6 +5,6 @@ namespace ServiceAbstraction.Contracts.Auth
     public interface ITokenService
     {
         public (string Token, DateTime Expiration) CreateTokenAsync(ApplicationUser user, IList<string> roles);
-
+        public RefreshToken GenerateRefreshToken(ApplicationUser use);
     }
 }

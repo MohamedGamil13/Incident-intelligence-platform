@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using ServiceAbstraction.Contracts.Auth;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace ServiceLayer.Services.Auth
@@ -46,6 +47,19 @@ namespace ServiceLayer.Services.Auth
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
             return (tokenString, expiresAt);
+        }
+
+        public RefreshToken GenerateRefreshToken(ApplicationUser use)
+        {
+            var randomNumber = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return new RefreshToken
+            {
+                Token = Convert.ToBase64String(randomNumber),
+                ExpiresOn = DateTime.UtcNow.AddDays(7),
+                CreatedOn = DateTime.UtcNow
+            };
         }
     }
 }

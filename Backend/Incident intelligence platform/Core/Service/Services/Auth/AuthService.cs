@@ -2,6 +2,7 @@
 using Domain.Entities.Users;
 using ServiceAbstraction.Contracts.Auth;
 using ServiceAbstraction.Contracts.Caching;
+using Shared.Dtos;
 using Shared.Dtos.AuthDTOs;
 using Shared.Helpers;
 
@@ -22,11 +23,11 @@ namespace ServiceLayer.Services.Auth
             _rediesCaching = rediesCachingService;
         }
 
-        public async Task<AuthResultDto> RegisterAsync(RegisterUserDto newUserDto)
+        public async Task<Result<string>> RegisterAsync(RegisterUserDto newUserDto)
         {
             if (await _authRepo.UserExistsAsync(newUserDto.Email))
             {
-                return new AuthResultDto { IsSuccess = false, Message = "Email Already In Use" };
+                return Result<string>.Failure("Email Already In Use");
             }
 
             var user = new ApplicationUser
@@ -35,81 +36,117 @@ namespace ServiceLayer.Services.Auth
                 UserName = newUserDto.Name
             };
 
-
             var result = await _authRepo.CreateUserAsync(user, newUserDto.Password);
             if (!result.Succeeded)
             {
-                return new AuthResultDto
-                {
-                    IsSuccess = false,
-                    Message = "User creation failed",
-                    Errors = result.Errors.Select(e => e.Description)
-                };
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                return Result<string>.Failure($"User creation failed: {errors}");
             }
 
-            return new AuthResultDto { IsSuccess = true, Message = "User created successfully" };
+            return Result<string>.Success("User created successfully");
         }
 
-        public async Task<AuthResultDto> LoginAsync(LoginRequest loginDto)
+        public async Task<Result<AuthResponseDto>> LoginAsync(LoginRequest loginDto)
         {
             var user = await _authRepo.FindByEmailAsync(loginDto.Email);
             if (user == null || !await _authRepo.CheckPasswordAsync(user, loginDto.Password))
             {
-                return new AuthResultDto { IsSuccess = false, Message = "Invalid Email Or Password" };
+                return Result<AuthResponseDto>.Failure("Invalid Email Or Password");
             }
 
             var roles = await _authRepo.GetRolesAsync(user);
             (string token, DateTime expiration) = _tokenService.CreateTokenAsync(user, roles);
+            var refreshToken = _tokenService.GenerateRefreshToken(user);
 
-            return new AuthResultDto
+            user.RefreshTokens.Add(refreshToken);
+            await _authRepo.UpdateUserAsync(user);
+
+            var response = new AuthResponseDto
             {
-                IsSuccess = true,
-                Message = "Login Successful",
-                Token = token,
-                Expiration = expiration
+                AccessToken = token,
+                AccessTokenExpiration = expiration,
+                RefreshToken = refreshToken.Token,
+                RefreshTokenExpiration = refreshToken.ExpiresOn
             };
+
+            return Result<AuthResponseDto>.Success(response);
         }
 
-        public async Task<AuthResultDto> RequestPasswordReset(ForgetPasswordRequest resetDto)
+        public async Task<Result<AuthResponseDto>> RefreshTokenAsync(RefreshTokenRequestDto dto)
+        {
+            var user = await _authRepo.GetUserByRefreshTokenAsync(dto.RefreshToken);
+            if (user == null)
+            {
+                return Result<AuthResponseDto>.Failure("Invalid Refresh Token");
+            }
+
+            var existingToken = user.RefreshTokens.SingleOrDefault(t => t.Token == dto.RefreshToken);
+            if (existingToken == null || !existingToken.IsActive)
+            {
+                return Result<AuthResponseDto>.Failure("Refresh Token is expired or revoked");
+            }
+
+            existingToken.RevokedOn = DateTime.UtcNow;
+
+            var roles = await _authRepo.GetRolesAsync(user);
+            (string newToken, DateTime expiration) = _tokenService.CreateTokenAsync(user, roles);
+            var newRefreshToken = _tokenService.GenerateRefreshToken(user);
+
+            user.RefreshTokens.Add(newRefreshToken);
+            await _authRepo.UpdateUserAsync(user);
+
+            var response = new AuthResponseDto
+            {
+                AccessToken = newToken,
+                AccessTokenExpiration = expiration,
+                RefreshToken = newRefreshToken.Token,
+                RefreshTokenExpiration = newRefreshToken.ExpiresOn
+            };
+
+            return Result<AuthResponseDto>.Success(response);
+        }
+
+        public async Task<Result<string>> RequestPasswordReset(ForgetPasswordRequest resetDto)
         {
             var user = await _authRepo.FindByEmailAsync(resetDto.Email);
             if (user == null)
             {
-                return new AuthResultDto { IsSuccess = false, Message = "Invalid request or user not found" };
+                return Result<string>.Failure("Invalid request or user not found");
             }
+
             string Otp = OtpGenerator.Generate();
             await _emailService.SendResetPasswordEmail(user.Email, Otp);
             var cacheKey = $"OTP Key N :{user.Id}";
             await _rediesCaching.SetData<string>(cacheKey, Otp);
-            return new AuthResultDto { IsSuccess = true, Message = "OTP has Sent To Your Email Successfully" };
+
+            return Result<string>.Success("OTP has Sent To Your Email Successfully");
         }
-        public async Task<AuthResultDto> ResetPasswordAsync(ResetPasswordRequest resetPassword)
+
+        public async Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest resetPassword)
         {
             var user = await _authRepo.FindByEmailAsync(resetPassword.Email);
             if (user == null)
             {
-                return new AuthResultDto { IsSuccess = false, Message = "Invalid request or user not found" };
+                return Result<string>.Failure("Invalid request or user not found");
             }
+
             var cacheKey = $"OTP Key N :{user.Id}";
             var OtpFromDb = await _rediesCaching.GetData<string>(cacheKey);
+
             if (!string.IsNullOrEmpty(OtpFromDb) && OtpFromDb.Equals(resetPassword.OTP))
             {
                 var result = await _authRepo.ResetPasswordAsync(user, resetPassword.NewPassword);
                 if (!result.Succeeded)
                 {
-                    return new AuthResultDto
-                    {
-                        IsSuccess = false,
-                        Message = "Reset password failed",
-                        Errors = result.Errors.Select(e => e.Description)
-                    };
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    return Result<string>.Failure($"Reset password failed: {errors}");
                 }
+
                 await _rediesCaching.DeleteData(cacheKey);
-                return new AuthResultDto { IsSuccess = true, Message = "Password Changed Successfully" };
+                return Result<string>.Success("Password Changed Successfully");
             }
-            return new AuthResultDto { IsSuccess = false, Message = "Invalid OTP or user not found" };
 
+            return Result<string>.Failure("Invalid OTP or user not found");
         }
-
     }
 }
