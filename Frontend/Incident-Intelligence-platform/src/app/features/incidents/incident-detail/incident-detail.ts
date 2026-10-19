@@ -20,6 +20,7 @@ import {
 import { ApiResponse } from '../../../core/models/api-response.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge';
 import { formatDateTime, formatTime, relativeTime } from '../../../core/utils/date.util';
+import { AuthService } from '../../../core/services/auth.service';
 
 type Tab = 'overview' | 'timeline' | 'logs' | 'rca';
 
@@ -37,6 +38,7 @@ export class IncidentDetailComponent {
   private readonly logsService = inject(LogsService);
   private readonly router = inject(Router);
   private readonly notifications = inject(NotificationService);
+  private readonly auth = inject(AuthService);
 
   readonly severities = INCIDENT_SEVERITIES;
   readonly statuses = INCIDENT_STATUSES;
@@ -56,6 +58,11 @@ export class IncidentDetailComponent {
   readonly serverErrors = signal<string[]>([]);
 
   private numericId = 0;
+
+  readonly canUpdate = signal(this.auth.canUpdateIncident());
+  readonly canDelete = signal(this.auth.canDeleteIncident());
+  readonly canAddEvent = signal(this.auth.canAddIncidentEvent());
+  readonly canShowMoreActions = computed(() => this.canUpdate() || this.canDelete());
 
   readonly statusForm = this.fb.nonNullable.group({
     status: ['Open' as IncidentStatus, [Validators.required]],

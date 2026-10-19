@@ -1,7 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
 import { ServiceCatalogService } from '../../../core/services/service-catalog.service';
 import { IncidentService } from '../../../core/services/incident.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -71,7 +70,7 @@ export class ServicesListComponent {
         (row) =>
           !term ||
           row.service.name.toLowerCase().includes(term) ||
-          row.service.description.toLowerCase().includes(term)
+          (row.service.description ?? '').toLowerCase().includes(term)
       )
       .sort((a, b) => b.openCount - a.openCount);
   });
@@ -93,18 +92,33 @@ export class ServicesListComponent {
 
   load(): void {
     this.loading.set(true);
-    forkJoin({
-      services: this.catalog.getAll(1, environment.maxPageSize),
-      incidents: this.incidents.getAll({ pageIndex: 1, pageSize: environment.maxPageSize }),
-    }).subscribe({
-      next: ({ services, incidents }) => {
-        this.services.set(services.data ?? []);
-        this.allIncidents.set(incidents.data ?? []);
+    let completed = 0;
+    const done = () => {
+      completed += 1;
+      if (completed >= 2) {
         this.loading.set(false);
+      }
+    };
+
+    this.catalog.getAll(1, environment.maxPageSize).subscribe({
+      next: (res) => {
+        this.services.set(res.data ?? []);
+        done();
       },
       error: () => {
-        this.loading.set(false);
         this.notifications.error('Load failed', 'Unable to load the service catalog.');
+        done();
+      },
+    });
+
+    this.incidents.getAll({ pageIndex: 1, pageSize: environment.maxPageSize }).subscribe({
+      next: (res) => {
+        this.allIncidents.set(res.data ?? []);
+        done();
+      },
+      error: () => {
+        this.allIncidents.set([]);
+        done();
       },
     });
   }

@@ -34,6 +34,8 @@ export class AuthService {
   readonly userEmail = computed(() => this._session()?.email ?? null);
   readonly roles = computed(() => this._session()?.roles ?? []);
   readonly isAdmin = computed(() => this.roles().includes('Admin'));
+  readonly isIncidentManager = computed(() => this.roles().includes('IncidentManager'));
+  readonly isDeveloper = computed(() => this.roles().includes('Developer'));
   readonly canManage = computed(() =>
     this.roles().some((r) => r === 'Admin' || r === 'IncidentManager')
   );
@@ -77,6 +79,19 @@ export class AuthService {
 
   hasRole(...roles: AppUserRole[]): boolean {
     return this.roles().some((r) => roles.includes(r as AppUserRole));
+  }
+
+  canCreateIncident(): boolean {
+    return this.canManage();
+  }
+  canUpdateIncident(): boolean {
+    return this.hasRole('Admin', 'IncidentManager', 'Developer');
+  }
+  canDeleteIncident(): boolean {
+    return this.canManage();
+  }
+  canAddIncidentEvent(): boolean {
+    return this.hasRole('Admin', 'IncidentManager', 'Developer');
   }
 
   get token(): string | null {

@@ -9,6 +9,7 @@ import { Service } from '../../../core/models/service.model';
 import { ApiResponse } from '../../../core/models/api-response.model';
 import { IncidentSeverity } from '../../../core/models/enums';
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-incident-create',
@@ -21,10 +22,12 @@ export class IncidentCreateComponent {
   private readonly serviceCatalog = inject(ServiceCatalogService);
   private readonly router = inject(Router);
   private readonly notifications = inject(NotificationService);
+  private readonly auth = inject(AuthService);
 
   readonly submitting = signal(false);
   readonly services = signal<Service[]>([]);
   readonly serverErrors = signal<string[]>([]);
+  readonly canCreate = this.auth.canCreateIncident();
 
   readonly form = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(100)]],
@@ -47,6 +50,11 @@ export class IncidentCreateComponent {
   readonly descriptionLength = signal(0);
 
   constructor() {
+    if (!this.canCreate) {
+      this.notifications.error('Access denied', 'You do not have permission to create incidents.');
+      this.router.navigate(['/incidents']);
+      return;
+    }
     this.serviceCatalog.getAll(1, environment.maxPageSize).subscribe({
       next: (res) => this.services.set(res.data ?? []),
       error: () => this.notifications.error('Services unavailable', 'Could not load the service catalog.'),

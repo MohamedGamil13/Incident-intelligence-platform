@@ -14,7 +14,8 @@
       <div class="relative inline-flex items-center">
         <select
           [value]="inc.status"
-          class="h-9 cursor-pointer appearance-none rounded-lg border border-outline-variant bg-surface-container-lowest pl-3 pr-8 font-label-md text-label-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          [disabled]="!canUpdate()"
+          class="h-9 cursor-pointer appearance-none rounded-lg border border-outline-variant bg-surface-container-lowest pl-3 pr-8 font-label-md text-label-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
           (change)="statusForm.controls.status.setValue($any($event.target).value); transitionStatus()"
         >
           @for (status of statuses; track status) {
@@ -25,22 +26,28 @@
       </div>
 
       <div class="relative inline-block text-left">
-        <button
-          type="button"
-          aria-label="More actions"
-          class="flex h-9 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-lowest px-2.5 text-on-surface transition-colors hover:bg-surface-container"
-          (click)="toggleMore()"
-        >
-          <span class="material-symbols-outlined text-[18px]">more_horiz</span>
-        </button>
+        @if (canShowMoreActions()) {
+          <button
+            type="button"
+            aria-label="More actions"
+            class="flex h-9 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-lowest px-2.5 text-on-surface transition-colors hover:bg-surface-container"
+            (click)="toggleMore()"
+          >
+            <span class="material-symbols-outlined text-[18px]">more_horiz</span>
+          </button>
+        }
         @if (moreOpen()) {
           <div class="absolute right-0 z-30 mt-1.5 w-36 rounded-lg border border-outline-variant bg-surface-container-lowest py-1 font-label-md text-label-md shadow-float">
-            <button type="button" class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-on-surface hover:bg-surface-container" (click)="startEdit()">
-              <span class="material-symbols-outlined text-[16px]">edit</span>Edit
-            </button>
-            <button type="button" class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-error hover:bg-error-container" (click)="moreOpen.set(false); confirmDelete.set(true)">
-              <span class="material-symbols-outlined text-[16px]">delete</span>Delete
-            </button>
+            @if (canUpdate()) {
+              <button type="button" class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-on-surface hover:bg-surface-container" (click)="startEdit()">
+                <span class="material-symbols-outlined text-[16px]">edit</span>Edit
+              </button>
+            }
+            @if (canDelete()) {
+              <button type="button" class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-error hover:bg-error-container" (click)="moreOpen.set(false); confirmDelete.set(true)">
+                <span class="material-symbols-outlined text-[16px]">delete</span>Delete
+              </button>
+            }
           </div>
         }
       </div>
@@ -212,29 +219,31 @@
             </div>
 
             <!-- Add event -->
-            <div class="mt-5 border-t border-outline-variant pt-5">
-              <h3 class="mb-3 font-label-md text-label-md text-on-surface">Add Timeline Event</h3>
-              <form class="flex flex-col gap-3" [formGroup]="eventForm" (ngSubmit)="addEvent()">
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  <select formControlName="timeStamp" class="h-10 rounded-xl bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container">
-                    @for (ts of eventTimestamps; track ts) {
-                      <option [value]="ts">{{ ts }}</option>
-                    }
-                  </select>
-                  <input type="text" formControlName="title" placeholder="Event title" maxlength="100"
-                    class="h-10 rounded-xl bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container sm:col-span-2" />
-                </div>
-                <textarea formControlName="description" rows="2" maxlength="500" placeholder="Describe what changed..."
-                  class="w-full rounded-xl bg-surface-container-lowest px-3 py-2 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container"></textarea>
-                <div class="flex justify-end">
-                  <button type="submit" [disabled]="addingEvent()"
-                    class="flex items-center gap-1.5 rounded-xl bg-primary-container px-4 py-2 font-label-md text-label-md text-on-primary hover:bg-primary disabled:opacity-60">
-                    <span class="material-symbols-outlined text-[16px]">add</span>
-                    {{ addingEvent() ? 'Adding...' : 'Add Event' }}
-                  </button>
-                </div>
-              </form>
-            </div>
+            @if (canAddEvent()) {
+              <div class="mt-5 border-t border-outline-variant pt-5">
+                <h3 class="mb-3 font-label-md text-label-md text-on-surface">Add Timeline Event</h3>
+                <form class="flex flex-col gap-3" [formGroup]="eventForm" (ngSubmit)="addEvent()">
+                  <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <select formControlName="timeStamp" class="h-10 rounded-xl bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container">
+                      @for (ts of eventTimestamps; track ts) {
+                        <option [value]="ts">{{ ts }}</option>
+                      }
+                    </select>
+                    <input type="text" formControlName="title" placeholder="Event title" maxlength="100"
+                      class="h-10 rounded-xl bg-surface-container-lowest px-3 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container sm:col-span-2" />
+                  </div>
+                  <textarea formControlName="description" rows="2" maxlength="500" placeholder="Describe what changed..."
+                    class="w-full rounded-xl bg-surface-container-lowest px-3 py-2 font-body-md text-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary-container"></textarea>
+                  <div class="flex justify-end">
+                    <button type="submit" [disabled]="addingEvent()"
+                      class="flex items-center gap-1.5 rounded-xl bg-primary-container px-4 py-2 font-label-md text-label-md text-on-primary hover:bg-primary disabled:opacity-60">
+                      <span class="material-symbols-outlined text-[16px]">add</span>
+                      {{ addingEvent() ? 'Adding...' : 'Add Event' }}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            }
           </div>
         }
         @case ('logs') {
@@ -357,10 +366,12 @@
           }
         }
       </div>
-      <button type="button" class="mt-5 flex h-9 w-full items-center justify-center gap-1.5 rounded border border-outline-variant bg-surface-container-lowest font-label-md text-label-md text-on-surface transition-colors hover:bg-surface-container" (click)="selectTab('timeline')">
-        <span class="material-symbols-outlined text-[16px]">add</span>
-        Add Event
-      </button>
+      @if (canAddEvent()) {
+        <button type="button" class="mt-5 flex h-9 w-full items-center justify-center gap-1.5 rounded border border-outline-variant bg-surface-container-lowest font-label-md text-label-md text-on-surface transition-colors hover:bg-surface-container" (click)="selectTab('timeline')">
+          <span class="material-symbols-outlined text-[16px]">add</span>
+          Add Event
+        </button>
+      }
     </div>
   </div>
 
