@@ -28,5 +28,6 @@ namespace Presistance
         public DbSet<IncidentEvent> IncidentEvents { get; set; }
         public DbSet<Log> Logs { get; set; }
         public DbSet<ServiceDeployment> ServiceDeployments { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
     }
 }

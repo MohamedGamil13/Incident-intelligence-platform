@@ -10,6 +10,9 @@ namespace Domain.Contracts.Auth
         Task<IdentityResult> CreateUserAsync(ApplicationUser user, string password);
         Task<IList<string>> GetRolesAsync(ApplicationUser user);
         Task<IdentityResult> ResetPasswordAsync(ApplicationUser user, string newPassword);
+        Task<IdentityResult> UpdateUserAsync(ApplicationUser user);
         Task<bool> UserExistsAsync(string email);
+        Task<ApplicationUser?> GetUserByRefreshTokenAsync(string token);
+
     }
 }

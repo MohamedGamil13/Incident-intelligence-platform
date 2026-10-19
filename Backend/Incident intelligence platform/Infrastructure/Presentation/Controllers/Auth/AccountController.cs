@@ -7,7 +7,6 @@ using System.Security.Claims;
 
 namespace Presentation.Controllers.Auth
 {
-
     public class AccountController : ApiController
     {
         private readonly IAuthService _authService;
@@ -19,59 +18,72 @@ namespace Presentation.Controllers.Auth
 
         [HttpPost("Register")]
         [AllowAnonymous]
-        public async Task<IActionResult> Register([FromBody] RegisterUserDto newUser)
+        public async Task<ActionResult> Register([FromBody] RegisterUserDto newUser)
         {
             var result = await _authService.RegisterAsync(newUser);
             if (!result.IsSuccess)
             {
-                return BadRequest(ApiResponse<object>.FailureResponse(result.Message, result.Errors, 400));
+                return BadRequest(ApiResponse<object>.FailureResponse(result.ErrorMessage!, statusCode: 400));
             }
 
-            return Ok(ApiResponse<string>.SuccessResponse(message: result.Message, statusCode: 200));
+            return Ok(ApiResponse<string>.SuccessResponse(result.Data!, message: "User registered successfully", statusCode: 200));
         }
 
         [HttpPost("Login")]
         [AllowAnonymous]
-        public async Task<IActionResult> Login([FromBody] LoginRequest user)
+        public async Task<ActionResult> Login([FromBody] LoginRequest user)
         {
             var result = await _authService.LoginAsync(user);
             if (!result.IsSuccess)
             {
-                return BadRequest(ApiResponse<object>.FailureResponse(result.Message, statusCode: 400));
+                return BadRequest(ApiResponse<object>.FailureResponse(result.ErrorMessage!, statusCode: 400));
             }
 
-            var tokenData = new { token = result.Token, expires = result.Expiration };
-            return Ok(ApiResponse<object>.SuccessResponse(tokenData, message: "Login Successful"));
+            return Ok(ApiResponse<AuthResponseDto>.SuccessResponse(result.Data!, message: "Login Successful"));
+        }
+
+        [HttpPost("RefreshToken")]
+        [AllowAnonymous]
+        public async Task<ActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
+        {
+            var result = await _authService.RefreshTokenAsync(request);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(ApiResponse<object>.FailureResponse(result.ErrorMessage!, statusCode: 400));
+            }
+
+            return Ok(ApiResponse<AuthResponseDto>.SuccessResponse(result.Data!, message: "Token Refreshed Successfully"));
         }
 
         [HttpPut("ResetPassword")]
         [AllowAnonymous]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
         {
             var result = await _authService.ResetPasswordAsync(request);
             if (!result.IsSuccess)
             {
-                return BadRequest(ApiResponse<object>.FailureResponse(result.Message, result.Errors, 400));
+                return BadRequest(ApiResponse<object>.FailureResponse(result.ErrorMessage!, statusCode: 400));
             }
 
-            return Ok(ApiResponse<string>.SuccessResponse(message: result.Message));
+            return Ok(ApiResponse<string>.SuccessResponse(result.Data!, message: "Password Reset Successfully"));
         }
+
         [HttpPut("ForgetPassword")]
         [AllowAnonymous]
-        public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordRequest request)
+        public async Task<ActionResult> ForgetPassword([FromBody] ForgetPasswordRequest request)
         {
             var result = await _authService.RequestPasswordReset(request);
             if (!result.IsSuccess)
             {
-                return BadRequest(ApiResponse<object>.FailureResponse(result.Message, result.Errors, 400));
+                return BadRequest(ApiResponse<object>.FailureResponse(result.ErrorMessage!, statusCode: 400));
             }
 
-            return Ok(ApiResponse<string>.SuccessResponse(message: result.Message));
+            return Ok(ApiResponse<string>.SuccessResponse(result.Data!, message: "OTP sent successfully"));
         }
 
         [HttpGet("my-roles")]
         [Authorize]
-        public IActionResult GetMyRolesFromToken()
+        public ActionResult GetMyRolesFromToken()
         {
             var roles = User.Claims
                             .Where(c => c.Type == ClaimTypes.Role)
@@ -80,6 +92,5 @@ namespace Presentation.Controllers.Auth
 
             return Ok(ApiResponse<IEnumerable<string>>.SuccessResponse(roles, "User roles retrieved from token successfully"));
         }
-
     }
 }

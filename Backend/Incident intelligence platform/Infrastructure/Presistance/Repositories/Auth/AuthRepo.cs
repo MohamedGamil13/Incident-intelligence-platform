@@ -48,6 +48,14 @@ namespace Persistence.Repositories.Auth
             return await _userManager.ResetPasswordAsync(user, resetToken, newPassword);
         }
 
+        public async Task<IdentityResult> UpdateUserAsync(ApplicationUser user) => await _userManager.UpdateAsync(user);
+
+        public async Task<ApplicationUser?> GetUserByRefreshTokenAsync(string refreshToken)
+        {
+            return await _userManager.Users
+                .Include(u => u.RefreshTokens)
+                .FirstOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == refreshToken));
+        }
         public async Task<bool> UserExistsAsync(string email)
         {
             return await _userManager.Users.AnyAsync(u => u.Email == email);
